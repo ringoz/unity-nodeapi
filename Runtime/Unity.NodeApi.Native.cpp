@@ -15,7 +15,7 @@ typedef void *(* GC_fn_type)(void *);
 extern "C" void *GC_call_with_alloc_lock(GC_fn_type fn, void *client_data);
 
 typedef struct uv_loop_s { void* data; } uv_loop_t;
-typedef struct uv_idle_s { void* data; uv_loop_t* loop; } uv_idle_t;
+typedef struct uv_idle_s { void* data; uv_loop_t* loop; void* reserved[14]; } uv_idle_t;
 typedef void (*uv_idle_cb)(uv_idle_t* handle);
 static int (*uv_idle_init)(uv_loop_t*, uv_idle_t* idle);
 static int (*uv_idle_start)(uv_idle_t* idle, uv_idle_cb cb);
