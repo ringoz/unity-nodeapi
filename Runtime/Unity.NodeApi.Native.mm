@@ -37,8 +37,8 @@ extern "C" void display_link(void (*cb)(void *), void *data)
 {
   @autoreleasepool
   {
-    id callback = [^{cb(data);} copy];
-    CADisplayLink *link = [[NSClassFromString(@"NSScreen") mainScreen] displayLinkWithTarget:callback selector:@selector(invoke)];
+    [[NSBundle bundleWithPath:@"/System/Library/Frameworks/AppKit.framework"] load];
+    CADisplayLink *link = [[NSClassFromString(@"NSScreen") mainScreen] displayLinkWithTarget:[^{cb(data);} copy] selector:@selector(invoke)];
     [link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
   }
 }
