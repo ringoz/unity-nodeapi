@@ -5,6 +5,7 @@
 #include <objc/runtime.h>
 
 static NSBundle *mainBundleFix;
+static auto appKit = [[NSBundle bundleWithPath:@"/System/Library/Frameworks/AppKit.framework"] load];
 
 @implementation NSBundle(BundleFixup)
 
@@ -22,7 +23,7 @@ static NSBundle *mainBundleFix;
 
 @end
 
-extern "C" void NSBundle_fixup(const char *path)
+extern "C" void app_init(const char *path)
 {
   @autoreleasepool
   {
@@ -45,7 +46,6 @@ extern "C" void display_link(void (*cb)(void *), void *data)
 {
   @autoreleasepool
   {
-    [[NSBundle bundleWithPath:@"/System/Library/Frameworks/AppKit.framework"] load];
     CADisplayLink *link = [[NSClassFromString(@"NSScreen") mainScreen] displayLinkWithTarget:[^{cb(data);} copy] selector:@selector(invoke)];
     [link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
   }

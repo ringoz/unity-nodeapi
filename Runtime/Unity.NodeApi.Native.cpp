@@ -62,8 +62,8 @@ extern "C" void UnityFiberProc()
   imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
   imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
   imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
-  extern void NSBundle_fixup(const char *path);
-  NSBundle_fixup(imagePath.c_str());
+  extern void app_init(const char *path);
+  app_init(imagePath.c_str());
   
   const char *argv[] = { os::Image::GetImageName(), "-logfile", "-" };
   playerProc(1, argv);
