@@ -131,6 +131,9 @@ extern "C" EXPORTED_SYMBOL void *napi_register_module_v1(napi_env env, void *exp
   atexit([]{ quick_exit(0); });
   node_jump({});
 
+  extern void app_activate(void);
+  app_activate();
+
   auto errorState = Baselib_ErrorState_Create();
   auto progHandle = Baselib_DynamicLibrary_OpenProgramHandle(&errorState);
   napi_get_uv_event_loop = (decltype(napi_get_uv_event_loop))Baselib_DynamicLibrary_GetFunction(progHandle, "napi_get_uv_event_loop", &errorState);

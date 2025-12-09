@@ -28,8 +28,16 @@ extern "C" void NSBundle_fixup(const char *path)
   {
     mainBundleFix = [NSBundle bundleWithPath:[NSString stringWithUTF8String:path]];
     [NSBundle fixup];
+  }
+}
 
-    [[NSClassFromString(@"NSApplication") sharedApplication] setActivationPolicy:NSApplicationActivationPolicyRegular];    
+extern "C" void app_activate(void)
+{
+  @autoreleasepool
+  {
+    NSApplication *app = [NSClassFromString(@"NSApplication") sharedApplication];
+    [app setActivationPolicy:NSApplicationActivationPolicyRegular];    
+    [app activateIgnoringOtherApps:YES];
   }
 }
 
