@@ -102,7 +102,7 @@ extern "C" void UnityFiberProc()
   }
 
   imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
-  auto dataPath = utils::StringUtils::Utf8ToNativeString(imagePath + "\\unode-module_Data");
+  auto dataPath = utils::StringUtils::Utf8ToNativeString(imagePath + "\\UnityPlayer_Data");
   imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
   imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
   
