@@ -24,6 +24,24 @@ typedef struct napi_env__* napi_env;
 typedef enum { napi_ok } napi_status;
 static napi_status (*napi_get_uv_event_loop)(napi_env env, struct uv_loop_s** loop);
 
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN 
+#include <windows.h>
+
+extern "C" void app_init(const char *path)
+{
+  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+}
+
+extern "C" void app_activate(void)
+{
+}
+
+extern "C" void display_link(void (*cb)(uv_idle_t *), uv_idle_t *data)
+{
+}
+#endif
+
 using namespace il2cpp;
 
 extern "C" void UnityFiberProc()
@@ -44,39 +62,24 @@ extern "C" void UnityFiberProc()
     abort();
   }
 
+  imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
+  auto dataPath = utils::StringUtils::Utf8ToNativeString(imagePath + "\\unode-module_Data");
+  imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
+  imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
+  
+  extern void app_init(const char *path);
+  app_init(imagePath.c_str());
+
 #if defined(__APPLE__)
   extern int PlayerMain(int argc, const char *argv[]);
   auto playerProc = (decltype(&PlayerMain))Baselib_DynamicLibrary_GetFunction(playerLib, "_Z10PlayerMainiPPKc", &errorState);
-#elif defined(_WIN32)
-  extern int UnityMain2(void *hInstance, const wchar_t *customDataFolder, wchar_t *lpCmdLine, int nShowCmd);
-  auto playerProc = (decltype(&UnityMain2))Baselib_DynamicLibrary_GetFunction(playerLib, "UnityMain2", &errorState);
-#endif
-
-  if (!playerProc)
-  {
-    printf("error: %s\n", utils::Exception::FormatBaselibErrorState(errorState).c_str());
-    abort();
-  }
-
-#if defined(__APPLE__)
-  imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
-  imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
-  imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
-  extern void app_init(const char *path);
-  app_init(imagePath.c_str());
-  
   const char *argv[] = { os::Image::GetImageName(), "-logfile", "-" };
   playerProc(1, argv);
 #elif defined(_WIN32)
-  imagePath = imagePath.substr(0, imagePath.find_last_of(IL2CPP_DIR_SEPARATOR));
-  imagePath += "\\unode-module_Data";
-  auto dataPath = utils::StringUtils::Utf8ToNativeString(imagePath);
-
-  extern IMPORTED_SYMBOL int SetProcessDpiAwarenessContext(int);
-  SetProcessDpiAwarenessContext(-4);
-
-  extern IMPORTED_SYMBOL void *GetModuleHandleW(wchar_t *);
-  playerProc(GetModuleHandleW(nullptr), dataPath.c_str(), L"-logfile -", 5);
+  extern int UnityMain2(void *hInstance, const wchar_t *customDataFolder, wchar_t *lpCmdLine, int nShowCmd);
+  auto playerProc = (decltype(&UnityMain2))Baselib_DynamicLibrary_GetFunction(playerLib, "UnityMain2", &errorState);
+  auto hInstance = GetModuleHandleW(nullptr);
+  playerProc(hInstance, dataPath.c_str(), L"-logfile -", 5);
 #endif
 
   Baselib_DynamicLibrary_Close(playerLib);
