@@ -3,4 +3,4 @@
 /* eslint-disable */
 
 
-export function hello(): void;
+export function hello(message: string): void;

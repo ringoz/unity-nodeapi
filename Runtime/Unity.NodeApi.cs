@@ -6,12 +6,9 @@ using UnityEngine.Scripting;
 
 public static class UnityNodeApi
 {
-  public static object garbagez;
-
   [JSExport]
-  public static void Hello()
+  public static void Hello(string message)
   {
-    Debug.Log("Hello world!");
-    garbagez = new byte[1024];
+    Debug.Log(message);
   }
 }
