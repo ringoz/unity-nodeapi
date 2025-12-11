@@ -27,6 +27,12 @@ static napi_status (*napi_get_uv_event_loop)(napi_env env, struct uv_loop_s** lo
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN 
 #include <windows.h>
+#include <DispatcherQueue.h>
+#pragma comment(lib, "CoreMessaging.lib")
+
+#include <wrl.h>
+using namespace Microsoft::WRL;
+using namespace ABI::Windows;
 
 extern "C" void app_init(const char *path)
 {
@@ -39,6 +45,39 @@ extern "C" void app_activate(void)
 
 extern "C" void display_link(void (*cb)(uv_idle_t *), uv_idle_t *data)
 {
+  static ComPtr<System::IDispatcherQueue> m_queue;
+
+  ComPtr<System::IDispatcherQueueStatics> queueStatics;
+  if (FAILED(Foundation::GetActivationFactory(Wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(), &queueStatics)) ||
+      FAILED(queueStatics->GetForCurrentThread(&m_queue)) || !m_queue)
+  {
+    DispatcherQueueOptions options = { sizeof(DispatcherQueueOptions) };
+    options.threadType = DQTYPE_THREAD_CURRENT;
+
+    System::IDispatcherQueueController *controller;
+    if (FAILED(::CreateDispatcherQueueController(options, &controller)))
+      abort();
+
+    controller->get_DispatcherQueue(&m_queue);
+  }
+
+  System::IDispatcherQueueTimer *timer;
+  if (FAILED(m_queue->CreateTimer(&timer)))
+    abort();
+
+  EventRegistrationToken token;
+  timer->add_Tick(Callback<Implements<RuntimeClassFlags<Delegate>, Foundation::ITypedEventHandler<System::DispatcherQueueTimer*, IInspectable*>, FtmBase>>([=](auto sender, auto args)
+  {
+    if (InSendMessage())
+      return S_OK;
+
+    cb(data);
+    return S_OK;
+  }).Get(), &token);
+
+  // $TODO proper vsync event
+  timer->put_Interval({ INT64(1000000ll * 10 / 60) });
+  timer->Start();
 }
 #endif
 
@@ -138,7 +177,11 @@ extern "C" EXPORTED_SYMBOL void *napi_register_module_v1(napi_env env, void *exp
   app_activate();
 
   auto errorState = Baselib_ErrorState_Create();
+#if defined(_WIN32)
+  auto progHandle = Baselib_DynamicLibrary_FromNativeHandle(reinterpret_cast<uint64_t>(GetModuleHandleW(nullptr)), Baselib_DynamicLibrary_WinApiHMODULE, &errorState);
+#else
   auto progHandle = Baselib_DynamicLibrary_OpenProgramHandle(&errorState);
+#endif
   napi_get_uv_event_loop = (decltype(napi_get_uv_event_loop))Baselib_DynamicLibrary_GetFunction(progHandle, "napi_get_uv_event_loop", &errorState);
   uv_idle_init = (decltype(uv_idle_init))Baselib_DynamicLibrary_GetFunction(progHandle, "uv_idle_init", &errorState);
   uv_idle_start = (decltype(uv_idle_start))Baselib_DynamicLibrary_GetFunction(progHandle, "uv_idle_start", &errorState);
@@ -147,7 +190,6 @@ extern "C" EXPORTED_SYMBOL void *napi_register_module_v1(napi_env env, void *exp
     printf("error: %s\n", utils::Exception::FormatBaselibErrorState(errorState).c_str());
     return nullptr;
   }
-  Baselib_DynamicLibrary_Close(progHandle);
 
   uv_loop_t *loop;
   napi_get_uv_event_loop(env, &loop);
