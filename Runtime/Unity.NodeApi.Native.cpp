@@ -25,7 +25,6 @@ typedef enum { napi_ok } napi_status;
 static napi_status (*napi_get_uv_event_loop)(napi_env env, struct uv_loop_s** loop);
 
 #if defined(_WIN32)
-#pragma comment(lib, "Packages/net.ringoz.unity.nodeapi/Runtime/lib/fcontext.lib")
 #define WIN32_LEAN_AND_MEAN 
 #include <windows.h>
 #include <DispatcherQueue.h>
