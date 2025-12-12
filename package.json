@@ -1,5 +1,6 @@
 {
 	"name": "net.ringoz.unity.nodeapi",
+	"type": "module",
 	"displayName": "Unity.NodeApi",
 	"version": "0.1.0",
 	"unity": "6000.3",
