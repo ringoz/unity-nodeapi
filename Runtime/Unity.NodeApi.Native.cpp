@@ -19,6 +19,7 @@ extern "C" EXPORTED_SYMBOL void *napi_register_wasm_v1(napi_env env, void *expor
 }
 
 #ifndef __EMSCRIPTEN__
+
 #include <os/Image.h>
 #include <Cpp/Baselib_DynamicLibrary.h>
 #include <fcontext.h>
@@ -216,4 +217,23 @@ extern "C" EXPORTED_SYMBOL void *napi_register_module_v1(napi_env env, void *exp
 
   return napi_register_wasm_v1(env, exports);
 }
+
+#else
+
+extern "C" char *node_dlerror(void)
+{
+  return nullptr;
+}
+
+extern "C" void *node_dlopen(const char *path, int flags)
+{
+  return (void *)path;
+}
+
+extern "C" void *node_dlsym(void *__restrict handle, const char *__restrict symbol)
+{
+  printf("error: %s not found\n", symbol);
+  abort();
+}
+
 #endif // __EMSCRIPTEN__
