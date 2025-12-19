@@ -56,7 +56,7 @@ function emnapiInit(options) {
             var exports$1 = emnapiModule.exports;
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             var exportsHandle = scope.add(exports$1);
-            var napiValue = _napi_register_wasm_v1({{{ to64('_envObject.id') }}}, {{{ to64('exportsHandle.id') }}});
+            var napiValue = _napi_register_wasm_v1({{{ ('_envObject.id') }}}, {{{ ('exportsHandle.id') }}});
             emnapiModule.exports = (!napiValue) ? exports$1 : emnapiCtx.handleStore.get(napiValue).value;
         });
     }
@@ -96,9 +96,9 @@ function _napi_clear_last_error(env) {
  * @__sig vppp
  */
 function __emnapi_get_node_version(major, minor, patch) {
-    {{{ from64('major') }}};
-    {{{ from64('minor') }}};
-    {{{ from64('patch') }}};
+    {{{ ('major') }}};
+    {{{ ('minor') }}};
+    {{{ ('patch') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var versions = (typeof process === 'object' && process !== null &&
         typeof process.versions === 'object' && process.versions !== null &&
@@ -167,7 +167,7 @@ function __emnapi_callback_into_module(forceUncaught, env, callback, data, close
  */
 function __emnapi_call_finalizer(forceUncaught, env, callback, data, hint) {
     var envObject = emnapiCtx.envStore.get(env);
-    {{{ from64('callback') }}};
+    {{{ ('callback') }}};
     envObject.callFinalizerInternal(forceUncaught, callback, data, hint);
 }
 /**
@@ -265,7 +265,7 @@ function _napi_adjust_external_memory(env, low, high, adjusted_value) {
         }
     }
 #if WASM_BIGINT
-    {{{ from64('high') }}};
+    {{{ ('high') }}};
     if (emnapiCtx.feature.supportBigInt) {
         {{{ makeSetValue('high', 0, 'wasmMemory.buffer.byteLength', 'i64') }}};
     }
@@ -273,7 +273,7 @@ function _napi_adjust_external_memory(env, low, high, adjusted_value) {
         emnapiSetValueI64(high, wasmMemory.buffer.byteLength);
     }
 #else
-    {{{ from64('adjusted_value') }}};
+    {{{ ('adjusted_value') }}};
     {{{ makeSetValue('adjusted_value', 0, 'wasmMemory.buffer.byteLength', 'i64') }}};
 #endif
     return envObject.clearLastError();
@@ -849,7 +849,7 @@ var emnapiString = {
         return outPtr - startPtr;
     },
     newString: function (env, str, length, result, stringMaker) {
-        {{{ from64('length') }}};
+        {{{ ('length') }}};
         if (!env)
             return 1 /* napi_status.napi_invalid_arg */;
         // @ts-expect-error
@@ -865,16 +865,16 @@ var emnapiString = {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         if (!(autoLength || (sizelength <= 2147483647)))
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('str') }}};
+        {{{ ('str') }}};
         var strValue = stringMaker(str, autoLength, sizelength);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var value = emnapiCtx.addToCurrentScope(strValue).id;
         {{{ makeSetValue('result', 0, 'value', '*') }}};
         return envObject.clearLastError();
     },
     newExternalString: function (env, str, length, finalize_callback, finalize_hint, result, copied, createApi, stringMaker) {
-        {{{ from64('length') }}};
+        {{{ ('length') }}};
         if (!env)
             return 1 /* napi_status.napi_invalid_arg */;
         // @ts-expect-error
@@ -922,7 +922,7 @@ function _emnapi_get_module_object(env, result) {
     try {
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         value = envObject.ensureHandleId(Module);
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -954,8 +954,8 @@ function _emnapi_get_module_property(env, utf8name, result) {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('utf8name') }}};
-        {{{ from64('result') }}};
+        {{{ ('utf8name') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         value = envObject.ensureHandleId(Module[emnapiString.UTF8ToString(utf8name, -1)]);
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -975,11 +975,11 @@ function _emnapi_get_module_property(env, utf8name, result) {
  * ```
  */
 var emnapiExternalMemory = {
-    registry: typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(function (_pointer) { _free({{{ to64('_pointer') }}}); }) : undefined,
+    registry: typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(function (_pointer) { _free({{{ ('_pointer') }}}); }) : undefined,
     table: new WeakMap(),
     wasmMemoryViewTable: new WeakMap(),
     init: function () {
-        emnapiExternalMemory.registry = typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(function (_pointer) { _free({{{ to64('_pointer') }}}); }) : undefined;
+        emnapiExternalMemory.registry = typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(function (_pointer) { _free({{{ ('_pointer') }}}); }) : undefined;
         emnapiExternalMemory.table = new WeakMap();
         emnapiExternalMemory.wasmMemoryViewTable = new WeakMap();
     },
@@ -1027,7 +1027,7 @@ var emnapiExternalMemory = {
         if (!shouldCopy) {
             return info;
         }
-        var pointer = _malloc({{{ to64('arrayBuffer.byteLength') }}});
+        var pointer = _malloc({{{ ('arrayBuffer.byteLength') }}});
         if (!pointer)
             throw new Error('Out of memory');
         new Uint8Array(wasmMemory.buffer).set(new Uint8Array(arrayBuffer), pointer);
@@ -1105,7 +1105,7 @@ function _napi_get_array_length(env, value, result) {
         if (!handle.isArray()) {
             return envObject.setLastError(8 /* napi_status.napi_array_expected */);
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var v = handle.value.length >>> 0;
         {{{ makeSetValue('result', 0, 'v', 'u32') }}};
@@ -1132,13 +1132,13 @@ function _napi_get_arraybuffer_info(env, arraybuffer, data, byte_length) {
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     }
     if (data) {
-        {{{ from64('data') }}};
+        {{{ ('data') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var p = emnapiExternalMemory.getArrayBufferPointer(handle.value, true).address;
         {{{ makeSetValue('data', 0, 'p', '*') }}};
     }
     if (byte_length) {
-        {{{ from64('byte_length') }}};
+        {{{ ('byte_length') }}};
         {{{ makeSetValue('byte_length', 0, 'handle.value.byteLength', SIZE_TYPE) }}};
     }
     return envObject.clearLastError();
@@ -1173,7 +1173,7 @@ function _napi_get_prototype(env, value, result) {
         catch (_) {
             return envObject.setLastError(2 /* napi_status.napi_object_expected */);
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var p = envObject.ensureHandleId(Object.getPrototypeOf(v));
         {{{ makeSetValue('result', 0, 'p', '*') }}};
@@ -1201,7 +1201,7 @@ function _napi_get_typedarray_info(env, typedarray, type, length, data, arraybuf
     }
     var v = handle.value;
     if (type) {
-        {{{ from64('type') }}};
+        {{{ ('type') }}};
         var t = void 0;
         if (v instanceof Int8Array) {
             t = 0 /* napi_typedarray_type.napi_int8_array */;
@@ -1243,27 +1243,27 @@ function _napi_get_typedarray_info(env, typedarray, type, length, data, arraybuf
         {{{ makeSetValue('type', 0, 't', 'i32') }}};
     }
     if (length) {
-        {{{ from64('length') }}};
+        {{{ ('length') }}};
         {{{ makeSetValue('length', 0, 'v.length', SIZE_TYPE) }}};
     }
     var buffer;
     if (data || arraybuffer) {
         buffer = v.buffer;
         if (data) {
-            {{{ from64('data') }}};
+            {{{ ('data') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             var p = emnapiExternalMemory.getViewPointer(v, true).address;
             {{{ makeSetValue('data', 0, 'p', '*') }}};
         }
         if (arraybuffer) {
-            {{{ from64('arraybuffer') }}};
+            {{{ ('arraybuffer') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             var ab = envObject.ensureHandleId(buffer);
             {{{ makeSetValue('arraybuffer', 0, 'ab', '*') }}};
         }
     }
     if (byte_offset) {
-        {{{ from64('byte_offset') }}};
+        {{{ ('byte_offset') }}};
         {{{ makeSetValue('byte_offset', 0, 'v.byteOffset', SIZE_TYPE) }}};
     }
     return envObject.clearLastError();
@@ -1304,27 +1304,27 @@ function _napi_get_dataview_info(env, dataview, byte_length, data, arraybuffer, 
     }
     var v = handle.value;
     if (byte_length) {
-        {{{ from64('byte_length') }}};
+        {{{ ('byte_length') }}};
         {{{ makeSetValue('byte_length', 0, 'v.byteLength', SIZE_TYPE) }}};
     }
     var buffer;
     if (data || arraybuffer) {
         buffer = v.buffer;
         if (data) {
-            {{{ from64('data') }}};
+            {{{ ('data') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             var p = emnapiExternalMemory.getViewPointer(v, true).address;
             {{{ makeSetValue('data', 0, 'p', '*') }}};
         }
         if (arraybuffer) {
-            {{{ from64('arraybuffer') }}};
+            {{{ ('arraybuffer') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             var ab = envObject.ensureHandleId(buffer);
             {{{ makeSetValue('arraybuffer', 0, 'ab', '*') }}};
         }
     }
     if (byte_offset) {
-        {{{ from64('byte_offset') }}};
+        {{{ ('byte_offset') }}};
         {{{ makeSetValue('byte_offset', 0, 'v.byteOffset', SIZE_TYPE) }}};
     }
     return envObject.clearLastError();
@@ -1354,7 +1354,7 @@ function _napi_get_date_value(env, value, result) {
         if (!handle.isDate()) {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         v = handle.value.valueOf();
         {{{ makeSetValue('result', 0, 'v', 'double') }}};
         return envObject.getReturnStatus();
@@ -1381,7 +1381,7 @@ function _napi_get_value_bool(env, value, result) {
     if (typeof handle.value !== 'boolean') {
         return envObject.setLastError(7 /* napi_status.napi_boolean_expected */);
     }
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = handle.value ? 1 : 0;
     {{{ makeSetValue('result', 0, 'r', 'i8') }}};
@@ -1404,7 +1404,7 @@ function _napi_get_value_double(env, value, result) {
     if (typeof handle.value !== 'number') {
         return envObject.setLastError(6 /* napi_status.napi_number_expected */);
     }
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = handle.value;
     {{{ makeSetValue('result', 0, 'r', 'double') }}};
@@ -1433,8 +1433,8 @@ function _napi_get_value_bigint_int64(env, value, result, lossless) {
     if (typeof numberValue !== 'bigint') {
         return envObject.setLastError(6 /* napi_status.napi_number_expected */);
     }
-    {{{ from64('lossless') }}};
-    {{{ from64('result') }}};
+    {{{ ('lossless') }}};
+    {{{ ('result') }}};
     if ((numberValue >= (BigInt(-1) * (BigInt(1) << BigInt(63)))) && (numberValue < (BigInt(1) << BigInt(63)))) {
         {{{ makeSetValue('lossless', 0, '1', 'i8') }}};
     }
@@ -1476,8 +1476,8 @@ function _napi_get_value_bigint_uint64(env, value, result, lossless) {
     if (typeof numberValue !== 'bigint') {
         return envObject.setLastError(6 /* napi_status.napi_number_expected */);
     }
-    {{{ from64('lossless') }}};
-    {{{ from64('result') }}};
+    {{{ ('lossless') }}};
+    {{{ ('result') }}};
     if ((numberValue >= BigInt(0)) && (numberValue < (BigInt(1) << BigInt(64)))) {
         {{{ makeSetValue('lossless', 0, '1', 'i8') }}};
     }
@@ -1514,11 +1514,11 @@ function _napi_get_value_bigint_words(env, value, sign_bit, word_count, words) {
         return envObject.setLastError(17 /* napi_status.napi_bigint_expected */);
     }
     var isMinus = handle.value < BigInt(0);
-    {{{ from64('sign_bit') }}};
-    {{{ from64('words') }}};
-    {{{ from64('word_count') }}};
+    {{{ ('sign_bit') }}};
+    {{{ ('words') }}};
+    {{{ ('word_count') }}};
     var word_count_int = {{{ makeGetValue('word_count', 0, SIZE_TYPE) }}};
-    {{{ from64('word_count_int') }}};
+    {{{ ('word_count_int') }}};
     var wordCount = 0;
     var bigintValue = isMinus ? (handle.value * BigInt(-1)) : handle.value;
     while (bigintValue !== BigInt(0)) {
@@ -1572,7 +1572,7 @@ function _napi_get_value_external(env, value, result) {
     if (!handle.isExternal()) {
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     }
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var p = handle.data();
     {{{ makeSetValue('result', 0, 'p', '*') }}};
@@ -1595,7 +1595,7 @@ function _napi_get_value_int32(env, value, result) {
     if (typeof handle.value !== 'number') {
         return envObject.setLastError(6 /* napi_status.napi_number_expected */);
     }
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var v = new Int32Array([handle.value])[0];
     {{{ makeSetValue('result', 0, 'v', 'i32') }}};
@@ -1619,7 +1619,7 @@ function _napi_get_value_int64(env, value, result) {
         return envObject.setLastError(6 /* napi_status.napi_number_expected */);
     }
     var numberValue = handle.value;
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     if (numberValue === Number.POSITIVE_INFINITY || numberValue === Number.NEGATIVE_INFINITY || isNaN(numberValue)) {
         {{{ makeSetValue('result', 0, '0', 'i32') }}};
         {{{ makeSetValue('result', 4, '0', 'i32') }}};
@@ -1648,9 +1648,9 @@ function _napi_get_value_string_latin1(env, value, buf, buf_size, result) {
     envObject.checkGCAccess();
     if (!value)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
-    {{{ from64('buf') }}};
-    {{{ from64('buf_size') }}};
+    {{{ ('result') }}};
+    {{{ ('buf') }}};
+    {{{ ('buf_size') }}};
     buf_size = buf_size >>> 0;
     var handle = emnapiCtx.handleStore.get(value);
     if (typeof handle.value !== 'string') {
@@ -1692,9 +1692,9 @@ function _napi_get_value_string_utf8(env, value, buf, buf_size, result) {
     envObject.checkGCAccess();
     if (!value)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
-    {{{ from64('buf') }}};
-    {{{ from64('buf_size') }}};
+    {{{ ('result') }}};
+    {{{ ('buf') }}};
+    {{{ ('buf_size') }}};
     buf_size = buf_size >>> 0;
     var handle = emnapiCtx.handleStore.get(value);
     if (typeof handle.value !== 'string') {
@@ -1730,9 +1730,9 @@ function _napi_get_value_string_utf16(env, value, buf, buf_size, result) {
     envObject.checkGCAccess();
     if (!value)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
-    {{{ from64('buf') }}};
-    {{{ from64('buf_size') }}};
+    {{{ ('result') }}};
+    {{{ ('buf') }}};
+    {{{ ('buf_size') }}};
     buf_size = buf_size >>> 0;
     var handle = emnapiCtx.handleStore.get(value);
     if (typeof handle.value !== 'string') {
@@ -1772,7 +1772,7 @@ function _napi_get_value_uint32(env, value, result) {
     if (typeof handle.value !== 'number') {
         return envObject.setLastError(6 /* napi_status.napi_number_expected */);
     }
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var v = new Uint32Array([handle.value])[0];
     {{{ makeSetValue('result', 0, 'v', 'u32') }}};
@@ -1790,7 +1790,7 @@ function _napi_create_int32(env, value, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var v = emnapiCtx.addToCurrentScope(value).id;
     {{{ makeSetValue('result', 0, 'v', '*') }}};
@@ -1807,7 +1807,7 @@ function _napi_create_uint32(env, value, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var v = emnapiCtx.addToCurrentScope(value >>> 0).id;
     {{{ makeSetValue('result', 0, 'v', '*') }}};
@@ -1829,7 +1829,7 @@ function _napi_create_int64(env, low, high, result) {
     value = Number(low);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var v1 = emnapiCtx.addToCurrentScope(value).id;
-    {{{ from64('high') }}};
+    {{{ ('high') }}};
     {{{ makeSetValue('high', 0, 'v1', '*') }}};
 #else
     if (!result)
@@ -1852,7 +1852,7 @@ function _napi_create_double(env, value, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var v = emnapiCtx.addToCurrentScope(value).id;
     {{{ makeSetValue('result', 0, 'v', '*') }}};
@@ -1952,7 +1952,7 @@ function _napi_create_bigint_int64(env, low, high, result) {
     value = low;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var v1 = emnapiCtx.addToCurrentScope(value).id;
-    {{{ from64('high') }}};
+    {{{ ('high') }}};
     {{{ makeSetValue('high', 0, 'v1', '*') }}};
 #else
     if (!result)
@@ -1983,7 +1983,7 @@ function _napi_create_bigint_uint64(env, low, high, result) {
     value = low & ((BigInt(1) << BigInt(64)) - BigInt(1));
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var v1 = emnapiCtx.addToCurrentScope(value).id;
-    {{{ from64('high') }}};
+    {{{ ('high') }}};
     {{{ makeSetValue('high', 0, 'v1', '*') }}};
 #else
     if (!result)
@@ -2017,8 +2017,8 @@ function _napi_create_bigint_words(env, sign_bit, word_count, words, result) {
         }
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('words') }}};
-        {{{ from64('word_count') }}};
+        {{{ ('words') }}};
+        {{{ ('word_count') }}};
         word_count = word_count >>> 0;
         if (word_count > 2147483647) {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
@@ -2034,7 +2034,7 @@ function _napi_create_bigint_words(env, sign_bit, word_count, words, result) {
             value += wordi << BigInt(64 * i);
         }
         value *= ((BigInt(sign_bit) % BigInt(2) === BigInt(0)) ? BigInt(1) : BigInt(-1));
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         v = emnapiCtx.addToCurrentScope(value).id;
         {{{ makeSetValue('result', 0, 'v', '*') }}};
         return envObject.getReturnStatus();
@@ -2048,7 +2048,7 @@ function _napi_create_bigint_words(env, sign_bit, word_count, words, result) {
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
 function emnapiCreateFunction(envObject, utf8name, length, cb, data) {
-    {{{ from64('utf8name') }}};
+    {{{ ('utf8name') }}};
     var functionName = (!utf8name || !length) ? '' : (emnapiString.UTF8ToString(utf8name, length));
     var f;
     var napiCallback = {{{ makeDynCall('ppp', 'cb') }}};
@@ -2198,7 +2198,7 @@ function emnapiWrap(env, js_object, native_object, finalize_cb, finalize_hint, r
             if (!finalize_cb)
                 return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
             reference = emnapiCtx.createReferenceWithFinalizer(envObject, handle.id, 0, 1 /* ReferenceOwnership.kUserland */, finalize_cb, native_object, finalize_hint);
-            {{{ from64('result') }}};
+            {{{ ('result') }}};
             referenceId = reference.id;
             {{{ makeSetValue('result', 0, 'referenceId', '*') }}};
         }
@@ -2246,7 +2246,7 @@ function emnapiUnwrap(env, js_object, result, action) {
         if (!ref)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         if (result) {
-            {{{ from64('result') }}};
+            {{{ ('result') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             data = ref.data();
             {{{ makeSetValue('result', 0, 'data', '*') }}};
@@ -2289,9 +2289,9 @@ function _napi_define_class(env, utf8name, length, constructor, callback_data, p
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         if (!constructor)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('length') }}};
-        {{{ from64('properties') }}};
-        {{{ from64('property_count') }}};
+        {{{ ('length') }}};
+        {{{ ('properties') }}};
+        {{{ ('property_count') }}};
         property_count = property_count >>> 0;
         if (property_count > 0) {
             if (!properties)
@@ -2315,7 +2315,7 @@ function _napi_define_class(env, utf8name, length, constructor, callback_data, p
             var setter = {{{ makeGetValue('propPtr', POINTER_SIZE * 4, '*') }}};
             var value = {{{ makeGetValue('propPtr', POINTER_SIZE * 5, '*') }}};
             attributes = {{{ makeGetValue('propPtr', POINTER_SIZE * 6, POINTER_WASM_TYPE) }}};
-            {{{ from64('attributes') }}};
+            {{{ ('attributes') }}};
             var data = {{{ makeGetValue('propPtr', POINTER_SIZE * 7, '*') }}};
             if (utf8Name) {
                 propertyName = emnapiString.UTF8ToString(utf8Name, -1);
@@ -2338,7 +2338,7 @@ function _napi_define_class(env, utf8name, length, constructor, callback_data, p
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var valueHandle = emnapiCtx.addToCurrentScope(F);
         valueHandleId = valueHandle.id;
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         {{{ makeSetValue('result', 0, 'valueHandleId', '*') }}};
         return envObject.getReturnStatus();
     }
@@ -2387,7 +2387,7 @@ function _napi_type_tag_object(env, object, type_tag) {
         if (!(value.isObject() || value.isFunction())) {
             return envObject.setLastError(envObject.tryCatch.hasCaught() ? 10 /* napi_status.napi_pending_exception */ : 2 /* napi_status.napi_object_expected */);
         }
-        {{{ from64('type_tag') }}};
+        {{{ ('type_tag') }}};
         if (!type_tag) {
             return envObject.setLastError(envObject.tryCatch.hasCaught() ? 10 /* napi_status.napi_pending_exception */ : 1 /* napi_status.napi_invalid_arg */);
         }
@@ -2437,7 +2437,7 @@ function _napi_check_object_type_tag(env, object, type_tag, result) {
         }
         var binding = envObject.getObjectBinding(value.value);
         if (binding.tag !== null) {
-            {{{ from64('type_tag') }}};
+            {{{ ('type_tag') }}};
             var tag = binding.tag;
             var typeTag = new Uint32Array(wasmMemory.buffer, type_tag, 4);
             ret = (tag[0] === typeTag[0] &&
@@ -2448,7 +2448,7 @@ function _napi_check_object_type_tag(env, object, type_tag, result) {
         else {
             ret = false;
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         {{{ makeSetValue('result', 0, 'ret ? 1 : 0', 'i8') }}};
         return envObject.getReturnStatus();
     }
@@ -2479,12 +2479,12 @@ function _napi_add_finalizer(env, js_object, finalize_data, finalize_cb, finaliz
     }
     var handle = handleResult.handle;
     var ownership = !result ? 0 /* ReferenceOwnership.kRuntime */ : 1 /* ReferenceOwnership.kUserland */;
-    {{{ from64('finalize_data') }}};
-    {{{ from64('finalize_cb') }}};
-    {{{ from64('finalize_hint') }}};
+    {{{ ('finalize_data') }}};
+    {{{ ('finalize_cb') }}};
+    {{{ ('finalize_hint') }}};
     var reference = emnapiCtx.createReferenceWithFinalizer(envObject, handle.id, 0, ownership, finalize_cb, finalize_data, finalize_hint);
     if (result) {
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var referenceId = reference.id;
         {{{ makeSetValue('result', 0, 'referenceId', '*') }}};
@@ -2520,9 +2520,9 @@ function _emnapi_create_memory_view(env, typedarray_type, external_data, byte_le
     try {
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('byte_length') }}};
-        {{{ from64('external_data') }}};
-        {{{ from64('result') }}};
+        {{{ ('byte_length') }}};
+        {{{ ('external_data') }}};
+        {{{ ('result') }}};
         byte_length = byte_length >>> 0;
         if (!external_data) {
             byte_length = 0;
@@ -2694,9 +2694,9 @@ function _emnapi_sync_memory(env, js_to_wasm, arraybuffer_or_view, offset, len) 
     try {
         if (!arraybuffer_or_view)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('arraybuffer_or_view') }}};
-        {{{ from64('offset') }}};
-        {{{ from64('len') }}};
+        {{{ ('arraybuffer_or_view') }}};
+        {{{ ('offset') }}};
+        {{{ ('len') }}};
         var handleId = {{{ makeGetValue('arraybuffer_or_view', 0, '*') }}};
         var handle = envObject.ctx.handleStore.get(handleId);
         if (!handle.isArrayBuffer() && !handle.isTypedArray() && !handle.isDataView() && !emnapiExternalMemory.isSharedArrayBuffer(handle.value)) {
@@ -2704,7 +2704,7 @@ function _emnapi_sync_memory(env, js_to_wasm, arraybuffer_or_view, offset, len) 
         }
         var ret = emnapiSyncMemory(Boolean(js_to_wasm), handle.value, offset, len);
         if (handle.value !== ret) {
-            {{{ from64('arraybuffer_or_view') }}};
+            {{{ ('arraybuffer_or_view') }}};
             v = envObject.ensureHandleId(ret);
             {{{ makeSetValue('arraybuffer_or_view', 0, 'v', '*') }}};
         }
@@ -2762,16 +2762,16 @@ function _emnapi_get_memory_address(env, arraybuffer_or_view, address, ownership
         info = emnapiGetMemoryAddress(handle.value);
         p = info.address;
         if (address) {
-            {{{ from64('address') }}};
+            {{{ ('address') }}};
             {{{ makeSetValue('address', 0, 'p', '*') }}};
         }
         if (ownership) {
-            {{{ from64('ownership') }}};
+            {{{ ('ownership') }}};
             ownershipOut = info.ownership;
             {{{ makeSetValue('ownership', 0, 'ownershipOut', 'i32') }}};
         }
         if (runtime_allocated) {
-            {{{ from64('runtime_allocated') }}};
+            {{{ ('runtime_allocated') }}};
             runtimeAllocated = info.runtimeAllocated;
             {{{ makeSetValue('runtime_allocated', 0, 'runtimeAllocated', 'i8') }}};
         }
@@ -2801,7 +2801,7 @@ function _emnapi_get_runtime_version(env, version) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var versions = runtimeVersion.split('.')
         .map(function (n) { return Number(n); });
-    {{{ from64('version') }}};
+    {{{ ('version') }}};
     {{{ makeSetValue('version', 0, 'versions[0]', 'u32') }}};
     {{{ makeSetValue('version', 4, 'versions[1]', 'u32') }}};
     {{{ makeSetValue('version', 8, 'versions[2]', 'u32') }}};
@@ -2820,7 +2820,7 @@ function _napi_create_array(env, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = emnapiCtx.addToCurrentScope([]).id;
     {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -2837,8 +2837,8 @@ function _napi_create_array_with_length(env, length, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('length') }}};
-    {{{ from64('result') }}};
+    {{{ ('length') }}};
+    {{{ ('result') }}};
     length = length >>> 0;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = emnapiCtx.addToCurrentScope(new Array(length)).id;
@@ -2846,11 +2846,11 @@ function _napi_create_array_with_length(env, length, result) {
     return envObject.clearLastError();
 }
 function emnapiCreateArrayBuffer(byte_length, data, shared) {
-    {{{ from64('byte_length') }}};
+    {{{ ('byte_length') }}};
     byte_length = byte_length >>> 0;
     var arrayBuffer = shared ? new SharedArrayBuffer(byte_length) : new ArrayBuffer(byte_length);
     if (data) {
-        {{{ from64('data') }}};
+        {{{ ('data') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var p = emnapiExternalMemory.getArrayBufferPointer(arrayBuffer, true).address;
         {{{ makeSetValue('data', 0, 'p', '*') }}};
@@ -2876,7 +2876,7 @@ function _napi_create_arraybuffer(env, byte_length, data, result) {
     try {
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         var arrayBuffer = emnapiCreateArrayBuffer(byte_length, data, false);
         value = emnapiCtx.addToCurrentScope(arrayBuffer).id;
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -2906,7 +2906,7 @@ function _node_api_create_sharedarraybuffer(env, byte_length, data, result) {
     try {
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         var arrayBuffer = emnapiCreateArrayBuffer(byte_length, data, true);
         value = emnapiCtx.addToCurrentScope(arrayBuffer).id;
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -2936,7 +2936,7 @@ function _napi_create_date(env, time, result) {
     try {
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         value = emnapiCtx.addToCurrentScope(new Date(time)).id;
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -2973,7 +2973,7 @@ function _napi_create_external(env, data, finalize_cb, finalize_hint, result) {
         if (finalize_cb) {
             emnapiCtx.createReferenceWithFinalizer(envObject, externalHandle.id, 0, 0 /* ReferenceOwnership.kRuntime */, finalize_cb, data, finalize_hint);
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         value = externalHandle.id;
         {{{ makeSetValue('result', 0, 'value', '*') }}};
         return envObject.clearLastError();
@@ -3002,9 +3002,9 @@ function _napi_create_external_arraybuffer(env, external_data, byte_length, fina
     try {
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('byte_length') }}};
-        {{{ from64('external_data') }}};
-        {{{ from64('result') }}};
+        {{{ ('byte_length') }}};
+        {{{ ('external_data') }}};
+        {{{ ('result') }}};
         byte_length = byte_length >>> 0;
         if (!external_data) {
             byte_length = 0;
@@ -3065,7 +3065,7 @@ function _napi_create_object(env, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = emnapiCtx.addToCurrentScope({}).id;
     {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -3082,7 +3082,7 @@ function _napi_create_object_with_properties(env, prototype_or_null, property_na
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('property_count') }}};
+    {{{ ('property_count') }}};
     property_count = property_count >>> 0;
     if (property_count > 0) {
         if (!property_names)
@@ -3094,8 +3094,8 @@ function _napi_create_object_with_properties(env, prototype_or_null, property_na
         ? emnapiCtx.handleStore.get(prototype_or_null).value
         : null;
     var properties = {};
-    {{{ from64('property_names') }}};
-    {{{ from64('property_values') }}};
+    {{{ ('property_names') }}};
+    {{{ ('property_values') }}};
     for (var i = 0; i < property_count; i++) {
         var name_value = emnapiCtx.handleStore.get({{{ makeGetValue('property_names', 'i * ' + POINTER_SIZE, '*') }}}).value;
         if (!(typeof name_value === "string" || typeof name_value === "symbol"))
@@ -3116,7 +3116,7 @@ function _napi_create_object_with_properties(env, prototype_or_null, property_na
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = emnapiCtx.addToCurrentScope(obj).id;
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     {{{ makeSetValue('result', 0, 'value', '*') }}};
     return envObject.clearLastError();
 }
@@ -3131,7 +3131,7 @@ function _napi_create_symbol(env, description, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     if (!description) {
         // eslint-disable-next-line symbol-description, @typescript-eslint/no-unused-vars
         var value = emnapiCtx.addToCurrentScope(Symbol()).id;
@@ -3175,8 +3175,8 @@ function _napi_create_typedarray(env, type, length, arraybuffer, byte_offset, re
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         }
         var buffer = handle.value;
-        {{{ from64('byte_offset') }}};
-        {{{ from64('length') }}};
+        {{{ ('byte_offset') }}};
+        {{{ ('length') }}};
         var createTypedArray = function (envObject, Type, size_of_element, buffer, byte_offset, length) {
             var _a;
             byte_offset = byte_offset >>> 0;
@@ -3207,7 +3207,7 @@ function _napi_create_typedarray(env, type, length, arraybuffer, byte_offset, re
                     });
                 }
             }
-            {{{ from64('result') }}};
+            {{{ ('result') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             value = emnapiCtx.addToCurrentScope(out).id;
             {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -3270,9 +3270,9 @@ function _napi_create_buffer(env, size, data, result) {
         if (!Buffer) {
             throw emnapiCtx.createNotSupportBufferError('napi_create_buffer', '');
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         var buffer = void 0;
-        {{{ from64('size') }}};
+        {{{ ('size') }}};
         size = size >>> 0;
         if (!data || (size === 0)) {
             buffer = Buffer.alloc(size);
@@ -3280,7 +3280,7 @@ function _napi_create_buffer(env, size, data, result) {
             {{{ makeSetValue('result', 0, 'value', '*') }}};
         }
         else {
-            pointer = _malloc({{{ to64('size') }}});
+            pointer = _malloc({{{ ('size') }}});
             if (!pointer)
                 throw new Error('Out of memory');
             new Uint8Array(wasmMemory.buffer).subarray(pointer, pointer + size).fill(0);
@@ -3296,7 +3296,7 @@ function _napi_create_buffer(env, size, data, result) {
             (_a = emnapiExternalMemory.registry) === null || _a === void 0 ? void 0 : _a.register(viewDescriptor, pointer);
             value = emnapiCtx.addToCurrentScope(buffer_1).id;
             {{{ makeSetValue('result', 0, 'value', '*') }}};
-            {{{ from64('data') }}};
+            {{{ ('data') }}};
             {{{ makeSetValue('data', 0, 'pointer', '*') }}};
         }
         return envObject.getReturnStatus();
@@ -3331,11 +3331,11 @@ function _napi_create_buffer_copy(env, length, data, result_data, result) {
         }
         var arrayBuffer = emnapiCreateArrayBuffer(length, result_data, false);
         var buffer = Buffer.from(arrayBuffer);
-        {{{ from64('data') }}};
-        {{{ from64('length') }}};
+        {{{ ('data') }}};
+        {{{ ('length') }}};
         buffer.set(new Uint8Array(wasmMemory.buffer).subarray(data, data + length));
         value = emnapiCtx.addToCurrentScope(buffer).id;
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         {{{ makeSetValue('result', 0, 'value', '*') }}};
         return envObject.getReturnStatus();
     }
@@ -3371,8 +3371,8 @@ function _node_api_create_buffer_from_arraybuffer(env, arraybuffer, byte_offset,
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('byte_offset') }}};
-        {{{ from64('byte_length') }}};
+        {{{ ('byte_offset') }}};
+        {{{ ('byte_length') }}};
         byte_offset = byte_offset >>> 0;
         byte_length = byte_length >>> 0;
         var handle = emnapiCtx.handleStore.get(arraybuffer);
@@ -3401,7 +3401,7 @@ function _node_api_create_buffer_from_arraybuffer(env, arraybuffer, byte_offset,
                 });
             }
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         value = emnapiCtx.addToCurrentScope(out).id;
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -3431,8 +3431,8 @@ function _napi_create_dataview(env, byte_length, arraybuffer, byte_offset, resul
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('byte_length') }}};
-        {{{ from64('byte_offset') }}};
+        {{{ ('byte_length') }}};
+        {{{ ('byte_offset') }}};
         byte_length = byte_length >>> 0;
         byte_offset = byte_offset >>> 0;
         var value = emnapiCtx.handleStore.get(arraybuffer).value;
@@ -3454,7 +3454,7 @@ function _napi_create_dataview(env, byte_length, arraybuffer, byte_offset, resul
                     });
                 }
             }
-            {{{ from64('result') }}};
+            {{{ ('result') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             var v = emnapiCtx.addToCurrentScope(dataview).id;
             {{{ makeSetValue('result', 0, 'v', '*') }}};
@@ -3483,9 +3483,9 @@ function _node_api_symbol_for(env, utf8description, length, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('length') }}};
-    {{{ from64('utf8description') }}};
-    {{{ from64('result') }}};
+    {{{ ('length') }}};
+    {{{ ('utf8description') }}};
+    {{{ ('result') }}};
     var autoLength = length === -1;
     var sizelength = length >>> 0;
     if (length !== 0) {
@@ -3511,7 +3511,7 @@ function _napi_get_boolean(env, value, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var v = value === 0 ? 3 /* GlobalHandle.FALSE */ : 4 /* GlobalHandle.TRUE */;
     {{{ makeSetValue('result', 0, 'v', '*') }}};
@@ -3526,7 +3526,7 @@ function _napi_get_global(env, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = 5 /* GlobalHandle.GLOBAL */;
     {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -3541,7 +3541,7 @@ function _napi_get_null(env, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = 2 /* GlobalHandle.NULL */;
     {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -3556,7 +3556,7 @@ function _napi_get_undefined(env, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = 1 /* GlobalHandle.UNDEFINED */;
     {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -3567,9 +3567,9 @@ function _napi_set_instance_data(env, data, finalize_cb, finalize_hint) {
     if (!env)
         return 1 /* napi_status.napi_invalid_arg */;
     var envObject = emnapiCtx.envStore.get(env);
-    {{{ from64('data') }}};
-    {{{ from64('finalize_cb') }}};
-    {{{ from64('finalize_hint') }}};
+    {{{ ('data') }}};
+    {{{ ('finalize_cb') }}};
+    {{{ ('finalize_hint') }}};
     envObject.setInstanceData(data, finalize_cb, finalize_hint);
     return envObject.clearLastError();
 }
@@ -3580,7 +3580,7 @@ function _napi_get_instance_data(env, data) {
     var envObject = emnapiCtx.envStore.get(env);
     if (!data)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('data') }}};
+    {{{ ('data') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = envObject.getInstanceData();
     {{{ makeSetValue('data', 0, 'value', '*') }}};
@@ -3588,9 +3588,9 @@ function _napi_get_instance_data(env, data) {
 }
 /** @__sig vpppp */
 function __emnapi_get_last_error_info(env, error_code, engine_error_code, engine_reserved) {
-    {{{ from64('error_code') }}};
-    {{{ from64('engine_error_code') }}};
-    {{{ from64('engine_reserved') }}};
+    {{{ ('error_code') }}};
+    {{{ ('engine_error_code') }}};
+    {{{ ('engine_reserved') }}};
     var envObject = emnapiCtx.envStore.get(env);
     var lastError = envObject.lastError;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -3599,7 +3599,7 @@ function __emnapi_get_last_error_info(env, error_code, engine_error_code, engine
     var engineErrorCode = lastError.engineErrorCode >>> 0;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var engineReserved = lastError.engineReserved;
-    {{{ from64('engineReserved') }}};
+    {{{ ('engineReserved') }}};
     {{{ makeSetValue('error_code', 0, 'errorCode', 'i32') }}};
     {{{ makeSetValue('engine_error_code', 0, 'engineErrorCode', 'u32') }}};
     {{{ makeSetValue('engine_reserved', 0, 'engineReserved', '*') }}};
@@ -3642,8 +3642,8 @@ function _napi_throw_error(env, code, msg) {
     try {
         if (!msg)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('code') }}};
-        {{{ from64('msg') }}};
+        {{{ ('code') }}};
+        {{{ ('msg') }}};
         var error = new Error(emnapiString.UTF8ToString(msg, -1));
         if (code)
             error.code = emnapiString.UTF8ToString(code, -1);
@@ -3670,8 +3670,8 @@ function _napi_throw_type_error(env, code, msg) {
     try {
         if (!msg)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('code') }}};
-        {{{ from64('msg') }}};
+        {{{ ('code') }}};
+        {{{ ('msg') }}};
         var error = new TypeError(emnapiString.UTF8ToString(msg, -1));
         if (code)
             error.code = emnapiString.UTF8ToString(code, -1);
@@ -3698,8 +3698,8 @@ function _napi_throw_range_error(env, code, msg) {
     try {
         if (!msg)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('code') }}};
-        {{{ from64('msg') }}};
+        {{{ ('code') }}};
+        {{{ ('msg') }}};
         var error = new RangeError(emnapiString.UTF8ToString(msg, -1));
         if (code)
             error.code = emnapiString.UTF8ToString(code, -1);
@@ -3726,8 +3726,8 @@ function _node_api_throw_syntax_error(env, code, msg) {
     try {
         if (!msg)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('code') }}};
-        {{{ from64('msg') }}};
+        {{{ ('code') }}};
+        {{{ ('msg') }}};
         var error = new SyntaxError(emnapiString.UTF8ToString(msg, -1));
         if (code)
             error.code = emnapiString.UTF8ToString(code, -1);
@@ -3750,7 +3750,7 @@ function _napi_is_exception_pending(env, result) {
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = envObject.tryCatch.hasCaught();
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     {{{ makeSetValue('result', 0, 'r ? 1 : 0', 'i8') }}};
     return envObject.clearLastError();
 }
@@ -3777,7 +3777,7 @@ function _napi_create_error(env, code, msg, result) {
         }
         error.code = codeValue;
     }
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = emnapiCtx.addToCurrentScope(error).id;
     {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -3806,7 +3806,7 @@ function _napi_create_type_error(env, code, msg, result) {
         }
         error.code = codeValue;
     }
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = emnapiCtx.addToCurrentScope(error).id;
     {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -3835,7 +3835,7 @@ function _napi_create_range_error(env, code, msg, result) {
         }
         error.code = codeValue;
     }
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = emnapiCtx.addToCurrentScope(error).id;
     {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -3864,7 +3864,7 @@ function _node_api_create_syntax_error(env, code, msg, result) {
         }
         error.code = codeValue;
     }
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value = emnapiCtx.addToCurrentScope(error).id;
     {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -3879,7 +3879,7 @@ function _napi_get_and_clear_last_exception(env, result) {
     envObject.checkGCAccess();
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     if (!envObject.tryCatch.hasCaught()) {
         {{{ makeSetValue('result', 0, '1', '*') }}}; // ID_UNDEFINED
         return envObject.clearLastError();
@@ -3895,10 +3895,10 @@ function _napi_get_and_clear_last_exception(env, result) {
 }
 /** @__sig vpppp */
 function _napi_fatal_error(location, location_len, message, message_len) {
-    {{{ from64('location') }}};
-    {{{ from64('location_len') }}};
-    {{{ from64('message') }}};
-    {{{ from64('message_len') }}};
+    {{{ ('location') }}};
+    {{{ ('location_len') }}};
+    {{{ ('message') }}};
+    {{{ ('message_len') }}};
     var locationStr = emnapiString.UTF8ToString(location, location_len);
     var messageStr = emnapiString.UTF8ToString(message, message_len);
     if (emnapiNodeBinding) {
@@ -3956,13 +3956,13 @@ function _napi_create_function(env, utf8name, length, cb, data, result) {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         if (!cb)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('length') }}};
+        {{{ ('length') }}};
         var fresult = emnapiCreateFunction(envObject, utf8name, length, cb, data);
         if (fresult.status !== 0 /* napi_status.napi_ok */)
             return envObject.setLastError(fresult.status);
         var f = fresult.f;
         var valueHandle = emnapiCtx.addToCurrentScope(f);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         value = valueHandle.id;
         {{{ makeSetValue('result', 0, 'value', '*') }}};
         return envObject.getReturnStatus();
@@ -3980,13 +3980,13 @@ function _napi_get_cb_info(env, cbinfo, argc, argv, this_arg, data) {
     if (!cbinfo)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var cbinfoValue = emnapiCtx.scopeStore.get(cbinfo).callbackInfo;
-    {{{ from64('argc') }}};
-    {{{ from64('argv') }}};
+    {{{ ('argc') }}};
+    {{{ ('argv') }}};
     if (argv) {
         if (!argc)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         var argcValue = {{{ makeGetValue('argc', 0, SIZE_TYPE) }}};
-        {{{ from64('argcValue') }}};
+        {{{ ('argcValue') }}};
         var len = cbinfoValue.args.length;
         var arrlen = argcValue < len ? argcValue : len;
         var i = 0;
@@ -4005,13 +4005,13 @@ function _napi_get_cb_info(env, cbinfo, argc, argv, this_arg, data) {
         {{{ makeSetValue('argc', 0, 'cbinfoValue.args.length', SIZE_TYPE) }}};
     }
     if (this_arg) {
-        {{{ from64('this_arg') }}};
+        {{{ ('this_arg') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var v = envObject.ensureHandleId(cbinfoValue.thiz);
         {{{ makeSetValue('this_arg', 0, 'v', '*') }}};
     }
     if (data) {
-        {{{ from64('data') }}};
+        {{{ ('data') }}};
         {{{ makeSetValue('data', 0, 'cbinfoValue.data', '*') }}};
     }
     return envObject.clearLastError();
@@ -4034,9 +4034,9 @@ function _napi_call_function(env, recv, func, argc, argv, result) {
     try {
         if (!recv)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('argc') }}};
-        {{{ from64('argv') }}};
-        {{{ from64('result') }}};
+        {{{ ('argc') }}};
+        {{{ ('argv') }}};
+        {{{ ('result') }}};
         argc = argc >>> 0;
         if (argc > 0) {
             if (!argv)
@@ -4083,9 +4083,9 @@ function _napi_new_instance(env, constructor, argc, argv, result) {
     try {
         if (!constructor)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('argc') }}};
-        {{{ from64('argv') }}};
-        {{{ from64('result') }}};
+        {{{ ('argc') }}};
+        {{{ ('argv') }}};
+        {{{ ('result') }}};
         argc = argc >>> 0;
         if (argc > 0) {
             if (!argv)
@@ -4137,7 +4137,7 @@ function _napi_get_new_target(env, cbinfo, result) {
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     var cbinfoValue = emnapiCtx.scopeStore.get(cbinfo).callbackInfo;
     var thiz = cbinfoValue.thiz, fn = cbinfoValue.fn;
     var value = thiz == null || thiz.constructor == null
@@ -4159,7 +4159,7 @@ function _napi_open_handle_scope(env, result) {
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var scope = emnapiCtx.openScope(envObject);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     {{{ makeSetValue('result', 0, 'scope.id', '*') }}};
     return envObject.clearLastError();
 }
@@ -4189,7 +4189,7 @@ function _napi_open_escapable_handle_scope(env, result) {
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var scope = emnapiCtx.openScope(envObject);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     {{{ makeSetValue('result', 0, 'scope.id', '*') }}};
     return envObject.clearLastError();
 }
@@ -4223,8 +4223,8 @@ function _napi_escape_handle(env, scope, escapee, result) {
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var scopeObject = emnapiCtx.scopeStore.get(scope);
     if (!scopeObject.escapeCalled()) {
-        {{{ from64('escapee') }}};
-        {{{ from64('result') }}};
+        {{{ ('escapee') }}};
+        {{{ ('result') }}};
         var newHandle = scopeObject.escape(escapee);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var value = newHandle ? newHandle.id : 0;
@@ -4252,7 +4252,7 @@ function _napi_create_reference(env, value, initial_refcount, result) {
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var ref = emnapiCtx.createReference(envObject, handle.id, initial_refcount >>> 0, 1 /* ReferenceOwnership.kUserland */);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     {{{ makeSetValue('result', 0, 'ref.id', '*') }}};
     return envObject.clearLastError();
 }
@@ -4278,7 +4278,7 @@ function _napi_reference_ref(env, ref, result) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var count = emnapiCtx.refStore.get(ref).ref();
     if (result) {
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         {{{ makeSetValue('result', 0, 'count', 'u32') }}};
     }
     return envObject.clearLastError();
@@ -4300,7 +4300,7 @@ function _napi_reference_unref(env, ref, result) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var count = reference.unref();
     if (result) {
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         {{{ makeSetValue('result', 0, 'count', 'u32') }}};
     }
     return envObject.clearLastError();
@@ -4319,7 +4319,7 @@ function _napi_get_reference_value(env, ref, result) {
     var reference = emnapiCtx.refStore.get(ref);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var handleId = reference.get(envObject);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     {{{ makeSetValue('result', 0, 'handleId', '*') }}};
     return envObject.clearLastError();
 }
@@ -4330,8 +4330,8 @@ function _napi_add_env_cleanup_hook(env, fun, arg) {
     var envObject = emnapiCtx.envStore.get(env);
     if (!fun)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('fun') }}};
-    {{{ from64('arg') }}};
+    {{{ ('fun') }}};
+    {{{ ('arg') }}};
     emnapiCtx.addCleanupHook(envObject, fun, arg);
     return 0 /* napi_status.napi_ok */;
 }
@@ -4342,8 +4342,8 @@ function _napi_remove_env_cleanup_hook(env, fun, arg) {
     var envObject = emnapiCtx.envStore.get(env);
     if (!fun)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('fun') }}};
-    {{{ from64('arg') }}};
+    {{{ ('fun') }}};
+    {{{ ('arg') }}};
     emnapiCtx.removeCleanupHook(envObject, fun, arg);
     return 0 /* napi_status.napi_ok */;
 }
@@ -4377,7 +4377,7 @@ function __emnapi_node_emit_async_init(async_resource, async_resource_name, trig
     var asyncId = asyncContext.asyncId;
     var triggerAsyncId = asyncContext.triggerAsyncId;
     if (result) {
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         {{{ makeSetValue('result', 0, 'asyncId', 'double') }}};
         {{{ makeSetValue('result', 8, 'triggerAsyncId', 'double') }}};
     }
@@ -4400,14 +4400,14 @@ function __emnapi_node_emit_async_destroy(async_id, trigger_async_id) {
     triggerAsyncId: trigger_async_id
   })
 
-  from64('result')
+  ('result')
   $_TODO_makeSetValue('result', 0, 'nativeCallbackScopePointer', 'i64')
 }
 
 vp
 export function _emnapi_node_close_callback_scope (scope: Pointer<int64_t>): void {
   if (!emnapiNodeBinding || !scope) return
-  from64('scope')
+  ('scope')
   const nativeCallbackScopePointer = $_TODO_makeGetValue('scope', 0, 'i64')
   emnapiNodeBinding.node.closeCallbackScope(BigInt(nativeCallbackScopePointer))
 } */
@@ -4420,8 +4420,8 @@ function __emnapi_node_make_callback(env, async_resource, cb, argv, size, async_
         return;
     var resource = emnapiCtx.handleStore.get(async_resource).value;
     var callback = emnapiCtx.handleStore.get(cb).value;
-    {{{ from64('argv') }}};
-    {{{ from64('size') }}};
+    {{{ ('argv') }}};
+    {{{ ('size') }}};
     size = size >>> 0;
     var arr = Array(size);
     for (; i < size; i++) {
@@ -4433,7 +4433,7 @@ function __emnapi_node_make_callback(env, async_resource, cb, argv, size, async_
         triggerAsyncId: trigger_async_id
     });
     if (result) {
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         var envObject = emnapiCtx.envStore.get(env);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         v = envObject.ensureHandleId(ret);
@@ -4464,7 +4464,7 @@ function __emnapi_async_init_js(async_resource, async_resource_name, result) {
     var low = Number(numberValue & BigInt(0xffffffff));
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var high = Number(numberValue >> BigInt(32));
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     {{{ makeSetValue('result', 0, 'low', 'i32') }}};
     {{{ makeSetValue('result', 4, 'high', 'i32') }}};
     return 0 /* napi_status.napi_ok */;
@@ -4474,7 +4474,7 @@ function __emnapi_async_destroy_js(async_context) {
     if (!emnapiNodeBinding) {
         return 9 /* napi_status.napi_generic_failure */;
     }
-    {{{ from64('async_context') }}};
+    {{{ ('async_context') }}};
     var low = {{{ makeGetValue('async_context', 0, 'i32') }}};
     var high = {{{ makeGetValue('async_context', 4, 'i32') }}};
     var pointer = BigInt(low >>> 0) | (BigInt(high) << BigInt(32));
@@ -4522,12 +4522,12 @@ function _napi_make_callback(env, async_context, recv, func, argc, argv, result)
         if (typeof v8func !== 'function') {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         }
-        {{{ from64('async_context') }}};
+        {{{ ('async_context') }}};
         var low = {{{ makeGetValue('async_context', 0, 'i32') }}};
         var high = {{{ makeGetValue('async_context', 4, 'i32') }}};
         var ctx = BigInt(low >>> 0) | (BigInt(high) << BigInt(32));
-        {{{ from64('argv') }}};
-        {{{ from64('argc') }}};
+        {{{ ('argv') }}};
+        {{{ ('argc') }}};
         argc = argc >>> 0;
         var arr = Array(argc);
         for (; i < argc; i++) {
@@ -4541,7 +4541,7 @@ function _napi_make_callback(env, async_context, recv, func, argc, argv, result)
         if (ret.status !== 0 /* napi_status.napi_ok */)
             return envObject.setLastError(ret.status);
         if (result) {
-            {{{ from64('result') }}};
+            {{{ ('result') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             v = envObject.ensureHandleId(ret.value);
             {{{ makeSetValue('result', 0, 'v', '*') }}};
@@ -4580,10 +4580,10 @@ function _napi_create_promise(env, deferred, promise) {
         var p = new Promise(function (resolve, reject) {
             var deferredObject = emnapiCtx.createDeferred({ resolve: resolve, reject: reject });
             deferredObjectId = deferredObject.id;
-            {{{ from64('deferred') }}};
+            {{{ ('deferred') }}};
             {{{ makeSetValue('deferred', 0, 'deferredObjectId', '*') }}};
         });
-        {{{ from64('promise') }}};
+        {{{ ('promise') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         value = emnapiCtx.addToCurrentScope(p).id;
         {{{ makeSetValue('promise', 0, 'value', '*') }}};
@@ -4658,7 +4658,7 @@ function _napi_is_promise(env, value, is_promise) {
     if (!is_promise)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var h = emnapiCtx.handleStore.get(value);
-    {{{ from64('is_promise') }}};
+    {{{ ('is_promise') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = h.isPromise() ? 1 : 0;
     {{{ makeSetValue('is_promise', 0, 'r', 'i8') }}};
@@ -4798,7 +4798,7 @@ function _napi_get_all_property_names(env, object, key_mode, key_filter, key_con
                 }
             }
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         value = emnapiCtx.addToCurrentScope(ret).id;
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -4876,7 +4876,7 @@ function _napi_has_property(env, object, key, result) {
         catch (_) {
             return envObject.setLastError(2 /* napi_status.napi_object_expected */);
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         r = (emnapiCtx.handleStore.get(key).value in v) ? 1 : 0;
         {{{ makeSetValue('result', 0, 'r', 'i8') }}};
         return envObject.getReturnStatus();
@@ -4918,7 +4918,7 @@ function _napi_get_property(env, object, key, result) {
         catch (_) {
             return envObject.setLastError(2 /* napi_status.napi_object_expected */);
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         value = envObject.ensureHandleId(v[emnapiCtx.handleStore.get(key).value]);
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -4965,7 +4965,7 @@ function _napi_delete_property(env, object, key, result) {
             }
         }
         if (result) {
-            {{{ from64('result') }}};
+            {{{ ('result') }}};
             {{{ makeSetValue('result', 0, 'r ? 1 : 0', 'i8') }}};
         }
         return envObject.getReturnStatus();
@@ -5012,7 +5012,7 @@ function _napi_has_own_property(env, object, key, result) {
             return envObject.setLastError(4 /* napi_status.napi_name_expected */);
         }
         r = Object.prototype.hasOwnProperty.call(v, emnapiCtx.handleStore.get(key).value);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         {{{ makeSetValue('result', 0, 'r ? 1 : 0', 'i8') }}};
         return envObject.getReturnStatus();
     }
@@ -5045,7 +5045,7 @@ function _napi_set_named_property(env, object, cname, value) {
         if (!cname) {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         }
-        {{{ from64('cname') }}};
+        {{{ ('cname') }}};
         emnapiCtx.handleStore.get(object).value[emnapiString.UTF8ToString(cname, -1)] = emnapiCtx.handleStore.get(value).value;
         return envObject.getReturnStatus();
     }
@@ -5087,8 +5087,8 @@ function _napi_has_named_property(env, object, utf8name, result) {
         catch (_) {
             return envObject.setLastError(2 /* napi_status.napi_object_expected */);
         }
-        {{{ from64('utf8name') }}};
-        {{{ from64('result') }}};
+        {{{ ('utf8name') }}};
+        {{{ ('result') }}};
         r = emnapiString.UTF8ToString(utf8name, -1) in v;
         {{{ makeSetValue('result', 0, 'r ? 1 : 0', 'i8') }}};
         return envObject.getReturnStatus();
@@ -5131,8 +5131,8 @@ function _napi_get_named_property(env, object, utf8name, result) {
         catch (_) {
             return envObject.setLastError(2 /* napi_status.napi_object_expected */);
         }
-        {{{ from64('utf8name') }}};
-        {{{ from64('result') }}};
+        {{{ ('utf8name') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         value = envObject.ensureHandleId(v[emnapiString.UTF8ToString(utf8name, -1)]);
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -5202,7 +5202,7 @@ function _napi_has_element(env, object, index, result) {
         catch (_) {
             return envObject.setLastError(2 /* napi_status.napi_object_expected */);
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         r = ((index >>> 0) in v) ? 1 : 0;
         {{{ makeSetValue('result', 0, 'r', 'i8') }}};
         return envObject.getReturnStatus();
@@ -5242,7 +5242,7 @@ function _napi_get_element(env, object, index, result) {
         catch (_) {
             return envObject.setLastError(2 /* napi_status.napi_object_expected */);
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         value = envObject.ensureHandleId(v[index >>> 0]);
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -5286,7 +5286,7 @@ function _napi_delete_element(env, object, index, result) {
             }
         }
         if (result) {
-            {{{ from64('result') }}};
+            {{{ ('result') }}};
             {{{ makeSetValue('result', 0, 'r ? 1 : 0', 'i8') }}};
         }
         return envObject.getReturnStatus();
@@ -5311,8 +5311,8 @@ function _napi_define_properties(env, object, property_count, properties) {
         return envObject.setLastError(envObject.moduleApiVersion >= 10 ? 23 /* napi_status.napi_cannot_run_js */ : 10 /* napi_status.napi_pending_exception */);
     envObject.clearLastError();
     try {
-        {{{ from64('properties') }}};
-        {{{ from64('property_count') }}};
+        {{{ ('properties') }}};
+        {{{ ('property_count') }}};
         property_count = property_count >>> 0;
         if (property_count > 0) {
             if (!properties)
@@ -5336,7 +5336,7 @@ function _napi_define_properties(env, object, property_count, properties) {
             var setter = {{{ makeGetValue('propPtr', POINTER_SIZE * 4, '*') }}};
             var value = {{{ makeGetValue('propPtr', POINTER_SIZE * 5, '*') }}};
             attributes = {{{ makeGetValue('propPtr', POINTER_SIZE * 6, POINTER_WASM_TYPE) }}};
-            {{{ from64('attributes') }}};
+            {{{ ('attributes') }}};
             var data = {{{ makeGetValue('propPtr', POINTER_SIZE * 7, '*') }}};
             if (utf8Name) {
                 propertyName = emnapiString.UTF8ToString(utf8Name, -1);
@@ -5443,7 +5443,7 @@ function _napi_run_script(env, script, result) {
         }
         var g = emnapiCtx.handleStore.get(5 /* GlobalHandle.GLOBAL */).value;
         var ret = g.eval(v8Script.value);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         value = envObject.ensureHandleId(ret);
         {{{ makeSetValue('result', 0, 'value', '*') }}};
@@ -5538,7 +5538,7 @@ var emnapiTSFN = {
     },
     initQueue: function (func) {
         var size = 2 * {{{ POINTER_SIZE }}};
-        var queue = _malloc({{{ to64('size') }}});
+        var queue = _malloc({{{ ('size') }}});
         if (!queue)
             return false;
         new Uint8Array(wasmMemory.buffer, queue, size).fill(0);
@@ -5548,7 +5548,7 @@ var emnapiTSFN = {
     destroyQueue: function (func) {
         var queue = emnapiTSFN.loadSizeTypeValue(func + emnapiTSFN.offset.queue, false);
         if (queue) {
-            _free({{{ to64('queue') }}});
+            _free({{{ ('queue') }}});
         }
     },
     pushQueue: function (func, data) {
@@ -5557,7 +5557,7 @@ var emnapiTSFN = {
         var tail = emnapiTSFN.loadSizeTypeValue(queue + {{{ POINTER_SIZE }}}, false);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var size = 2 * {{{ POINTER_SIZE }}};
-        var node = _malloc({{{ to64('size') }}});
+        var node = _malloc({{{ ('size') }}});
         if (!node)
             throw new Error('OOM');
         emnapiTSFN.storeSizeTypeValue(node, data, false);
@@ -5585,7 +5585,7 @@ var emnapiTSFN = {
         }
         emnapiTSFN.storeSizeTypeValue(node + {{{ POINTER_SIZE }}}, 0, false);
         var value = emnapiTSFN.loadSizeTypeValue(node, false);
-        _free({{{ to64('node') }}});
+        _free({{{ ('node') }}});
         emnapiTSFN.subQueueSize(func);
         return value;
     },
@@ -5744,7 +5744,7 @@ var emnapiTSFN = {
         arr = new Uint32Array(wasmMemory.buffer);
         index = (func + offset) >> 2;
 #endif
-        Atomics.add(arr, index, {{{ to64('1') }}});
+        Atomics.add(arr, index, {{{ ('1') }}});
     },
     subQueueSize: function (func) {
         var offset = emnapiTSFN.offset.queue_size;
@@ -5756,7 +5756,7 @@ var emnapiTSFN = {
         arr = new Uint32Array(wasmMemory.buffer);
         index = (func + offset) >> 2;
 #endif
-        Atomics.sub(arr, index, {{{ to64('1') }}});
+        Atomics.sub(arr, index, {{{ ('1') }}});
     },
     getThreadCount: function (func) {
         return emnapiTSFN.loadSizeTypeValue(func + emnapiTSFN.offset.thread_count, true);
@@ -5771,7 +5771,7 @@ var emnapiTSFN = {
         arr = new Uint32Array(wasmMemory.buffer);
         index = (func + offset) >> 2;
 #endif
-        Atomics.add(arr, index, {{{ to64('1') }}});
+        Atomics.add(arr, index, {{{ ('1') }}});
     },
     subThreadCount: function (func) {
         var offset = emnapiTSFN.offset.thread_count;
@@ -5783,7 +5783,7 @@ var emnapiTSFN = {
         arr = new Uint32Array(wasmMemory.buffer);
         index = (func + offset) >> 2;
 #endif
-        Atomics.sub(arr, index, {{{ to64('1') }}});
+        Atomics.sub(arr, index, {{{ ('1') }}});
     },
     getIsClosing: function (func) {
         return Atomics.load(new Int32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.is_closing) >> 2);
@@ -5896,7 +5896,7 @@ var emnapiTSFN = {
             var triggerAsyncId = view.getFloat64(func + emnapiTSFN.offset.trigger_async_id, true);
             __emnapi_node_emit_async_destroy(asyncId, triggerAsyncId);
         }
-        _free({{{ to64('func') }}});
+        _free({{{ ('func') }}});
     },
     emptyQueueAndDelete: function (func) {
         var callJsCb = emnapiTSFN.getCallJSCb(func);
@@ -5907,7 +5907,7 @@ var emnapiTSFN = {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             data = emnapiTSFN.shiftQueue(func);
             if (callJsCb) {
-                {{{ makeDynCall('vpppp', 'callJsCb') }}}({{{ to64('0') }}}, {{{ to64('0') }}}, {{{ to64('context') }}}, {{{ to64('data') }}});
+                {{{ makeDynCall('vpppp', 'callJsCb') }}}({{{ ('0') }}}, {{{ ('0') }}}, {{{ ('context') }}}, {{{ ('data') }}});
             }
         }
         emnapiTSFN.destroy(func);
@@ -5922,7 +5922,7 @@ var emnapiTSFN = {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var context = emnapiTSFN.getContext(func);
         var f = function () {
-            envObject.callFinalizerInternal(0, {{{ to64('finalize') }}}, {{{ to64('data') }}}, {{{ to64('context') }}});
+            envObject.callFinalizerInternal(0, {{{ ('finalize') }}}, {{{ ('data') }}}, {{{ ('context') }}});
         };
         try {
             if (finalize) {
@@ -6024,7 +6024,7 @@ var emnapiTSFN = {
                     if (callJsCb) {
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         var context = emnapiTSFN.getContext(func);
-                        {{{ makeDynCall('vpppp', 'callJsCb') }}}({{{ to64('env') }}}, {{{ to64('js_callback') }}}, {{{ to64('context') }}}, {{{ to64('data') }}});
+                        {{{ makeDynCall('vpppp', 'callJsCb') }}}({{{ ('env') }}}, {{{ ('js_callback') }}}, {{{ ('context') }}}, {{{ ('data') }}});
                     }
                     else {
                         var jsCallback = js_callback ? emnapiCtx.handleStore.get(js_callback).value : null;
@@ -6102,13 +6102,13 @@ function _napi_create_threadsafe_function(env, func, async_resource, async_resou
     envObject.checkGCAccess();
     if (!async_resource_name)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    {{{ from64('max_queue_size') }}};
-    {{{ from64('initial_thread_count') }}};
-    {{{ from64('env') }}};
-    {{{ from64('thread_finalize_data') }}};
-    {{{ from64('thread_finalize_cb') }}};
-    {{{ from64('context') }}};
-    {{{ from64('call_js_cb') }}};
+    {{{ ('max_queue_size') }}};
+    {{{ ('initial_thread_count') }}};
+    {{{ ('env') }}};
+    {{{ ('thread_finalize_data') }}};
+    {{{ ('thread_finalize_cb') }}};
+    {{{ ('context') }}};
+    {{{ ('call_js_cb') }}};
     max_queue_size = max_queue_size >>> 0;
     initial_thread_count = initial_thread_count >>> 0;
     if (initial_thread_count === 0) {
@@ -6117,7 +6117,7 @@ function _napi_create_threadsafe_function(env, func, async_resource, async_resou
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var ref = 0;
-    {{{ from64('func') }}};
+    {{{ ('func') }}};
     if (!func) {
         if (!call_js_cb)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
@@ -6150,7 +6150,7 @@ function _napi_create_threadsafe_function(env, func, async_resource, async_resou
     var resource_name = envObject.ensureHandleId(asyncResourceName);
     // tsfn create
     var sizeofTSFN = emnapiTSFN.offset.end;
-    var tsfn = _malloc({{{ to64('sizeofTSFN') }}});
+    var tsfn = _malloc({{{ ('sizeofTSFN') }}});
     if (!tsfn)
         return envObject.setLastError(9 /* napi_status.napi_generic_failure */);
     new Uint8Array(wasmMemory.buffer).subarray(tsfn, tsfn + sizeofTSFN).fill(0);
@@ -6159,7 +6159,7 @@ function _napi_create_threadsafe_function(env, func, async_resource, async_resou
     var resource_ = resourceRef.id;
     {{{ makeSetValue('tsfn', 0, 'resource_', '*') }}};
     if (!emnapiTSFN.initQueue(tsfn)) {
-        _free({{{ to64('tsfn') }}});
+        _free({{{ ('tsfn') }}});
         resourceRef.dispose();
         return envObject.setLastError(9 /* napi_status.napi_generic_failure */);
     }
@@ -6177,7 +6177,7 @@ function _napi_create_threadsafe_function(env, func, async_resource, async_resou
     __emnapi_runtime_keepalive_push();
     emnapiCtx.increaseWaitingRequestCounter();
     {{{ makeSetValue('tsfn', 'emnapiTSFN.offset.async_ref', '1', 'i32') }}};
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     {{{ makeSetValue('result', 0, 'tsfn', '*') }}};
     return envObject.clearLastError();
 }
@@ -6187,8 +6187,8 @@ function _napi_get_threadsafe_function_context(func, result) {
         abort();
         return 1 /* napi_status.napi_invalid_arg */;
     }
-    {{{ from64('func') }}};
-    {{{ from64('result') }}};
+    {{{ ('func') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var context = emnapiTSFN.getContext(func);
     {{{ makeSetValue('result', 0, 'context', '*') }}};
@@ -6200,8 +6200,8 @@ function _napi_call_threadsafe_function(func, data, mode) {
         abort();
         return 1 /* napi_status.napi_invalid_arg */;
     }
-    {{{ from64('func') }}};
-    {{{ from64('data') }}};
+    {{{ ('func') }}};
+    {{{ ('data') }}};
     return emnapiTSFN.push(func, data, mode);
 }
 /** @__sig ip */
@@ -6210,7 +6210,7 @@ function _napi_acquire_threadsafe_function(func) {
         abort();
         return 1 /* napi_status.napi_invalid_arg */;
     }
-    {{{ from64('func') }}};
+    {{{ ('func') }}};
     var mutex = emnapiTSFN.getMutex(func);
     return mutex.execute(function () {
         if (emnapiTSFN.getIsClosing(func)) {
@@ -6226,7 +6226,7 @@ function _napi_release_threadsafe_function(func, mode) {
         abort();
         return 1 /* napi_status.napi_invalid_arg */;
     }
-    {{{ from64('func') }}};
+    {{{ ('func') }}};
     var mutex = emnapiTSFN.getMutex(func);
     var cond = emnapiTSFN.getCond(func);
     return mutex.execute(function () {
@@ -6254,7 +6254,7 @@ function _napi_unref_threadsafe_function(env, func) {
         abort();
         return 1 /* napi_status.napi_invalid_arg */;
     }
-    {{{ from64('func') }}};
+    {{{ ('func') }}};
     var asyncRefOffset = (func + emnapiTSFN.offset.async_ref) >> 2;
     var arr = new Int32Array(wasmMemory.buffer);
     if (Atomics.load(arr, asyncRefOffset)) {
@@ -6270,7 +6270,7 @@ function _napi_ref_threadsafe_function(env, func) {
         abort();
         return 1 /* napi_status.napi_invalid_arg */;
     }
-    {{{ from64('func') }}};
+    {{{ ('func') }}};
     var asyncRefOffset = (func + emnapiTSFN.offset.async_ref) >> 2;
     var arr = new Int32Array(wasmMemory.buffer);
     if (!Atomics.load(arr, asyncRefOffset)) {
@@ -6292,7 +6292,7 @@ function _napi_typeof(env, value, result) {
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var v = emnapiCtx.handleStore.get(value);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     var r;
     if (v.isNumber()) {
         r = 3 /* napi_valuetype.napi_number */;
@@ -6356,7 +6356,7 @@ function _napi_coerce_to_bool(env, value, result) {
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         var handle = emnapiCtx.handleStore.get(value);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         v = handle.value ? 4 /* GlobalHandle.TRUE */ : 3 /* GlobalHandle.FALSE */;
         {{{ makeSetValue('result', 0, 'v', '*') }}};
         return envObject.getReturnStatus();
@@ -6389,7 +6389,7 @@ function _napi_coerce_to_number(env, value, result) {
         if (handle.isBigInt()) {
             throw new TypeError('Cannot convert a BigInt value to a number');
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         v = emnapiCtx.addToCurrentScope(Number(handle.value)).id;
         {{{ makeSetValue('result', 0, 'v', '*') }}};
@@ -6423,7 +6423,7 @@ function _napi_coerce_to_object(env, value, result) {
         if (handle.value == null) {
             throw new TypeError('Cannot convert undefined or null to object');
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         v = envObject.ensureHandleId(Object(handle.value));
         {{{ makeSetValue('result', 0, 'v', '*') }}};
@@ -6457,7 +6457,7 @@ function _napi_coerce_to_string(env, value, result) {
         if (handle.isSymbol()) {
             throw new TypeError('Cannot convert a Symbol value to a string');
         }
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         v = emnapiCtx.addToCurrentScope(String(handle.value)).id;
         {{{ makeSetValue('result', 0, 'v', '*') }}};
@@ -6489,7 +6489,7 @@ function _napi_instanceof(env, object, constructor, result) {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         if (!constructor)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         {{{ makeSetValue('result', 0, '0', 'i8') }}};
         var ctor = emnapiCtx.handleStore.get(constructor);
         if (!ctor.isFunction()) {
@@ -6518,7 +6518,7 @@ function _napi_is_array(env, value, result) {
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var h = emnapiCtx.handleStore.get(value);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = h.isArray() ? 1 : 0;
     {{{ makeSetValue('result', 0, 'r', 'i8') }}};
@@ -6536,7 +6536,7 @@ function _napi_is_arraybuffer(env, value, result) {
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var h = emnapiCtx.handleStore.get(value);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = h.isArrayBuffer() ? 1 : 0;
     {{{ makeSetValue('result', 0, 'r', 'i8') }}};
@@ -6554,7 +6554,7 @@ function _node_api_is_sharedarraybuffer(env, value, result) {
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var h = emnapiCtx.handleStore.get(value);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = ((typeof SharedArrayBuffer === 'function' && h.value instanceof SharedArrayBuffer) ||
         (Object.prototype.toString.call(h.value) === '[object SharedArrayBuffer]'))
@@ -6575,7 +6575,7 @@ function _napi_is_date(env, value, result) {
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var h = emnapiCtx.handleStore.get(value);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = h.isDate() ? 1 : 0;
     {{{ makeSetValue('result', 0, 'r', 'i8') }}};
@@ -6593,7 +6593,7 @@ function _napi_is_error(env, value, result) {
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var val = emnapiCtx.handleStore.get(value).value;
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = (val instanceof Error) ? 1 : 0;
     {{{ makeSetValue('result', 0, 'r', 'i8') }}};
@@ -6611,7 +6611,7 @@ function _napi_is_typedarray(env, value, result) {
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var h = emnapiCtx.handleStore.get(value);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = h.isTypedArray() ? 1 : 0;
     {{{ makeSetValue('result', 0, 'r', 'i8') }}};
@@ -6629,7 +6629,7 @@ function _napi_is_buffer(env, value, result) {
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var h = emnapiCtx.handleStore.get(value);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = h.isBuffer(emnapiCtx.feature.Buffer) ? 1 : 0;
     {{{ makeSetValue('result', 0, 'r', 'i8') }}};
@@ -6647,7 +6647,7 @@ function _napi_is_dataview(env, value, result) {
     if (!result)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     var h = emnapiCtx.handleStore.get(value);
-    {{{ from64('result') }}};
+    {{{ ('result') }}};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var r = h.isDataView() ? 1 : 0;
     {{{ makeSetValue('result', 0, 'r', 'i8') }}};
@@ -6676,7 +6676,7 @@ function _napi_strict_equals(env, lhs, rhs, result) {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         var lv = emnapiCtx.handleStore.get(lhs).value;
         var rv = emnapiCtx.handleStore.get(rhs).value;
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         r = (lv === rv) ? 1 : 0;
         {{{ makeSetValue('result', 0, 'r', 'i8') }}};
         return envObject.getReturnStatus();
@@ -6730,7 +6730,7 @@ function _napi_is_detached_arraybuffer(env, arraybuffer, result) {
         if (!result)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         var h = emnapiCtx.handleStore.get(arraybuffer);
-        {{{ from64('result') }}};
+        {{{ ('result') }}};
         if (h.isArrayBuffer() && h.value.byteLength === 0) {
             try {
                 // eslint-disable-next-line no-new

@@ -1,5 +1,24 @@
-#include <codegen/il2cpp-codegen-metadata.h>
 #include <utils/Exception.h>
+#include <codegen/il2cpp-codegen-metadata.h>
+
+typedef struct napi_env__* napi_env;
+typedef enum { napi_ok } napi_status;
+
+extern "C" EXPORTED_SYMBOL int32_t node_api_module_get_api_version_v1(void)
+{
+  return 8;
+}
+
+extern "C" EXPORTED_SYMBOL void *napi_register_wasm_v1(napi_env env, void *exports)
+{
+  extern const Il2CppMethodPointer g_ReversePInvokeWrapperPointers[];
+  extern const Il2CppCodeGenModule g_Unity_NodeApi_CodeGenModule;
+
+  auto func = g_ReversePInvokeWrapperPointers[g_Unity_NodeApi_CodeGenModule.reversePInvokeWrapperIndices[0].index];
+  return reinterpret_cast<decltype(&napi_register_wasm_v1)>(func)(env, exports);
+}
+
+#ifndef __EMSCRIPTEN__
 #include <os/Image.h>
 #include <Cpp/Baselib_DynamicLibrary.h>
 #include <fcontext.h>
@@ -19,9 +38,6 @@ typedef struct uv_idle_s { void* data; uv_loop_t* loop; void* reserved[14]; } uv
 typedef void (*uv_idle_cb)(uv_idle_t* handle);
 static int (*uv_idle_init)(uv_loop_t*, uv_idle_t* idle);
 static int (*uv_idle_start)(uv_idle_t* idle, uv_idle_cb cb);
-
-typedef struct napi_env__* napi_env;
-typedef enum { napi_ok } napi_status;
 static napi_status (*napi_get_uv_event_loop)(napi_env env, struct uv_loop_s** loop);
 
 #if defined(_WIN32)
@@ -198,9 +214,6 @@ extern "C" EXPORTED_SYMBOL void *napi_register_module_v1(napi_env env, void *exp
   uv_idle_init(loop, &idler);
   uv_idle_start(&idler, &node_jump);
 
-  extern const Il2CppMethodPointer g_ReversePInvokeWrapperPointers[];
-  extern const Il2CppCodeGenModule g_Unity_NodeApi_CodeGenModule;
-
-  auto func = g_ReversePInvokeWrapperPointers[g_Unity_NodeApi_CodeGenModule.reversePInvokeWrapperIndices[0].index];
-  return reinterpret_cast<decltype(&napi_register_module_v1)>(func)(env, exports);
+  return napi_register_wasm_v1(env, exports);
 }
+#endif // __EMSCRIPTEN__
