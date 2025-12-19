@@ -37,9 +37,9 @@ extern "C" void *GC_call_with_alloc_lock(GC_fn_type fn, void *client_data);
 typedef struct uv_loop_s { void* data; } uv_loop_t;
 typedef struct uv_idle_s { void* data; uv_loop_t* loop; void* reserved[14]; } uv_idle_t;
 typedef void (*uv_idle_cb)(uv_idle_t* handle);
-static int (*uv_idle_init)(uv_loop_t*, uv_idle_t* idle);
-static int (*uv_idle_start)(uv_idle_t* idle, uv_idle_cb cb);
-static napi_status (*napi_get_uv_event_loop)(napi_env env, struct uv_loop_s** loop);
+extern "C" int uv_idle_init(uv_loop_t*, uv_idle_t* idle);
+extern "C" int uv_idle_start(uv_idle_t* idle, uv_idle_cb cb);
+extern "C" napi_status napi_get_uv_event_loop(napi_env env, struct uv_loop_s** loop);
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN 
@@ -193,21 +193,6 @@ extern "C" EXPORTED_SYMBOL void *napi_register_module_v1(napi_env env, void *exp
   extern void app_activate(void);
   app_activate();
 
-  auto errorState = Baselib_ErrorState_Create();
-#if defined(_WIN32)
-  auto progHandle = Baselib_DynamicLibrary_FromNativeHandle(reinterpret_cast<uint64_t>(GetModuleHandleW(nullptr)), Baselib_DynamicLibrary_WinApiHMODULE, &errorState);
-#else
-  auto progHandle = Baselib_DynamicLibrary_OpenProgramHandle(&errorState);
-#endif
-  napi_get_uv_event_loop = (decltype(napi_get_uv_event_loop))Baselib_DynamicLibrary_GetFunction(progHandle, "napi_get_uv_event_loop", &errorState);
-  uv_idle_init = (decltype(uv_idle_init))Baselib_DynamicLibrary_GetFunction(progHandle, "uv_idle_init", &errorState);
-  uv_idle_start = (decltype(uv_idle_start))Baselib_DynamicLibrary_GetFunction(progHandle, "uv_idle_start", &errorState);
-  if (Baselib_ErrorState_ErrorRaised(&errorState))
-  {
-    printf("error: %s\n", utils::Exception::FormatBaselibErrorState(errorState).c_str());
-    return nullptr;
-  }
-
   uv_loop_t *loop;
   napi_get_uv_event_loop(env, &loop);
 
@@ -216,24 +201,6 @@ extern "C" EXPORTED_SYMBOL void *napi_register_module_v1(napi_env env, void *exp
   uv_idle_start(&idler, &node_jump);
 
   return napi_register_wasm_v1(env, exports);
-}
-
-#else
-
-extern "C" char *node_dlerror(void)
-{
-  return nullptr;
-}
-
-extern "C" void *node_dlopen(const char *path, int flags)
-{
-  return (void *)path;
-}
-
-extern "C" void *node_dlsym(void *__restrict handle, const char *__restrict symbol)
-{
-  printf("error: %s not found\n", symbol);
-  abort();
 }
 
 #endif // __EMSCRIPTEN__
