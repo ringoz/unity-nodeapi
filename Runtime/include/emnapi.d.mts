@@ -661,5 +661,3 @@ export declare class TryCatch {
 export declare const version: string;
 
 export { }
-
-export as namespace emnapi;
