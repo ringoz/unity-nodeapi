@@ -12,7 +12,6 @@ const { Module } = await createUnityInstance(document.querySelector("#unity-canv
   // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
   // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
 });
-const exports = Module.emnapiInit({ context: getDefaultContext() });
 
-export const hello = exports.hello;
+const exports = Module.emnapiInit({ context: getDefaultContext() });
 export default exports;
