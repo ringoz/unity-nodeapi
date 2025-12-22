@@ -2,7 +2,10 @@
 	"name": "net.ringoz.unity.nodeapi",
 	"type": "module",
 	"types": "./index.d.ts",
-	"exports": "./index.js",
+	"exports": {
+		".": "./index.js",
+		"./react": "./react.js"
+	},
 	"displayName": "Unity.NodeApi",
 	"version": "0.1.0",
 	"unity": "6000.3",
