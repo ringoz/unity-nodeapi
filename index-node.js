@@ -10,4 +10,11 @@ const moduleFilePath = join(moduleName, 'Build.app', gamePath);
 
 const exports = {};
 dlopen({ exports }, moduleFilePath);
+
+exports.noTimeout = -1;
+exports.scheduleTimeout = setTimeout;
+exports.cancelTimeout = clearTimeout;
+exports.supportsMicrotasks = true;
+exports.scheduleMicrotask = queueMicrotask;
+
 export default exports;
