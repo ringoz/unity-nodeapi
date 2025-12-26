@@ -4,7 +4,7 @@
 	"types": "./index.d.ts",
 	"exports": {
 		".": "./index.js",
-		"./react": "./react.js"
+		"./react": "./react.ts"
 	},
 	"displayName": "Unity.NodeApi",
 	"version": "0.1.0",

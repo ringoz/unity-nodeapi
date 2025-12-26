@@ -4,19 +4,21 @@
 
 import Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import FiberConfig from './index.js';
+import { activeScene } from '.';
+import * as FiberConfig from './reconciler.ts';
 
 const reconciler = Reconciler(FiberConfig);
-reconciler.injectIntoDevTools();
+reconciler.injectIntoDevTools(undefined as any);
+// @ts-ignore - reconciler types are not maintained
 reconciler.flushSync = reconciler.flushSyncFromReconciler;
 
-export function createRoot(view) {
+export function createRoot(view = activeScene) {
   const isStrictMode = process.env.NODE_ENV !== 'production';
   const concurrentUpdatesByDefaultOverride = false;
   const identifierPrefix = '';
-  const onUncaughtError = reconciler.defaultOnUncaughtError;
-  const onCaughtError = reconciler.defaultOnCaughtError;
-  const onRecoverableError = reconciler.defaultOnRecoverableError;
+  const onUncaughtError = (reconciler as any).defaultOnUncaughtError;
+  const onCaughtError = (reconciler as any).defaultOnCaughtError;
+  const onRecoverableError = (reconciler as any).defaultOnRecoverableError;
   const onDefaultTransitionIndicator = () => { };
   const transitionCallbacks = null;
   const root = reconciler.createContainer(
@@ -33,7 +35,7 @@ export function createRoot(view) {
     transitionCallbacks
   );
   return {
-    render: (component) => new Promise((resolve, reject) => {
+    render: (component: React.ReactNode) => new Promise<void>((resolve, reject) => {
       try {
         reconciler.updateContainer(component, root, null, resolve);
       } catch (e) {

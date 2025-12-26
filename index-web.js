@@ -13,11 +13,4 @@ const { Module } = await createUnityInstance(document.querySelector("#unity-canv
 
 import { getDefaultContext } from './Runtime/include/emnapi.mjs';
 const exports = Module.emnapiInit({ context: getDefaultContext() });
-
-exports.noTimeout = -1;
-exports.scheduleTimeout = setTimeout;
-exports.cancelTimeout = clearTimeout;
-exports.supportsMicrotasks = true;
-exports.scheduleMicrotask = queueMicrotask;
-
 export default exports;

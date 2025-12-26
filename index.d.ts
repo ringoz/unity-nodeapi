@@ -5,162 +5,36 @@
 import './mscorlib';
 
 
-export function createInstance(
-	type: string,
-	props: ReadonlyMap<string, Object>,
-	rootContainer?: Object,
-	hostContext?: Object,
-): Object;
+export function createObject(type: string): Object;
 
-export function createTextInstance(
-	text: string,
-	rootContainer?: Object,
-	hostContext?: Object,
-): Object;
+export function deleteObject(node: Object): void;
 
-export function appendInitialChild(
+export function appendChildObject(
 	parent: Object,
 	child: Object,
 ): void;
 
-export function finalizeInitialChildren(
-	node: Object,
-	type: string,
-	props: ReadonlyMap<string, Object>,
-	rootContainer?: Object,
-	hostContext?: Object,
-): boolean;
-
-export function shouldSetTextContent(
-	type: string,
-	props: ReadonlyMap<string, Object>,
-): boolean;
-
-export function getRootHostContext(root?: Object): Object;
-
-export function getChildHostContext(
-	parentHostContext: Object,
-	type: string,
-	root?: Object,
-): Object;
-
-export function getPublicInstance(node: Object): Object;
-
-export function prepareForCommit(containerInfo: Object): void;
-
-export function resetAfterCommit(containerInfo: Object): void;
-
-export function preparePortalMount(containerInfo: Object): void;
-
-export function setCurrentUpdatePriority(newPriority: number): void;
-
-export function getCurrentUpdatePriority(): number;
-
-export function resolveUpdatePriority(): number;
-
-export function trackSchedulerEvent(): void;
-
-export function resolveEventType(): string;
-
-export function resolveEventTimeStamp(): number;
-
-export function resetFormInstance(form: Object): void;
-
-export function shouldAttemptEagerTransition(): boolean;
-
-export function getInstanceFromNode(node: Object): Object;
-
-export function detachDeletedInstance(node: Object): void;
-
-export function maySuspendCommit(
-	type: string,
-	props: ReadonlyMap<string, Object>,
-): boolean;
-
-export function preloadInstance(
-	node: Object,
-	type: string,
-	props: ReadonlyMap<string, Object>,
-): boolean;
-
-export function startSuspendingCommit(): Object;
-
-export function suspendInstance(
-	state: Object,
-	node: Object,
-	type: string,
-	props: ReadonlyMap<string, Object>,
-): void;
-
-export function waitForCommitToBeReady(): Object;
-
-export function appendChild(
-	parent: Object,
-	child: Object,
-): void;
-
-export function appendChildToContainer(
-	container: Object,
-	child: Object,
-): void;
-
-export function insertBefore(
+export function insertBeforeObject(
 	parent: Object,
 	child: Object,
 	beforeChild: Object,
 ): void;
 
-export function insertInContainerBefore(
-	container: Object,
-	child: Object,
-	beforeChild: Object,
-): void;
-
-export function removeChild(
+export function removeChildObject(
 	parent: Object,
 	child: Object,
 ): void;
 
-export function removeChildFromContainer(
-	container: Object,
-	child: Object,
-): void;
-
-export function resetTextContent(node: Object): void;
-
-export function commitTextUpdate(
+export function setObjectProperty(
 	node: Object,
-	oldText: string,
-	newText: string,
+	property: string,
+	value: Object,
 ): void;
 
-export function commitMount(
-	node: Object,
-	type: string,
-	props: ReadonlyMap<string, Object>,
-): void;
+export function hideObject(node: Object): void;
 
-export function commitUpdate(
-	node: Object,
-	type: string,
-	prevProps: ReadonlyMap<string, Object>,
-	nextProps: ReadonlyMap<string, Object>,
-): void;
+export function unhideObject(node: Object): void;
 
-export function hideInstance(node: Object): void;
+export function clearObject(container: Object): void;
 
-export function hideTextInstance(node: Object): void;
-
-export function unhideInstance(node: Object): void;
-
-export function unhideTextInstance(node: Object): void;
-
-export function clearContainer(container: Object): void;
-
-export const rendererPackageName: string;
-
-export const rendererVersion: string;
-
-export const supportsMutation: boolean;
-
-export const isPrimaryRenderer: boolean;
+export const activeScene: Object;
