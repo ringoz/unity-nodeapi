@@ -2,6 +2,7 @@
  Copyright (c) Vladimir Davidovich. All rights reserved.
 ***********************************************************************/
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using Unity.Properties;
 
@@ -9,7 +10,7 @@ class PropertiezDump : PropertyVisitor
 {
   private delegate void WriteLine(string line);
   private readonly WriteLine mWriteLine = (line) => Trace.WriteLine(line);
-  private int mIndentLevel = 0;
+  private readonly HashSet<object> mIndent = new();
 
   protected override void VisitProperty<TContainer, TValue>(Property<TContainer, TValue> property, ref TContainer container, ref TValue value)
   {
@@ -21,15 +22,15 @@ class PropertiezDump : PropertyVisitor
     var type = value?.GetType() ?? property.DeclaredValueType();
     var typeName = TypeUtility.GetTypeDisplayName(type);
 
-    string indent = new(' ', mIndentLevel * 2);
+    string indent = new(' ', mIndent.Count * 2);
     if (TypeTraits.IsContainer(type))
       mWriteLine($"{indent}- {propertyName} {{{typeName}}}");
     else
       mWriteLine($"{indent}- {propertyName} = {{{typeName}}} {value}");
 
-    ++mIndentLevel;
-    if (null != value && (object)value != (object)container)
+    mIndent.Add(container);
+    if (null != value && !mIndent.Contains(value))
       PropertyContainer.Accept(this, ref value);
-    --mIndentLevel;
+    mIndent.Remove(container);
   }
 }

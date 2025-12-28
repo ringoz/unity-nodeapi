@@ -12,6 +12,7 @@ using Unity.Properties;
 
 [assembly: AlwaysLinkAssembly]
 [assembly: GeneratePropertyBagsForType(typeof(GameObject))]
+[assembly: GeneratePropertyBagsForType(typeof(Transform))]
 [assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
 
 public static class UnityNodeApi

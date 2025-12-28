@@ -4,7 +4,7 @@
 
 import type Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { appendChildObject, clearObject, createObject, deleteObject, hideObject, insertBeforeObject, removeChildObject, setObjectProperty, unhideObject } from '.';
+import { appendChildObject, clearObject, createObject, deleteObject, dumpObjectProperties, hideObject, insertBeforeObject, removeChildObject, setObjectProperty, unhideObject } from '.';
 import { name as packageName, version as packageVersion } from './package.json';
 
 export const rendererPackageName = packageName;
@@ -235,6 +235,8 @@ export function commitUpdate(instance: Instance, type: Type, prevProps: Props, n
 
     setObjectProperty(instance, key, newVal);
   }
+
+  dumpObjectProperties(instance);
 }
 
 export function hideInstance(instance: Instance | TextInstance): void {
