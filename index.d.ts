@@ -31,6 +31,8 @@ export function setObjectProperty(
 	value: Object,
 ): void;
 
+export function dumpObjectProperties(node: Object): void;
+
 export function hideObject(node: Object): void;
 
 export function unhideObject(node: Object): void;

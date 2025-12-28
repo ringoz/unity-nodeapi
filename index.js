@@ -13,6 +13,7 @@ export const {
 	insertBeforeObject,
 	removeChildObject,
 	setObjectProperty,
+	dumpObjectProperties,
 	hideObject,
 	unhideObject,
 	clearObject,
