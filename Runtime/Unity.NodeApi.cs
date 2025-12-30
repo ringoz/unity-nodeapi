@@ -3,7 +3,7 @@
 ***********************************************************************/
 
 using System;
-using System.Diagnostics;
+using System.Text;
 using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -11,104 +11,123 @@ using UnityEngine.SceneManagement;
 using Unity.Properties;
 
 [assembly: AlwaysLinkAssembly]
-[assembly: GeneratePropertyBagsForType(typeof(GameObject))]
-[assembly: GeneratePropertyBagsForType(typeof(Transform))]
-[assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
+[assembly: GeneratePropertyBagsForType(typeof(UnityEngine.GameObject))]
+[assembly: GeneratePropertyBagsForType(typeof(UnityEngine.Transform))]
+[assembly: GeneratePropertyBagsForType(typeof(UnityEngine.Behaviour))]
+
+[JSExport]
+public class Instance : IDisposable
+{
+  internal object m_obj;
+  internal object obj { get => m_obj; init => m_obj = value; }
+
+  protected Instance() { }
+
+  public virtual void Dispose()
+  {
+    if (obj is IDisposable)
+      ((IDisposable)obj).Dispose();
+  }
+
+  public override string ToString()
+  {
+    var sb = new StringBuilder();
+    PropertyContainer.Accept(new PropertiezDump((l) => sb.AppendLine(l)), this);
+    return sb.ToString();
+  }
+
+  public void SetProperty(string property, object value)
+  {
+    PropertyContainer.SetValue(obj, property, value);
+  }
+
+  public virtual void SetActive(bool value)
+  {
+    throw new NotImplementedException();
+  }
+
+  public virtual void SetParent(Instance parent, Instance beforeChild = null)
+  {
+    throw new NotImplementedException();
+  }
+
+  public virtual void Clear()
+  {
+    throw new NotImplementedException();
+  }
+}
+
+[JSExport]
+public class Scene : Instance
+{
+  protected Scene() { }
+
+  public static Instance Active { get; } = new Scene() { obj = SceneManager.GetActiveScene() };
+
+  public override void Clear()
+  {
+    if ((UnityEngine.SceneManagement.Scene)obj == SceneManager.GetActiveScene())
+      SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+  }
+}
+
+[JSExport]
+public class BaseObject : Instance
+{
+  protected BaseObject() { }
+}
+
+[JSExport]
+public class GameObject : BaseObject
+{
+  protected GameObject() { }
+
+  public static Instance Create(string type) => type switch
+  {
+    "sphere" => new GameObject() { obj = UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Sphere) },
+    "capsule" => new GameObject() { obj = UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Capsule) },
+    "cylinder" => new GameObject() { obj = UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cylinder) },
+    "cube" => new GameObject() { obj = UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cube) },
+    "plane" => new GameObject() { obj = UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Plane) },
+    "quad" => new GameObject() { obj = UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Quad) },
+    _ => null,
+  };
+
+  public override void SetActive(bool value)
+  {
+    ((UnityEngine.GameObject)obj).SetActive(value);
+  }
+
+  public override void SetParent(Instance parent, Instance beforeChild = null)
+  {
+    if (parent.obj is UnityEngine.GameObject)
+      ((UnityEngine.GameObject)obj).transform.parent = ((UnityEngine.GameObject)parent.obj).transform;
+    else if (parent.obj is UnityEngine.SceneManagement.Scene)
+      SceneManager.MoveGameObjectToScene((UnityEngine.GameObject)obj, (UnityEngine.SceneManagement.Scene)parent.obj);
+    else
+      base.SetParent(parent, beforeChild);
+  }
+}
+
+[JSExport]
+public class Component : BaseObject
+{
+  protected Component() { }
+
+  public static Instance Create(string type) => type switch
+  {
+    _ => null,
+  };
+
+  public override void SetActive(bool value)
+  {
+    if (obj is UnityEngine.Behaviour)
+      ((UnityEngine.Behaviour)obj).enabled = value;
+    else
+      base.SetActive(value);
+  }
+}
 
 public static class UnityNodeApi
 {
-  [JSExport]
-  public static object ActiveScene => SceneManager.GetActiveScene();
-
-  [JSExport]
-  public static object CreateObject(string type)
-  {
-    Trace.WriteLine($"CreateObject: {type}");
-    switch (type)
-    {
-      case "sphere":
-        return GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        //case "transform":
-        //return new Transform();
-        //case "meshRenderer":
-        //return new MeshRenderer();
-    }
-
-    throw new NotImplementedException();
-  }
-
-  [JSExport]
-  public static void DeleteObject(object node)
-  {
-    if (node is UnityEngine.Object)
-      UnityEngine.Object.Destroy((UnityEngine.Object)node);
-    else
-      throw new NotImplementedException();
-  }
-
-  [JSExport]
-  public static void AppendChildObject(object parent, object child)
-  {
-    if (parent is GameObject && child is GameObject)
-      ((GameObject)child).transform.parent = ((GameObject)parent).transform;
-    else if (parent is Scene && child is GameObject)
-      SceneManager.MoveGameObjectToScene((GameObject)child, (Scene)parent);
-    else
-      throw new NotImplementedException();
-  }
-
-  [JSExport]
-  public static void InsertBeforeObject(object parent, object child, object beforeChild)
-  {
-    throw new NotImplementedException();
-  }
-
-  [JSExport]
-  public static void RemoveChildObject(object parent, object child)
-  {
-    throw new NotImplementedException();
-  }
-
-  [JSExport]
-  public static void SetObjectProperty(object node, string property, object value)
-  {
-    PropertyContainer.SetValue(node, property, value);
-  }
-
-  [JSExport]
-  public static void DumpObjectProperties(object node)
-  {
-    PropertyContainer.Accept(new PropertiezDump(), node);
-  }
-
-  [JSExport]
-  public static void HideObject(object node)
-  {
-    if (node is GameObject)
-      ((GameObject)node).SetActive(false);
-    else if (node is Behaviour)
-      ((Behaviour)node).enabled = false;
-    else
-      throw new NotImplementedException();
-  }
-
-  [JSExport]
-  public static void UnhideObject(object node)
-  {
-    if (node is GameObject)
-      ((GameObject)node).SetActive(true);
-    else if (node is Behaviour)
-      ((Behaviour)node).enabled = true;
-    else
-      throw new NotImplementedException();
-  }
-
-  [JSExport]
-  public static void ClearObject(object container)
-  {
-    if (container is Scene && ((Scene)container) == SceneManager.GetActiveScene())
-      SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    else
-      throw new NotImplementedException();
-  }
 }

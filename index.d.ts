@@ -5,38 +5,48 @@
 import './mscorlib';
 
 
-export function createObject(type: string): Object;
+export class Instance {
+	dispose(): void;
 
-export function deleteObject(node: Object): void;
+	toString(): string;
 
-export function appendChildObject(
-	parent: Object,
-	child: Object,
-): void;
+	setProperty(
+		property: string,
+		value: Object,
+	): void;
 
-export function insertBeforeObject(
-	parent: Object,
-	child: Object,
-	beforeChild: Object,
-): void;
+	setActive(value: boolean): void;
 
-export function removeChildObject(
-	parent: Object,
-	child: Object,
-): void;
+	setParent(
+		parent: Instance,
+		beforeChild?: Instance,
+	): void;
 
-export function setObjectProperty(
-	node: Object,
-	property: string,
-	value: Object,
-): void;
+	clear(): void;
+}
 
-export function dumpObjectProperties(node: Object): void;
+export class Scene extends Instance {
+	static readonly active: Instance;
 
-export function hideObject(node: Object): void;
+	clear(): void;
+}
 
-export function unhideObject(node: Object): void;
+export class BaseObject extends Instance {
+}
 
-export function clearObject(container: Object): void;
+export class GameObject extends BaseObject {
+	static create(type: string): Instance;
 
-export const activeScene: Object;
+	setActive(value: boolean): void;
+
+	setParent(
+		parent: Instance,
+		beforeChild?: Instance,
+	): void;
+}
+
+export class Component extends BaseObject {
+	static create(type: string): Instance;
+
+	setActive(value: boolean): void;
+}

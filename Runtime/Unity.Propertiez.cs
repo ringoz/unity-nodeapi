@@ -3,14 +3,18 @@
 ***********************************************************************/
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using Unity.Properties;
 
 class PropertiezDump : PropertyVisitor
 {
-  private delegate void WriteLine(string line);
-  private readonly WriteLine mWriteLine = (line) => Trace.WriteLine(line);
+  public delegate void WriteLine(string line);
+  private readonly WriteLine mWriteLine;
   private readonly HashSet<object> mIndent = new();
+
+  public PropertiezDump(WriteLine writeLine)
+  {
+    mWriteLine = writeLine;
+  }
 
   protected override void VisitProperty<TContainer, TValue>(Property<TContainer, TValue> property, ref TContainer container, ref TValue value)
   {

@@ -4,7 +4,7 @@
 
 import Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { activeScene } from '.';
+import { Scene } from '.';
 import * as FiberConfig from './reconciler.ts';
 
 const reconciler = Reconciler(FiberConfig);
@@ -12,7 +12,7 @@ reconciler.injectIntoDevTools(undefined as any);
 // @ts-ignore - reconciler types are not maintained
 reconciler.flushSync = reconciler.flushSyncFromReconciler;
 
-export function createRoot(view = activeScene) {
+export function createRoot(view = Scene.active) {
   const isStrictMode = process.env.NODE_ENV !== 'production';
   const concurrentUpdatesByDefaultOverride = false;
   const identifierPrefix = '';

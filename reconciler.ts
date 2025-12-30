@@ -4,7 +4,7 @@
 
 import type Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { appendChildObject, clearObject, createObject, deleteObject, dumpObjectProperties, hideObject, insertBeforeObject, removeChildObject, setObjectProperty, unhideObject } from '.';
+import { GameObject, Instance } from '.';
 import { name as packageName, version as packageVersion } from './package.json';
 
 export const rendererPackageName = packageName;
@@ -16,8 +16,7 @@ export const isPrimaryRenderer = true;
 
 type Type = string;
 type Props = Record<string, any>;
-type Container = object;
-type Instance = object;
+type Container = Instance;
 type TextInstance = Instance;
 type SuspenseInstance = Instance;
 type PublicInstance = Instance;
@@ -26,7 +25,7 @@ type HostContext = any;
 const EMPTY = Object.freeze({});
 
 export function createInstance<T extends Instance>(type: Type, props: Props, root: Container, hostContext: HostContext, internalHandle: Reconciler.OpaqueHandle): T {
-  const instance = createObject(type) as T;
+  const instance = GameObject.create(type) as T;
   commitUpdate(instance, type, EMPTY, props, internalHandle);
   return instance;
 }
@@ -160,7 +159,7 @@ export function getInstanceFromScope(scopeInstance: any): Instance | null {
 }
 
 export function detachDeletedInstance(node: Instance): void {
-  deleteObject(node);
+  node.dispose();
 }
 
 export function maySuspendCommit(type: Type, props: Props) {
@@ -182,7 +181,7 @@ export function waitForCommitToBeReady() {
 }
 
 export function appendChild(parentInstance: Instance, child: Instance | TextInstance): void {
-  appendChildObject(parentInstance, child);
+  child.setParent(parentInstance);
 }
 
 export function appendChildToContainer(container: Container, child: Instance | TextInstance): void {
@@ -190,7 +189,7 @@ export function appendChildToContainer(container: Container, child: Instance | T
 }
 
 export function insertBefore(parentInstance: Instance, child: Instance | TextInstance, beforeChild: Instance | TextInstance | SuspenseInstance): void {
-  insertBeforeObject(parentInstance, child, beforeChild);
+  child.setParent(parentInstance, beforeChild);
 }
 
 export function insertInContainerBefore(container: Container, child: Instance | TextInstance, beforeChild: Instance | TextInstance | SuspenseInstance): void {
@@ -198,7 +197,7 @@ export function insertInContainerBefore(container: Container, child: Instance | 
 }
 
 export function removeChild(parentInstance: Instance, child: Instance | TextInstance | SuspenseInstance): void {
-  removeChildObject(parentInstance, child);
+  child.setParent(null!);
 }
 
 export function removeChildFromContainer(container: Container, child: Instance | TextInstance | SuspenseInstance): void {
@@ -233,24 +232,24 @@ export function commitUpdate(instance: Instance, type: Type, prevProps: Props, n
     if (isEqual(oldVal, newVal))
       continue;
 
-    setObjectProperty(instance, key, newVal);
+    instance.setProperty(key, newVal);
   }
 
-  dumpObjectProperties(instance);
+  console.info(instance.toString());
 }
 
 export function hideInstance(instance: Instance | TextInstance): void {
-  hideObject(instance);
+  instance.setActive(false);
 }
 
 export const hideTextInstance = hideInstance;
 
 export function unhideInstance(instance: Instance | TextInstance): void {
-  unhideObject(instance);
+  instance.setActive(true);
 }
 
 export const unhideTextInstance = unhideInstance;
 
 export function clearContainer(container: Container): void {
-  clearObject(container);
+  container.clear();
 }

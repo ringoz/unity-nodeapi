@@ -7,15 +7,9 @@ const { default: exports } = await import(`./index-${suffix}.js`);
 export default exports;
 
 export const {
-	createObject,
-	deleteObject,
-	appendChildObject,
-	insertBeforeObject,
-	removeChildObject,
-	setObjectProperty,
-	dumpObjectProperties,
-	hideObject,
-	unhideObject,
-	clearObject,
-	activeScene,
+	Instance,
+	Scene,
+	BaseObject,
+	GameObject,
+	Component,
 } = exports;
