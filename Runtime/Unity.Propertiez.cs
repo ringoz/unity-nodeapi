@@ -2,6 +2,7 @@
  Copyright (c) Vladimir Davidovich. All rights reserved.
 ***********************************************************************/
 
+using System.Text;
 using System.Collections.Generic;
 using Unity.Properties;
 
@@ -36,5 +37,12 @@ class PropertiezDump : PropertyVisitor
     if (null != value && !mIndent.Contains(value))
       PropertyContainer.Accept(this, ref value);
     mIndent.Remove(container);
+  }
+
+  public static string ToString(object container)
+  {
+    var sb = new StringBuilder();
+    PropertyContainer.Accept(new PropertiezDump((l) => sb.AppendLine(l)), container);
+    return sb.ToString();
   }
 }

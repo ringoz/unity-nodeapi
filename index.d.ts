@@ -8,10 +8,14 @@ import './mscorlib';
 export class Instance {
 	dispose(): void;
 
+	equals(obj: Object): boolean;
+
+	getHashCode(): number;
+
 	toString(): string;
 
 	setProperty(
-		property: string,
+		key: string,
 		value: Object,
 	): void;
 
@@ -26,16 +30,17 @@ export class Instance {
 }
 
 export class Scene extends Instance {
-	static readonly active: Instance;
+	static readonly active: Scene;
 
 	clear(): void;
 }
 
 export class BaseObject extends Instance {
+	dispose(): void;
 }
 
 export class GameObject extends BaseObject {
-	static create(type: string): Instance;
+	static create(type: string): GameObject;
 
 	setActive(value: boolean): void;
 
@@ -46,7 +51,17 @@ export class GameObject extends BaseObject {
 }
 
 export class Component extends BaseObject {
-	static create(type: string): Instance;
+	static create(type: string): Component;
+
+	setProperty(
+		key: string,
+		value: Object,
+	): void;
 
 	setActive(value: boolean): void;
+
+	setParent(
+		parent: Instance,
+		beforeChild?: Instance,
+	): void;
 }

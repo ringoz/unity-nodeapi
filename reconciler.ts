@@ -4,7 +4,7 @@
 
 import type Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { GameObject, Instance } from '.';
+import { Component, GameObject, Instance } from '.';
 import { name as packageName, version as packageVersion } from './package.json';
 
 export const rendererPackageName = packageName;
@@ -25,7 +25,7 @@ type HostContext = any;
 const EMPTY = Object.freeze({});
 
 export function createInstance<T extends Instance>(type: Type, props: Props, root: Container, hostContext: HostContext, internalHandle: Reconciler.OpaqueHandle): T {
-  const instance = GameObject.create(type) as T;
+  const instance = (Component.create(type) ?? GameObject.create(type)) as T;
   commitUpdate(instance, type, EMPTY, props, internalHandle);
   return instance;
 }
