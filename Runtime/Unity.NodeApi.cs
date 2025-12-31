@@ -111,9 +111,7 @@ public class GameObject : BaseObject
 [JSExport]
 public class Component : BaseObject
 {
-  private static readonly string __type__ = "__type__";
-
-  protected Component(Type type) : base(new Dictionary<string, object>() { { __type__, type } }) { }
+  protected Component(Type type) : base(new Dictionary<string, object>() { { string.Empty, type } }) { }
 
   public static Component Create(string type) => type switch
   {
@@ -144,10 +142,10 @@ public class Component : BaseObject
 
     if (parent.mObj is UnityEngine.GameObject && mObj is Dictionary<string, object> props)
     {
-      var type = (Type)props[__type__];
+      var type = (Type)props[string.Empty];
       mObj = ((UnityEngine.GameObject)parent.mObj).GetComponent(type) ?? ((UnityEngine.GameObject)parent.mObj).AddComponent(type);
       foreach (var prop in props)
-        if (prop.Key != __type__)
+        if (prop.Key != string.Empty)
           base.SetProperty(prop.Key, prop.Value);
     }
     else
