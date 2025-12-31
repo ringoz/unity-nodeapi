@@ -54,7 +54,19 @@ public class GameObject : BaseObject
 
   public static GameObject Find(string name) => Wrap(UnityEngine.GameObject.Find(name));
 
-  private static GameObject gTrash = null;
+  private static GameObject _Trash = new GameObject(null);
+  private static GameObject Trash
+  {
+    get
+    {
+      if (_Trash.mObj == null)
+      {
+        _Trash.mObj = new UnityEngine.GameObject();
+        _Trash.SetActive(false);
+      }
+      return _Trash;
+    }
+  }
 
   public static GameObject Create(string type)
   {
@@ -81,14 +93,7 @@ public class GameObject : BaseObject
   {
     Assert.IsNull(beforeChild);
     if (parent == null)
-    {
-      if (gTrash == null)
-      {
-        gTrash = Wrap(new UnityEngine.GameObject());
-        gTrash.SetActive(false);
-      }
-      parent = gTrash;
-    }
+      parent = Trash;
 
     if (parent.mObj is UnityEngine.GameObject)
       ((UnityEngine.GameObject)mObj).transform.parent = ((UnityEngine.GameObject)parent.mObj).transform;
@@ -98,6 +103,8 @@ public class GameObject : BaseObject
 
   public override void Clear()
   {
+    foreach (Transform child in ((UnityEngine.GameObject)mObj).transform)
+      child.parent = ((UnityEngine.GameObject)Trash.mObj).transform;
   }
 }
 
