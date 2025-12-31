@@ -97,7 +97,7 @@ public class GameObject : BaseObject
     if (parent.mObj is UnityEngine.GameObject)
     {
       ((UnityEngine.GameObject)mObj).transform.SetParent(((UnityEngine.GameObject)parent.mObj).transform, false);
-      if (beforeChild != null)
+      if (beforeChild is GameObject)
         ((UnityEngine.GameObject)mObj).transform.SetSiblingIndex(((UnityEngine.GameObject)beforeChild.mObj).transform.GetSiblingIndex());
     }
     else
@@ -122,6 +122,20 @@ public class Component : BaseObject
     _ => null,
   };
 
+  public override void Dispose()
+  {
+    // Destroying the transform component is not allowed.
+    if (mObj is UnityEngine.Transform transform)
+    {
+      transform.localPosition = Vector3.zero;
+      transform.localRotation = Quaternion.identity;
+      transform.localScale = Vector3.one;
+      return;
+    }
+
+    base.Dispose();
+  }
+
   public override void SetProperty(string key, object value)
   {
     if (mObj is Dictionary<string, object> props)
@@ -140,8 +154,11 @@ public class Component : BaseObject
 
   public override void SetParent(Instance parent, Instance beforeChild = null)
   {
-    Assert.IsNotNull(parent);
-    Assert.IsNull(beforeChild);
+    if (parent == null)
+    {
+      Dispose();
+      return;
+    }
 
     if (parent.mObj is UnityEngine.GameObject && mObj is Dictionary<string, object> props)
     {

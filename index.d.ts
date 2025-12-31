@@ -51,6 +51,8 @@ export class GameObject extends BaseObject {
 export class Component extends BaseObject {
 	static create(type: string): Component;
 
+	dispose(): void;
+
 	setProperty(
 		key: string,
 		value: Object,
