@@ -29,17 +29,13 @@ export class Instance {
 	clear(): void;
 }
 
-export class Scene extends Instance {
-	static readonly active: Scene;
-
-	clear(): void;
-}
-
 export class BaseObject extends Instance {
 	dispose(): void;
 }
 
 export class GameObject extends BaseObject {
+	static find(name: string): GameObject;
+
 	static create(type: string): GameObject;
 
 	setActive(value: boolean): void;
@@ -48,6 +44,8 @@ export class GameObject extends BaseObject {
 		parent: Instance,
 		beforeChild?: Instance,
 	): void;
+
+	clear(): void;
 }
 
 export class Component extends BaseObject {

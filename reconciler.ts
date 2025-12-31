@@ -234,8 +234,6 @@ export function commitUpdate(instance: Instance, type: Type, prevProps: Props, n
 
     instance.setProperty(key, newVal);
   }
-
-  console.info(instance.toString());
 }
 
 export function hideInstance(instance: Instance | TextInstance): void {

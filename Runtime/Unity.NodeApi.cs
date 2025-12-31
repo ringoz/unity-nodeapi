@@ -9,7 +9,6 @@ using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Scripting;
-using UnityEngine.SceneManagement;
 using Unity.Properties;
 
 [assembly: AlwaysLinkAssembly]
@@ -36,20 +35,6 @@ public class Instance : IDisposable
 }
 
 [JSExport]
-public class Scene : Instance
-{
-  protected Scene(object obj) : base(obj) { }
-
-  public static Scene Active { get; } = new Scene(SceneManager.GetActiveScene());
-
-  public override void Clear()
-  {
-    if ((UnityEngine.SceneManagement.Scene)mObj == SceneManager.GetActiveScene())
-      SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-  }
-}
-
-[JSExport]
 public class BaseObject : Instance
 {
   protected BaseObject(object obj) : base(obj) { }
@@ -65,16 +50,27 @@ public class GameObject : BaseObject
 {
   protected GameObject(object obj) : base(obj) { }
 
-  public static GameObject Create(string type) => type switch
+  private static GameObject Wrap(UnityEngine.GameObject obj) => obj ? new GameObject(obj) : null;
+
+  public static GameObject Find(string name) => Wrap(UnityEngine.GameObject.Find(name));
+
+  private static GameObject gTrash = null;
+
+  public static GameObject Create(string type)
   {
-    "sphere" => new GameObject(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Sphere)),
-    "capsule" => new GameObject(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Capsule)),
-    "cylinder" => new GameObject(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cylinder)),
-    "cube" => new GameObject(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cube)),
-    "plane" => new GameObject(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Plane)),
-    "quad" => new GameObject(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Quad)),
-    _ => null,
-  };
+    var obj = type switch
+    {
+      "sphere" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Sphere)),
+      "capsule" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Capsule)),
+      "cylinder" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cylinder)),
+      "cube" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cube)),
+      "plane" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Plane)),
+      "quad" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Quad)),
+      _ => null,
+    };
+    obj?.SetParent(null);
+    return obj;
+  }
 
   public override void SetActive(bool value)
   {
@@ -83,15 +79,25 @@ public class GameObject : BaseObject
 
   public override void SetParent(Instance parent, Instance beforeChild = null)
   {
-    Assert.IsNotNull(parent);
     Assert.IsNull(beforeChild);
+    if (parent == null)
+    {
+      if (gTrash == null)
+      {
+        gTrash = Wrap(new UnityEngine.GameObject());
+        gTrash.SetActive(false);
+      }
+      parent = gTrash;
+    }
 
     if (parent.mObj is UnityEngine.GameObject)
       ((UnityEngine.GameObject)mObj).transform.parent = ((UnityEngine.GameObject)parent.mObj).transform;
-    else if (parent.mObj is UnityEngine.SceneManagement.Scene)
-      SceneManager.MoveGameObjectToScene((UnityEngine.GameObject)mObj, (UnityEngine.SceneManagement.Scene)parent.mObj);
     else
       base.SetParent(parent, beforeChild);
+  }
+
+  public override void Clear()
+  {
   }
 }
 
@@ -136,8 +142,6 @@ public class Component : BaseObject
       foreach (var prop in props)
         if (prop.Key != __type__)
           base.SetProperty(prop.Key, prop.Value);
-
-      System.Diagnostics.Trace.WriteLine(ToString());
     }
     else
       base.SetParent(parent, beforeChild);

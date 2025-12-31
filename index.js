@@ -8,7 +8,6 @@ export default exports;
 
 export const {
 	Instance,
-	Scene,
 	BaseObject,
 	GameObject,
 	Component,

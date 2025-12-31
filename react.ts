@@ -4,7 +4,7 @@
 
 import Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { Scene } from '.';
+import { GameObject } from '.';
 import * as FiberConfig from './reconciler.ts';
 
 const reconciler = Reconciler(FiberConfig);
@@ -12,7 +12,7 @@ reconciler.injectIntoDevTools(undefined as any);
 // @ts-ignore - reconciler types are not maintained
 reconciler.flushSync = reconciler.flushSyncFromReconciler;
 
-export function createRoot(view = Scene.active) {
+export function createRoot(parent: GameObject) {
   const isStrictMode = process.env.NODE_ENV !== 'production';
   const concurrentUpdatesByDefaultOverride = false;
   const identifierPrefix = '';
@@ -22,7 +22,7 @@ export function createRoot(view = Scene.active) {
   const onDefaultTransitionIndicator = () => { };
   const transitionCallbacks = null;
   const root = reconciler.createContainer(
-    view,
+    parent,
     Constants.ConcurrentRoot,
     null,
     isStrictMode,
