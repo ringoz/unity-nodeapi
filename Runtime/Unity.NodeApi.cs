@@ -154,8 +154,7 @@ public class Component : BaseObject
 
 public static class UnityNodeApi
 {
-  public static string RemoveParentheses(this string source) => source.Replace("(", "").Replace(")", "");
-  public static IEnumerable<T> AsVector<T>(this string source) => source.RemoveParentheses().Split(',').Select(s => TypeConversion.Convert<string, T>(ref s));
+  public static IEnumerable<T> AsVector<T>(this string source) => source.Split(' ').Select(s => TypeConversion.Convert<string, T>(ref s));
 
   [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
   static void Init()
