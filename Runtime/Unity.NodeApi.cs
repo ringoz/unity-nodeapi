@@ -71,6 +71,7 @@ public class GameObject : BaseObject
   {
     var obj = type switch
     {
+      "object" => Wrap(new UnityEngine.GameObject()),
       "sphere" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Sphere)),
       "capsule" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Capsule)),
       "cylinder" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cylinder)),
@@ -90,20 +91,23 @@ public class GameObject : BaseObject
 
   public override void SetParent(Instance parent, Instance beforeChild = null)
   {
-    Assert.IsNull(beforeChild);
     if (parent == null)
       parent = Trash;
 
     if (parent.mObj is UnityEngine.GameObject)
-      ((UnityEngine.GameObject)mObj).transform.parent = ((UnityEngine.GameObject)parent.mObj).transform;
+    {
+      ((UnityEngine.GameObject)mObj).transform.SetParent(((UnityEngine.GameObject)parent.mObj).transform, false);
+      if (beforeChild != null)
+        ((UnityEngine.GameObject)mObj).transform.SetSiblingIndex(((UnityEngine.GameObject)beforeChild.mObj).transform.GetSiblingIndex());
+    }
     else
       base.SetParent(parent, beforeChild);
   }
 
   public override void Clear()
   {
-    foreach (Transform child in ((UnityEngine.GameObject)mObj).transform)
-      child.parent = ((UnityEngine.GameObject)Trash.mObj).transform;
+    foreach (UnityEngine.Transform child in ((UnityEngine.GameObject)mObj).transform)
+      child.SetParent(((UnityEngine.GameObject)Trash.mObj).transform, false);
   }
 }
 
