@@ -51,7 +51,6 @@ public class GameObject : BaseObject
   protected GameObject(object obj) : base(obj) { }
 
   private static GameObject Wrap(UnityEngine.GameObject obj) => obj ? new GameObject(obj) : null;
-
   public static GameObject Find(string name) => Wrap(UnityEngine.GameObject.Find(name));
 
   private static GameObject _Trash = new GameObject(null);
@@ -161,11 +160,11 @@ public static class UnityNodeApi
   [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
   static void Init()
   {
-    TypeConversion.Register((ref string s) => { var p = s.AsVector<int>(); return new Vector2Int(p.ElementAt(0), p.ElementAt(1)); });
-    TypeConversion.Register((ref string s) => { var p = s.AsVector<int>(); return new Vector3Int(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2)); });
-    TypeConversion.Register((ref string s) => { var p = s.AsVector<float>(); return new Vector2(p.ElementAt(0), p.ElementAt(1)); });
-    TypeConversion.Register((ref string s) => { var p = s.AsVector<float>(); return new Vector3(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2)); });
-    TypeConversion.Register((ref string s) => { var p = s.AsVector<float>(); return new Vector4(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2), p.ElementAt(3)); });
-    TypeConversion.Register((ref string s) => { var p = s.AsVector<float>(); return new Quaternion(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2), p.ElementAt(3)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<int>(); return new Vector2Int(p.ElementAt(0), p.ElementAt(1)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<int>(); return new Vector3Int(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector2(p.ElementAt(0), p.ElementAt(1)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector3(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector4(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2), p.ElementAt(3)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Quaternion(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2), p.ElementAt(3)); });
   }
 }

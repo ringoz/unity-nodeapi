@@ -227,11 +227,15 @@ export function commitUpdate(instance: Instance, type: Type, prevProps: Props, n
   const { ref: refOld, children: childrenOld, ...restOld } = prevProps;
   const { ref: refNew, children: childrenNew, ...restNew } = nextProps;
 
-  for (const [key, newVal] of Object.entries(restNew)) {
-    const oldVal = restOld[key];
+  for (const [key, oldVal] of Object.entries(restOld)) {
+    const newVal = nextProps[key];
     if (isEqual(oldVal, newVal))
-      continue;
+      delete restNew[key];
+    else if (newVal === undefined)
+      restNew[key] = undefined;
+  }
 
+  for (const [key, newVal] of Object.entries(restNew)) {
     instance.setProperty(key, newVal);
   }
 }
