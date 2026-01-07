@@ -18,6 +18,19 @@ using Unity.Properties;
 [assembly: GeneratePropertyBagsForType(typeof(UnityEngine.Behaviour))]
 
 [JSExport]
+public struct Rect
+{
+  public float x { get; init; }
+  public float y { get; init; }
+  public float width { get; init; }
+  public float height { get; init; }
+  public float left => x;
+  public float top => y;
+  public float right => x + width;
+  public float bottom => y + height;
+}
+
+[JSExport]
 public class Instance : IDisposable
 {
   internal object mObj;
@@ -33,6 +46,7 @@ public class Instance : IDisposable
   public virtual void SetActive(bool value) => throw new NotImplementedException();
   public virtual void SetParent(Instance parent, Instance beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
+  public virtual Rect GetBoundingClientRect() => default;
 }
 
 [JSExport]
@@ -119,6 +133,34 @@ public class GameObject : BaseObject
   {
     foreach (UnityEngine.Transform child in ((UnityEngine.GameObject)mObj).transform)
       child.SetParent(((UnityEngine.GameObject)Null.mObj).transform, false);
+  }
+
+  public override Rect GetBoundingClientRect()
+  {
+    var renderer = ((UnityEngine.GameObject)mObj).GetComponent<Renderer>();
+    if (renderer == null)
+      return base.GetBoundingClientRect();
+
+    var c = renderer.bounds.center;
+    var e = renderer.bounds.extents;
+    var worldCorners = new[]
+    {
+      new Vector3( c.x + e.x, c.y + e.y, c.z + e.z ),
+      new Vector3( c.x + e.x, c.y + e.y, c.z - e.z ),
+      new Vector3( c.x + e.x, c.y - e.y, c.z + e.z ),
+      new Vector3( c.x + e.x, c.y - e.y, c.z - e.z ),
+      new Vector3( c.x - e.x, c.y + e.y, c.z + e.z ),
+      new Vector3( c.x - e.x, c.y + e.y, c.z - e.z ),
+      new Vector3( c.x - e.x, c.y - e.y, c.z + e.z ),
+      new Vector3( c.x - e.x, c.y - e.y, c.z - e.z ),
+    };
+
+    var screenCorners = worldCorners.Select(corner => Camera.main.WorldToScreenPoint(corner));
+    var maxX = screenCorners.Max(corner => corner.x) * 96 / Screen.dpi;
+    var minX = screenCorners.Min(corner => corner.x) * 96 / Screen.dpi;
+    var maxY = screenCorners.Max(corner => Screen.height - corner.y) * 96 / Screen.dpi;
+    var minY = screenCorners.Min(corner => Screen.height - corner.y) * 96 / Screen.dpi;
+    return new Rect() { x = minX, y = minY, width = maxX - minX, height = maxY - minY };
   }
 }
 

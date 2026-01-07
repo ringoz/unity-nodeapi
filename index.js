@@ -7,6 +7,7 @@ const { default: exports } = await import(`./index-${suffix}.js`);
 export default exports;
 
 export const {
+	Rect,
 	Instance,
 	BaseObject,
 	GameObject,

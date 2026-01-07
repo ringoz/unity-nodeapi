@@ -5,6 +5,24 @@
 import './mscorlib';
 
 
+export class Rect extends ValueType {
+	x: number;
+
+	y: number;
+
+	width: number;
+
+	height: number;
+
+	readonly left: number;
+
+	readonly top: number;
+
+	readonly right: number;
+
+	readonly bottom: number;
+}
+
 export class Instance {
 	dispose(): void;
 
@@ -27,6 +45,8 @@ export class Instance {
 	): void;
 
 	clear(): void;
+
+	getBoundingClientRect(): Rect;
 }
 
 export class BaseObject extends Instance {
@@ -48,6 +68,8 @@ export class GameObject extends BaseObject {
 	): void;
 
 	clear(): void;
+
+	getBoundingClientRect(): Rect;
 }
 
 export class Component extends BaseObject {
