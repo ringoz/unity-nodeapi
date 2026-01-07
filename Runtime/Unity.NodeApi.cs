@@ -78,7 +78,7 @@ public class GameObject : BaseObject
       "cube" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cube)),
       "plane" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Plane)),
       "quad" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Quad)),
-      _ => null,
+      _ => Wrap(UnityEngine.Object.Instantiate(Resources.Load(type)) as UnityEngine.GameObject)
     };
     obj?.SetParent(null);
     return obj;
