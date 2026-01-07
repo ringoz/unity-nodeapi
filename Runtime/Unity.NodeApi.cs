@@ -143,7 +143,7 @@ public class GameObject : BaseObject
 
     var c = renderer.bounds.center;
     var e = renderer.bounds.extents;
-    var worldCorners = new[]
+    var corners = new[]
     {
       new Vector3( c.x + e.x, c.y + e.y, c.z + e.z ),
       new Vector3( c.x + e.x, c.y + e.y, c.z - e.z ),
@@ -153,13 +153,12 @@ public class GameObject : BaseObject
       new Vector3( c.x - e.x, c.y + e.y, c.z - e.z ),
       new Vector3( c.x - e.x, c.y - e.y, c.z + e.z ),
       new Vector3( c.x - e.x, c.y - e.y, c.z - e.z ),
-    };
+    }.Select(corner => Camera.main.WorldToScreenPoint(corner));
 
-    var screenCorners = worldCorners.Select(corner => Camera.main.WorldToScreenPoint(corner));
-    var maxX = screenCorners.Max(corner => corner.x) * 96 / Screen.dpi;
-    var minX = screenCorners.Min(corner => corner.x) * 96 / Screen.dpi;
-    var maxY = screenCorners.Max(corner => Screen.height - corner.y) * 96 / Screen.dpi;
-    var minY = screenCorners.Min(corner => Screen.height - corner.y) * 96 / Screen.dpi;
+    var maxX = corners.Max(corner => corner.x) * 96 / Screen.dpi;
+    var minX = corners.Min(corner => corner.x) * 96 / Screen.dpi;
+    var maxY = corners.Max(corner => Screen.height - corner.y) * 96 / Screen.dpi;
+    var minY = corners.Min(corner => Screen.height - corner.y) * 96 / Screen.dpi;
     return new Rect() { x = minX, y = minY, width = maxX - minX, height = maxY - minY };
   }
 }
