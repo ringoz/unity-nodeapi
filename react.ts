@@ -2,9 +2,10 @@
  Copyright (c) Vladimir Davidovich. All rights reserved.
 ***********************************************************************/
 
+import { createElement, lazy } from 'react';
 import Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { GameObject } from '.';
+import { BaseObject, GameObject } from '.';
 import * as FiberConfig from './reconciler.ts';
 
 const reconciler = Reconciler(FiberConfig);
@@ -47,4 +48,13 @@ export function createRoot(parent: GameObject) {
       return Promise.resolve();
     }
   };
+}
+
+export function prefab(path: string) {
+  return lazy(async () => {
+    const $$$ = await BaseObject.loadAsync(path);
+    const fun = (props: any) => createElement("", { $$$, ...props });
+    fun.displayName = path;
+    return { default: fun };
+  });
 }

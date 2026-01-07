@@ -30,13 +30,15 @@ export class Instance {
 }
 
 export class BaseObject extends Instance {
+	static loadAsync(path: string): Promise<BaseObject>;
+
 	dispose(): void;
 }
 
 export class GameObject extends BaseObject {
 	static find(name: string): GameObject;
 
-	static create(type: string): GameObject;
+	static create(type: Object): GameObject;
 
 	setActive(value: boolean): void;
 
@@ -49,7 +51,7 @@ export class GameObject extends BaseObject {
 }
 
 export class Component extends BaseObject {
-	static create(type: string): Component;
+	static create(type: Object): Component;
 
 	dispose(): void;
 

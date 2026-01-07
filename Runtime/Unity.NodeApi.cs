@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -39,6 +40,14 @@ public class BaseObject : Instance
 {
   protected BaseObject(object obj) : base(obj) { }
 
+  private static BaseObject Wrap(UnityEngine.Object obj) => obj ? new BaseObject(obj) : null;
+  public static async Task<BaseObject> LoadAsync(string path)
+  {
+    var request = Resources.LoadAsync(path);
+    await request;
+    return Wrap(request.asset);
+  }
+
   public override void Dispose()
   {
     UnityEngine.Object.Destroy((UnityEngine.Object)mObj);
@@ -67,10 +76,11 @@ public class GameObject : BaseObject
     }
   }
 
-  public static GameObject Create(string type)
+  public static GameObject Create(object type)
   {
     var obj = type switch
     {
+      BaseObject prefab => Wrap(UnityEngine.Object.Instantiate((UnityEngine.GameObject)prefab.mObj)),
       "object" => Wrap(new UnityEngine.GameObject()),
       "sphere" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Sphere)),
       "capsule" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Capsule)),
@@ -78,7 +88,8 @@ public class GameObject : BaseObject
       "cube" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cube)),
       "plane" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Plane)),
       "quad" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Quad)),
-      _ => Wrap(UnityEngine.Object.Instantiate(Resources.Load(type)) as UnityEngine.GameObject)
+      string path => Wrap(UnityEngine.Object.Instantiate(Resources.Load<UnityEngine.GameObject>(path))),
+      _ => null
     };
     obj?.SetParent(null);
     return obj;
@@ -116,10 +127,10 @@ public class Component : BaseObject
 {
   protected Component(Type type) : base(new Dictionary<string, object>() { { string.Empty, type } }) { }
 
-  public static Component Create(string type) => type switch
+  public static Component Create(object type) => type switch
   {
     "transform" => new Component(typeof(UnityEngine.Transform)),
-    _ => null,
+    _ => null
   };
 
   public override void Dispose()

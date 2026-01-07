@@ -25,8 +25,9 @@ type HostContext = any;
 const EMPTY = Object.freeze({});
 
 export function createInstance<T extends Instance>(type: Type, props: Props, root: Container, hostContext: HostContext, internalHandle: Reconciler.OpaqueHandle): T {
-  const instance = (Component.create(type) ?? GameObject.create(type)) as T;
-  commitUpdate(instance, type, EMPTY, props, internalHandle);
+  const { $$$, ...rest } = props;
+  const instance = (Component.create($$$ ?? type) ?? GameObject.create($$$ ?? type)) as T;
+  commitUpdate(instance, type, EMPTY, rest, internalHandle);
   return instance;
 }
 
