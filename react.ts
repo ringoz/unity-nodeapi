@@ -50,7 +50,7 @@ export function createRoot(parent: GameObject) {
   };
 }
 
-export function prefab(path: string) {
+export function /* @__PURE__ */ prefab(path: string) {
   return lazy(async () => {
     const $$$ = await BaseObject.loadAsync(path);
     const fun = (props: any) => createElement("", { $$$, ...props });
