@@ -162,7 +162,9 @@ public class Component : BaseObject
 
   static Component()
   {
-    Types.Add(typeof(UnityEngine.Transform).AsKeyValuePair());
+    var types = PropertyBag.GetAllTypesWithAPropertyBag();
+    foreach (var type in types.Where(type => type.IsSubclassOf(typeof(UnityEngine.Component))))
+      Types.Add(KeyValuePair.Create(type.Name.Uncapitalize(), type));
   }
 
   protected Component(Type type) : base(new Dictionary<string, object>() { { string.Empty, type } }) { }
@@ -228,8 +230,6 @@ public class Component : BaseObject
 public static class UnityNodeApi
 {
   public static string Uncapitalize(this string s) => char.ToLower(s[0]) + s.Substring(1);
-
-  public static KeyValuePair<string, Type> AsKeyValuePair(this Type t) => KeyValuePair.Create(t.Name.Uncapitalize(), t);
 
   public static IEnumerable<T> AsVector<T>(this string source) => source.Split(' ').Select(s => TypeConversion.Convert<string, T>(ref s));
 
