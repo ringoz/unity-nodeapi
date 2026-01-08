@@ -50,10 +50,12 @@ export class Instance {
 }
 
 export class BaseObject extends Instance {
-	static loadAsync(path: string): Promise<BaseObject>;
+	static loadAsync: BaseObject.Loader;
 
 	dispose(): void;
 }
+
+export interface Loader { (path: string): Promise<Object>; }
 
 export class GameObject extends BaseObject {
 	static find(name: string): GameObject;

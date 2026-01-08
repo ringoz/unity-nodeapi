@@ -54,13 +54,13 @@ public class BaseObject : Instance
 {
   protected BaseObject(object obj) : base(obj) { }
 
-  private static BaseObject Wrap(UnityEngine.Object obj) => obj ? new BaseObject(obj) : null;
-  public static async Task<BaseObject> LoadAsync(string path)
+  public delegate Task<object> Loader(string path);
+  public static Loader LoadAsync { get; set; } = async (string path) =>
   {
     var request = Resources.LoadAsync(path);
     await request;
-    return Wrap(request.asset);
-  }
+    return request.asset;
+  };
 
   public override void Dispose()
   {
@@ -94,7 +94,7 @@ public class GameObject : BaseObject
   {
     var obj = kind switch
     {
-      BaseObject prefab => (UnityEngine.GameObject)prefab.mObj,
+      UnityEngine.GameObject prefab => prefab,
       string path => Resources.Load<UnityEngine.GameObject>(path),
       _ => null
     };
