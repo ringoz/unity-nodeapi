@@ -1146,6 +1146,44 @@ function _napi_get_arraybuffer_info(env, arraybuffer, data, byte_length) {
 /**
  * @__sig ippp
  */
+function _node_api_set_prototype(env, object, value) {
+    if (!env)
+        return 1 /* napi_status.napi_invalid_arg */;
+    // @ts-expect-error
+    var envObject = emnapiCtx.envStore.get(env);
+    envObject.checkGCAccess();
+    if (!envObject.tryCatch.isEmpty())
+        return envObject.setLastError(10 /* napi_status.napi_pending_exception */);
+    if (!envObject.canCallIntoJs())
+        return envObject.setLastError(envObject.moduleApiVersion >= 10 ? 23 /* napi_status.napi_cannot_run_js */ : 10 /* napi_status.napi_pending_exception */);
+    envObject.clearLastError();
+    try {
+        if (!value)
+            return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
+        var obj = emnapiCtx.handleStore.get(object).value;
+        if (obj == null) {
+            throw new TypeError('Cannot convert undefined or null to object');
+        }
+        var type = typeof obj;
+        var v = void 0;
+        try {
+            v = (type === 'object' && obj !== null) || type === 'function' ? obj : Object(obj);
+        }
+        catch (_) {
+            return envObject.setLastError(2 /* napi_status.napi_object_expected */);
+        }
+        var val = emnapiCtx.handleStore.get(value).value;
+        Object.setPrototypeOf(v, val);
+        return envObject.getReturnStatus();
+    }
+    catch (err) {
+        envObject.tryCatch.setError(err);
+        return envObject.setLastError(10 /* napi_status.napi_pending_exception */);
+    }
+}
+/**
+ * @__sig ippp
+ */
 function _napi_get_prototype(env, value, result) {
     if (!env)
         return 1 /* napi_status.napi_invalid_arg */;
@@ -1223,6 +1261,9 @@ function _napi_get_typedarray_info(env, typedarray, type, length, data, arraybuf
         }
         else if (v instanceof Uint32Array) {
             t = 6 /* napi_typedarray_type.napi_uint32_array */;
+        }
+        else if (typeof Float16Array === 'function' && v instanceof Float16Array) {
+            t = 11 /* napi_typedarray_type.napi_float16_array */;
         }
         else if (v instanceof Float32Array) {
             t = 7 /* napi_typedarray_type.napi_float32_array */;
@@ -2574,6 +2615,12 @@ function _emnapi_create_memory_view(env, typedarray_type, external_data, byte_le
             case -1 /* emnapi_memory_view_type.emnapi_data_view */:
                 viewDescriptor = { Ctor: DataView, address: external_data, length: byte_length, ownership: 1 /* ReferenceOwnership.kUserland */, runtimeAllocated: 0 };
                 break;
+            case 11 /* emnapi_memory_view_type.emnapi_float16_array */:
+                if (typeof Float16Array !== 'function') {
+                    return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
+                }
+                viewDescriptor = { Ctor: Float16Array, address: external_data, length: byte_length >> 1, ownership: 1 /* ReferenceOwnership.kUserland */, runtimeAllocated: 0 };
+                break;
             case -2 /* emnapi_memory_view_type.emnapi_buffer */: {
                 if (!emnapiCtx.feature.Buffer) {
                     throw emnapiCtx.createNotSupportBufferError('emnapi_create_memory_view', '');
@@ -3236,6 +3283,11 @@ function _napi_create_typedarray(env, type, length, arraybuffer, byte_offset, re
                 return createTypedArray(envObject, BigInt64Array, 8, buffer, byte_offset, length);
             case 10 /* napi_typedarray_type.napi_biguint64_array */:
                 return createTypedArray(envObject, BigUint64Array, 8, buffer, byte_offset, length);
+            case 11 /* napi_typedarray_type.napi_float16_array */:
+                if (typeof Float16Array !== 'function') {
+                    return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
+                }
+                return createTypedArray(envObject, Float16Array, 2, buffer, byte_offset, length);
             default:
                 return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         }
@@ -7353,6 +7405,9 @@ function _napi_get_version(env, result) {
     node_api_post_finalizer: _node_api_post_finalizer,
     node_api_post_finalizer__deps: ["$emnapiCtx"],
     node_api_post_finalizer__sig: "ipppp",
+    node_api_set_prototype: _node_api_set_prototype,
+    node_api_set_prototype__deps: ["$emnapiCtx"],
+    node_api_set_prototype__sig: "ippp",
     node_api_symbol_for: _node_api_symbol_for,
     node_api_symbol_for__deps: ["$emnapiCtx", "$emnapiString"],
     node_api_symbol_for__sig: "ipppp",
