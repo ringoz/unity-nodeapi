@@ -94,19 +94,11 @@ public class GameObject : BaseObject
   {
     var obj = kind switch
     {
-      BaseObject prefab => Wrap(UnityEngine.Object.Instantiate((UnityEngine.GameObject)prefab.mObj)),
-      "object" => Wrap(new UnityEngine.GameObject()),
-      "sphere" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Sphere)),
-      "capsule" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Capsule)),
-      "cylinder" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cylinder)),
-      "cube" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cube)),
-      "plane" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Plane)),
-      "quad" => Wrap(UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Quad)),
-      string path => Wrap(UnityEngine.Object.Instantiate(Resources.Load<UnityEngine.GameObject>(path))),
+      BaseObject prefab => (UnityEngine.GameObject)prefab.mObj,
+      string path => Resources.Load<UnityEngine.GameObject>(path),
       _ => null
     };
-    obj?.SetParent(null);
-    return obj;
+    return obj ? Wrap(UnityEngine.Object.Instantiate(obj, ((UnityEngine.GameObject)Null.mObj).transform, false)) : null;
   }
 
   public override void SetActive(bool value)
