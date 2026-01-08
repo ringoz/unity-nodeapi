@@ -13,9 +13,9 @@ using UnityEngine.Scripting;
 using Unity.Properties;
 
 [assembly: AlwaysLinkAssembly]
-[assembly: GeneratePropertyBagsForType(typeof(UnityEngine.GameObject))]
-[assembly: GeneratePropertyBagsForType(typeof(UnityEngine.Transform))]
-[assembly: GeneratePropertyBagsForType(typeof(UnityEngine.Behaviour))]
+[assembly: GeneratePropertyBagsForType(typeof(GameObject))]
+[assembly: GeneratePropertyBagsForType(typeof(Transform))]
+[assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
 
 [JSExport]
 public struct Rect
@@ -31,28 +31,28 @@ public struct Rect
 }
 
 [JSExport]
-public class Instance : IDisposable
+public class Element : IDisposable
 {
   internal object mObj;
 
-  protected Instance(object obj) => mObj = obj;
+  protected Element(object obj) => mObj = obj;
   public virtual void Dispose() => (mObj as IDisposable)?.Dispose();
 
-  public override bool Equals(object obj) => (obj is Instance instance) ? obj.Equals(instance.mObj) : base.Equals(obj);
+  public override bool Equals(object obj) => (obj is Element instance) ? obj.Equals(instance.mObj) : base.Equals(obj);
   public override int GetHashCode() => mObj.GetHashCode();
   public override string ToString() => PropertiezDump.ToString(mObj);
 
   public virtual void SetProperty(string key, object value) => PropertyContainer.SetValue(mObj, key, value?.ToString());
   public virtual void SetActive(bool value) => throw new NotImplementedException();
-  public virtual void SetParent(Instance parent, Instance beforeChild = null) => throw new NotImplementedException();
+  public virtual void SetParent(Element parent, Element beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
   public virtual Rect GetBoundingClientRect() => default;
 }
 
 [JSExport]
-public class BaseObject : Instance
+public class ObjectElement : Element
 {
-  protected BaseObject(object obj) : base(obj) { }
+  protected ObjectElement(object obj) : base(obj) { }
 
   public delegate Task<object> Loader(string path);
   public static Loader LoadAsync { get; set; } = async (string path) =>
@@ -69,53 +69,53 @@ public class BaseObject : Instance
 }
 
 [JSExport]
-public class GameObject : BaseObject
+public class GameObjectElement : ObjectElement
 {
-  protected GameObject(object obj) : base(obj) { }
+  protected GameObjectElement(object obj) : base(obj) { }
 
-  private static GameObject Wrap(UnityEngine.GameObject obj) => obj ? new GameObject(obj) : null;
-  public static GameObject Find(string name) => Wrap(UnityEngine.GameObject.Find(name));
+  private static GameObjectElement Wrap(GameObject obj) => obj ? new GameObjectElement(obj) : null;
+  public static GameObjectElement Find(string name) => Wrap(GameObject.Find(name));
 
-  private static GameObject _null = new GameObject(null);
-  private static GameObject Null
+  private static GameObjectElement _null = new GameObjectElement(null);
+  private static GameObjectElement Null
   {
     get
     {
       if (_null.mObj == null)
       {
-        _null.mObj = new UnityEngine.GameObject();
+        _null.mObj = new GameObject();
         _null.SetActive(false);
       }
       return _null;
     }
   }
 
-  public static GameObject Create(object kind)
+  public static GameObjectElement Create(object kind)
   {
     var obj = kind switch
     {
-      UnityEngine.GameObject prefab => prefab,
-      string path => Resources.Load<UnityEngine.GameObject>(path),
+      GameObject prefab => prefab,
+      string path => Resources.Load<GameObject>(path),
       _ => null
     };
-    return obj ? Wrap(UnityEngine.Object.Instantiate(obj, ((UnityEngine.GameObject)Null.mObj).transform, false)) : null;
+    return obj ? Wrap(UnityEngine.Object.Instantiate(obj, ((GameObject)Null.mObj).transform, false)) : null;
   }
 
   public override void SetActive(bool value)
   {
-    ((UnityEngine.GameObject)mObj).SetActive(value);
+    ((GameObject)mObj).SetActive(value);
   }
 
-  public override void SetParent(Instance parent, Instance beforeChild = null)
+  public override void SetParent(Element parent, Element beforeChild = null)
   {
     if (parent == null)
       parent = Null;
 
-    if (parent.mObj is UnityEngine.GameObject)
+    if (parent.mObj is GameObject)
     {
-      ((UnityEngine.GameObject)mObj).transform.SetParent(((UnityEngine.GameObject)parent.mObj).transform, false);
-      if (beforeChild is GameObject)
-        ((UnityEngine.GameObject)mObj).transform.SetSiblingIndex(((UnityEngine.GameObject)beforeChild.mObj).transform.GetSiblingIndex());
+      ((GameObject)mObj).transform.SetParent(((GameObject)parent.mObj).transform, false);
+      if (beforeChild is GameObjectElement)
+        ((GameObject)mObj).transform.SetSiblingIndex(((GameObject)beforeChild.mObj).transform.GetSiblingIndex());
     }
     else
       base.SetParent(parent, beforeChild);
@@ -123,13 +123,13 @@ public class GameObject : BaseObject
 
   public override void Clear()
   {
-    foreach (UnityEngine.Transform child in ((UnityEngine.GameObject)mObj).transform)
-      child.SetParent(((UnityEngine.GameObject)Null.mObj).transform, false);
+    foreach (Transform child in ((GameObject)mObj).transform)
+      child.SetParent(((GameObject)Null.mObj).transform, false);
   }
 
   public override Rect GetBoundingClientRect()
   {
-    var renderer = ((UnityEngine.GameObject)mObj).GetComponent<Renderer>();
+    var renderer = ((GameObject)mObj).GetComponent<Renderer>();
     if (renderer == null)
       return base.GetBoundingClientRect();
 
@@ -156,30 +156,30 @@ public class GameObject : BaseObject
 }
 
 [JSExport]
-public class Component : BaseObject
+public class ComponentElement : ObjectElement
 {
   public static IDictionary<string, Type> Types { get; } = new Dictionary<string, Type>();
 
-  static Component()
+  static ComponentElement()
   {
     var types = PropertyBag.GetAllTypesWithAPropertyBag();
-    foreach (var type in types.Where(type => type.IsSubclassOf(typeof(UnityEngine.Component))))
+    foreach (var type in types.Where(type => type.IsSubclassOf(typeof(Component))))
       Types.Add(KeyValuePair.Create(type.Name.Uncapitalize(), type));
   }
 
-  protected Component(Type type) : base(new Dictionary<string, object>() { { string.Empty, type } }) { }
+  protected ComponentElement(Type type) : base(new Dictionary<string, object>() { { string.Empty, type } }) { }
 
-  public static Component Create(object kind) => kind switch
+  public static ComponentElement Create(object kind) => kind switch
   {
-    Type type => new Component(type),
-    string path => Types.TryGetValue(path, out Type type) ? new Component(type) : null,
+    Type type => new ComponentElement(type),
+    string path => Types.TryGetValue(path, out Type type) ? new ComponentElement(type) : null,
     _ => null
   };
 
   public override void Dispose()
   {
     // Destroying the transform component is not allowed.
-    if (mObj is UnityEngine.Transform transform)
+    if (mObj is Transform transform)
     {
       transform.localPosition = Vector3.zero;
       transform.localRotation = Quaternion.identity;
@@ -200,13 +200,13 @@ public class Component : BaseObject
 
   public override void SetActive(bool value)
   {
-    if (mObj is UnityEngine.Behaviour)
-      ((UnityEngine.Behaviour)mObj).enabled = value;
+    if (mObj is Behaviour)
+      ((Behaviour)mObj).enabled = value;
     else
       base.SetActive(value);
   }
 
-  public override void SetParent(Instance parent, Instance beforeChild = null)
+  public override void SetParent(Element parent, Element beforeChild = null)
   {
     if (parent == null)
     {
@@ -214,10 +214,10 @@ public class Component : BaseObject
       return;
     }
 
-    if (parent.mObj is UnityEngine.GameObject && mObj is Dictionary<string, object> props)
+    if (parent.mObj is GameObject && mObj is Dictionary<string, object> props)
     {
       var type = (Type)props[string.Empty];
-      mObj = ((UnityEngine.GameObject)parent.mObj).GetComponent(type) ?? ((UnityEngine.GameObject)parent.mObj).AddComponent(type);
+      mObj = ((GameObject)parent.mObj).GetComponent(type) ?? ((GameObject)parent.mObj).AddComponent(type);
       foreach (var prop in props)
         if (prop.Key != string.Empty)
           base.SetProperty(prop.Key, prop.Value);

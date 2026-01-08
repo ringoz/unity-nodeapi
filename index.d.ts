@@ -23,7 +23,7 @@ export class Rect extends ValueType {
 	readonly bottom: number;
 }
 
-export class Instance {
+export class Element {
 	dispose(): void;
 
 	equals(obj: Object): boolean;
@@ -40,8 +40,8 @@ export class Instance {
 	setActive(value: boolean): void;
 
 	setParent(
-		parent: Instance,
-		beforeChild?: Instance,
+		parent: Element,
+		beforeChild?: Element,
 	): void;
 
 	clear(): void;
@@ -49,24 +49,24 @@ export class Instance {
 	getBoundingClientRect(): Rect;
 }
 
-export class BaseObject extends Instance {
-	static loadAsync: BaseObject.Loader;
+export class ObjectElement extends Element {
+	static loadAsync: ObjectElement.Loader;
 
 	dispose(): void;
 }
 
 export interface Loader { (path: string): Promise<Object>; }
 
-export class GameObject extends BaseObject {
-	static find(name: string): GameObject;
+export class GameObjectElement extends ObjectElement {
+	static find(name: string): GameObjectElement;
 
-	static create(kind: Object): GameObject;
+	static create(kind: Object): GameObjectElement;
 
 	setActive(value: boolean): void;
 
 	setParent(
-		parent: Instance,
-		beforeChild?: Instance,
+		parent: Element,
+		beforeChild?: Element,
 	): void;
 
 	clear(): void;
@@ -74,10 +74,10 @@ export class GameObject extends BaseObject {
 	getBoundingClientRect(): Rect;
 }
 
-export class Component extends BaseObject {
+export class ComponentElement extends ObjectElement {
 	static readonly types: Map<string, Type>;
 
-	static create(kind: Object): Component;
+	static create(kind: Object): ComponentElement;
 
 	dispose(): void;
 
@@ -89,7 +89,7 @@ export class Component extends BaseObject {
 	setActive(value: boolean): void;
 
 	setParent(
-		parent: Instance,
-		beforeChild?: Instance,
+		parent: Element,
+		beforeChild?: Element,
 	): void;
 }

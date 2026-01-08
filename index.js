@@ -8,8 +8,8 @@ export default exports;
 
 export const {
 	Rect,
-	Instance,
-	BaseObject,
-	GameObject,
-	Component,
+	Element,
+	ObjectElement,
+	GameObjectElement,
+	ComponentElement,
 } = exports;
