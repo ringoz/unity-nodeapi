@@ -4,7 +4,7 @@
 
 import type Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { Component, GameObject, Instance } from '.';
+import { Element } from '.';
 import { name as packageName, version as packageVersion } from './package.json';
 
 export const rendererPackageName = packageName;
@@ -16,28 +16,28 @@ export const isPrimaryRenderer = true;
 
 type Type = string;
 type Props = Record<string, any>;
-type Container = Instance;
-type TextInstance = Instance;
-type SuspenseInstance = Instance;
-type PublicInstance = Instance;
+type Container = Element;
+type TextElement = Element;
+type SuspenseElement = Element;
+type PublicElement = Element;
 type HostContext = any;
 
 const EMPTY = Object.freeze({});
 
-export function createInstance<T extends Instance>(type: Type, props: Props, root: Container, hostContext: HostContext, internalHandle: Reconciler.OpaqueHandle): T {
+export function createInstance<T extends Element>(type: Type, props: Props, root: Container, hostContext: HostContext, internalHandle: Reconciler.OpaqueHandle): T {
   const { $$$, ...rest } = props;
-  const instance = (Component.create($$$ ?? type) ?? GameObject.create($$$ ?? type)) as T;
+  const instance = Element.create($$$ ?? type) as T;
   commitUpdate(instance, type, EMPTY, rest, internalHandle);
   return instance;
 }
 
-export function createTextInstance(text: string, root: Container, hostContext: HostContext, internalHandle: Reconciler.OpaqueHandle): TextInstance {
+export function createTextInstance(text: string, root: Container, hostContext: HostContext, internalHandle: Reconciler.OpaqueHandle): TextElement {
   throw new Error('Method not implemented.');
 }
 
 export const appendInitialChild = appendChild;
 
-export function finalizeInitialChildren(instance: Instance, type: Type, props: Props, root: Container, hostContext: HostContext): boolean {
+export function finalizeInitialChildren(instance: Element, type: Type, props: Props, root: Container, hostContext: HostContext): boolean {
   return false;
 }
 
@@ -53,7 +53,7 @@ export function getChildHostContext(parentHostContext: HostContext, type: Type, 
   return parentHostContext;
 }
 
-export function getPublicInstance(instance: Instance | TextInstance): PublicInstance {
+export function getPublicInstance(instance: Element | TextElement): PublicElement {
   return instance;
 }
 
@@ -155,11 +155,11 @@ export function prepareScopeUpdate(scopeInstance: any, instance: any): void {
   throw new Error('Method not implemented.');
 }
 
-export function getInstanceFromScope(scopeInstance: any): Instance | null {
+export function getInstanceFromScope(scopeInstance: any): Element | null {
   throw new Error('Method not implemented.');
 }
 
-export function detachDeletedInstance(node: Instance): void {
+export function detachDeletedInstance(node: Element): void {
   node.dispose();
 }
 
@@ -181,50 +181,50 @@ export function waitForCommitToBeReady() {
   return null;
 }
 
-export function appendChild(parentInstance: Instance, child: Instance | TextInstance): void {
+export function appendChild(parentInstance: Element, child: Element | TextElement): void {
   child.setParent(parentInstance);
 }
 
-export function appendChildToContainer(container: Container, child: Instance | TextInstance): void {
+export function appendChildToContainer(container: Container, child: Element | TextElement): void {
   appendChild(container, child);
 }
 
-export function insertBefore(parentInstance: Instance, child: Instance | TextInstance, beforeChild: Instance | TextInstance | SuspenseInstance): void {
+export function insertBefore(parentInstance: Element, child: Element | TextElement, beforeChild: Element | TextElement | SuspenseElement): void {
   child.setParent(parentInstance, beforeChild);
 }
 
-export function insertInContainerBefore(container: Container, child: Instance | TextInstance, beforeChild: Instance | TextInstance | SuspenseInstance): void {
+export function insertInContainerBefore(container: Container, child: Element | TextElement, beforeChild: Element | TextElement | SuspenseElement): void {
   insertBefore(container, child, beforeChild);
 }
 
-export function removeChild(parentInstance: Instance, child: Instance | TextInstance | SuspenseInstance): void {
+export function removeChild(parentInstance: Element, child: Element | TextElement | SuspenseElement): void {
   child.setParent(null!);
 }
 
-export function removeChildFromContainer(container: Container, child: Instance | TextInstance | SuspenseInstance): void {
+export function removeChildFromContainer(container: Container, child: Element | TextElement | SuspenseElement): void {
   removeChild(container, child);
 }
 
-export function resetTextContent(instance: Instance): void {
+export function resetTextContent(instance: Element): void {
   throw new Error('Method not implemented.');
 }
 
-export function commitTextUpdate(textInstance: TextInstance, oldText: string, newText: string): void {
+export function commitTextUpdate(textInstance: TextElement, oldText: string, newText: string): void {
   throw new Error('Method not implemented.');
 }
 
-export function commitMount(instance: Instance, type: Type, props: Props, internalInstanceHandle: Reconciler.OpaqueHandle): void {
+export function commitMount(instance: Element, type: Type, props: Props, internalInstanceHandle: Reconciler.OpaqueHandle): void {
   throw new Error('Method not implemented.');
 }
 
 function isEqual(a: any, b: any) {
   if (a === b) return true;
-  if (a instanceof Instance && b instanceof Instance && a.equals(b)) return true;
+  if (a instanceof Element && b instanceof Element && a.equals(b)) return true;
   if (Array.isArray(a) && Array.isArray(b) && a.every((v, i) => v === b[i])) return true;
   return false;
 }
 
-export function commitUpdate(instance: Instance, type: Type, prevProps: Props, nextProps: Props, internalHandle: Reconciler.OpaqueHandle): void {
+export function commitUpdate(instance: Element, type: Type, prevProps: Props, nextProps: Props, internalHandle: Reconciler.OpaqueHandle): void {
   const { ref: refOld, children: childrenOld, ...restOld } = prevProps;
   const { ref: refNew, children: childrenNew, ...restNew } = nextProps;
 
@@ -241,13 +241,13 @@ export function commitUpdate(instance: Instance, type: Type, prevProps: Props, n
   }
 }
 
-export function hideInstance(instance: Instance | TextInstance): void {
+export function hideInstance(instance: Element | TextElement): void {
   instance.setActive(false);
 }
 
 export const hideTextInstance = hideInstance;
 
-export function unhideInstance(instance: Instance | TextInstance): void {
+export function unhideInstance(instance: Element | TextElement): void {
   instance.setActive(true);
 }
 

@@ -17,6 +17,13 @@ using Unity.Properties;
 [assembly: GeneratePropertyBagsForType(typeof(Transform))]
 [assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
 
+static class Extensions
+{
+  public static string Uncapitalize(this string s) => char.ToLower(s[0]) + s.Substring(1);
+
+  public static IEnumerable<T> AsVector<T>(this string source) => source.Split(' ').Select(s => TypeConversion.Convert<string, T>(ref s));
+}
+
 [JSExport]
 public struct Rect
 {
@@ -31,8 +38,21 @@ public struct Rect
 }
 
 [JSExport]
+public delegate Task<object> Loader(string path);
+
+[JSExport]
 public class Element : IDisposable
 {
+  static Element()
+  {
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<int>(); return new Vector2Int(p.ElementAt(0), p.ElementAt(1)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<int>(); return new Vector3Int(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector2(p.ElementAt(0), p.ElementAt(1)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector3(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector4(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2), p.ElementAt(3)); });
+    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Quaternion(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2), p.ElementAt(3)); });
+  }
+
   internal object mObj;
 
   protected Element(object obj) => mObj = obj;
@@ -47,20 +67,21 @@ public class Element : IDisposable
   public virtual void SetParent(Element parent, Element beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
   public virtual Rect GetBoundingClientRect() => default;
-}
 
-[JSExport]
-public class ObjectElement : Element
-{
-  protected ObjectElement(object obj) : base(obj) { }
+  public static Element Create(object kind) => ComponentElement.Create(kind) ?? GameObjectElement.Create(kind);
+  public static Element Search(string name) => GameObjectElement.Find(name);
 
-  public delegate Task<object> Loader(string path);
-  public static Loader LoadAsync { get; set; } = async (string path) =>
+  public static Loader LoadAssetAsync { get; set; } = async (string path) =>
   {
     var request = Resources.LoadAsync(path);
     await request;
     return request.asset;
   };
+}
+
+class ObjectElement : Element
+{
+  protected ObjectElement(object obj) : base(obj) { }
 
   public override void Dispose()
   {
@@ -68,12 +89,11 @@ public class ObjectElement : Element
   }
 }
 
-[JSExport]
-public class GameObjectElement : ObjectElement
+class GameObjectElement : ObjectElement
 {
   protected GameObjectElement(object obj) : base(obj) { }
 
-  private static GameObjectElement Wrap(GameObject obj) => obj ? new GameObjectElement(obj) : null;
+  public static GameObjectElement Wrap(GameObject obj) => obj ? new GameObjectElement(obj) : null;
   public static GameObjectElement Find(string name) => Wrap(GameObject.Find(name));
 
   private static GameObjectElement _null = new GameObjectElement(null);
@@ -90,7 +110,7 @@ public class GameObjectElement : ObjectElement
     }
   }
 
-  public static GameObjectElement Create(object kind)
+  public static new Element Create(object kind)
   {
     var obj = kind switch
     {
@@ -155,8 +175,7 @@ public class GameObjectElement : ObjectElement
   }
 }
 
-[JSExport]
-public class ComponentElement : ObjectElement
+class ComponentElement : ObjectElement
 {
   public static IDictionary<string, Type> Types { get; } = new Dictionary<string, Type>();
 
@@ -169,7 +188,7 @@ public class ComponentElement : ObjectElement
 
   protected ComponentElement(Type type) : base(new Dictionary<string, object>() { { string.Empty, type } }) { }
 
-  public static ComponentElement Create(object kind) => kind switch
+  public static new Element Create(object kind) => kind switch
   {
     Type type => new ComponentElement(type),
     string path => Types.TryGetValue(path, out Type type) ? new ComponentElement(type) : null,
@@ -224,23 +243,5 @@ public class ComponentElement : ObjectElement
     }
     else
       base.SetParent(parent, beforeChild);
-  }
-}
-
-public static class UnityNodeApi
-{
-  public static string Uncapitalize(this string s) => char.ToLower(s[0]) + s.Substring(1);
-
-  public static IEnumerable<T> AsVector<T>(this string source) => source.Split(' ').Select(s => TypeConversion.Convert<string, T>(ref s));
-
-  [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-  static void Init()
-  {
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<int>(); return new Vector2Int(p.ElementAt(0), p.ElementAt(1)); });
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<int>(); return new Vector3Int(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2)); });
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector2(p.ElementAt(0), p.ElementAt(1)); });
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector3(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2)); });
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector4(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2), p.ElementAt(3)); });
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Quaternion(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2), p.ElementAt(3)); });
   }
 }

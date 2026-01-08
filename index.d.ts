@@ -23,7 +23,11 @@ export class Rect extends ValueType {
 	readonly bottom: number;
 }
 
+export interface Loader { (path: string): Promise<Object>; }
+
 export class Element {
+	static loadAssetAsync: Loader;
+
 	dispose(): void;
 
 	equals(obj: Object): boolean;
@@ -47,49 +51,8 @@ export class Element {
 	clear(): void;
 
 	getBoundingClientRect(): Rect;
-}
 
-export class ObjectElement extends Element {
-	static loadAsync: ObjectElement.Loader;
+	static create(kind: Object): Element;
 
-	dispose(): void;
-}
-
-export interface Loader { (path: string): Promise<Object>; }
-
-export class GameObjectElement extends ObjectElement {
-	static find(name: string): GameObjectElement;
-
-	static create(kind: Object): GameObjectElement;
-
-	setActive(value: boolean): void;
-
-	setParent(
-		parent: Element,
-		beforeChild?: Element,
-	): void;
-
-	clear(): void;
-
-	getBoundingClientRect(): Rect;
-}
-
-export class ComponentElement extends ObjectElement {
-	static readonly types: Map<string, Type>;
-
-	static create(kind: Object): ComponentElement;
-
-	dispose(): void;
-
-	setProperty(
-		key: string,
-		value: Object,
-	): void;
-
-	setActive(value: boolean): void;
-
-	setParent(
-		parent: Element,
-		beforeChild?: Element,
-	): void;
+	static search(name: string): Element;
 }
