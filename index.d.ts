@@ -58,7 +58,7 @@ export class BaseObject extends Instance {
 export class GameObject extends BaseObject {
 	static find(name: string): GameObject;
 
-	static create(type: Object): GameObject;
+	static create(kind: Object): GameObject;
 
 	setActive(value: boolean): void;
 
@@ -73,7 +73,9 @@ export class GameObject extends BaseObject {
 }
 
 export class Component extends BaseObject {
-	static create(type: Object): Component;
+	static readonly types: Map<string, Type>;
+
+	static create(kind: Object): Component;
 
 	dispose(): void;
 

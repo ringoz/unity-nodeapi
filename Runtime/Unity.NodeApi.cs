@@ -90,9 +90,9 @@ public class GameObject : BaseObject
     }
   }
 
-  public static GameObject Create(object type)
+  public static GameObject Create(object kind)
   {
-    var obj = type switch
+    var obj = kind switch
     {
       BaseObject prefab => Wrap(UnityEngine.Object.Instantiate((UnityEngine.GameObject)prefab.mObj)),
       "object" => Wrap(new UnityEngine.GameObject()),
@@ -166,11 +166,19 @@ public class GameObject : BaseObject
 [JSExport]
 public class Component : BaseObject
 {
+  public static IDictionary<string, Type> Types { get; } = new Dictionary<string, Type>();
+
+  static Component()
+  {
+    Types.Add(typeof(UnityEngine.Transform).AsKeyValuePair());
+  }
+
   protected Component(Type type) : base(new Dictionary<string, object>() { { string.Empty, type } }) { }
 
-  public static Component Create(object type) => type switch
+  public static Component Create(object kind) => kind switch
   {
-    "transform" => new Component(typeof(UnityEngine.Transform)),
+    Type type => new Component(type),
+    string path => Types.TryGetValue(path, out Type type) ? new Component(type) : null,
     _ => null
   };
 
@@ -227,6 +235,10 @@ public class Component : BaseObject
 
 public static class UnityNodeApi
 {
+  public static string Uncapitalize(this string s) => char.ToLower(s[0]) + s.Substring(1);
+
+  public static KeyValuePair<string, Type> AsKeyValuePair(this Type t) => KeyValuePair.Create(t.Name.Uncapitalize(), t);
+
   public static IEnumerable<T> AsVector<T>(this string source) => source.Split(' ').Select(s => TypeConversion.Convert<string, T>(ref s));
 
   [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
