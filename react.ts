@@ -50,11 +50,45 @@ export function createRoot(parent: Element) {
   };
 }
 
-export function /* @__PURE__ */ prefab(path: string) {
+type Vector3 = number[];
+
+interface Object {
+  name: string;
+}
+
+interface GameObject extends Object {
+}
+
+interface Component extends Object {
+}
+
+interface Transform extends Component {
+  localScale: Vector3;
+  localPosition: Vector3;
+}
+
+export type Props<T> = React.PropsWithChildren<Partial<T>> & React.RefAttributes<T>;
+
+export function /* @__PURE__ */ intrinsic<T>(type: string) {
+  const render: React.FunctionComponent<Props<T>> = (props) => createElement(type, props);
+  render.displayName = type;
+  return render;
+}
+
+export const GameObject = intrinsic<GameObject>("GameObject");
+export const Capsule = intrinsic<GameObject>("Capsule");
+export const Cube = intrinsic<GameObject>("Cube");
+export const Cylinder = intrinsic<GameObject>("Cylinder");
+export const Plane = intrinsic<GameObject>("Plane");
+export const Quad = intrinsic<GameObject>("Quad");
+export const Sphere = intrinsic<GameObject>("Sphere");
+export const Transform = intrinsic<Transform>("Transform");
+
+export function /* @__PURE__ */ asset<T = GameObject>(path: string) {
   return lazy(async () => {
     const $$$ = await Element.loadAssetAsync(path);
-    const fun = (props: any) => createElement("prefab", { $$$, ...props });
-    fun.displayName = path;
-    return { default: fun };
+    const render: React.FunctionComponent<Props<T>> = (props) => createElement("", { $$$, ...props });
+    render.displayName = path;
+    return { default: render };
   });
 }

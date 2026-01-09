@@ -17,11 +17,6 @@ using Unity.Properties;
 [assembly: GeneratePropertyBagsForType(typeof(Transform))]
 [assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
 
-static class Extensions
-{
-  public static string Uncapitalize(this string s) => char.ToLower(s[0]) + s.Substring(1);
-}
-
 [JSExport]
 public struct Rect
 {
@@ -195,7 +190,7 @@ class ComponentElement : ObjectElement
   {
     var types = PropertyBag.GetAllTypesWithAPropertyBag();
     foreach (var type in types.Where(type => type.IsSubclassOf(typeof(Component))))
-      Types.Add(KeyValuePair.Create(type.Name.Uncapitalize(), type));
+      Types.Add(KeyValuePair.Create(type.Name, type));
   }
 
   protected ComponentElement(Type type) : base(new List<object> { type }) { }
