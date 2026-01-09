@@ -20,8 +20,6 @@ using Unity.Properties;
 static class Extensions
 {
   public static string Uncapitalize(this string s) => char.ToLower(s[0]) + s.Substring(1);
-
-  public static IEnumerable<T> AsVector<T>(this string source) => source.Split(' ').Select(s => TypeConversion.Convert<string, T>(ref s));
 }
 
 [JSExport]
@@ -45,12 +43,26 @@ public class Element : IDisposable
 {
   static Element()
   {
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<int>(); return new Vector2Int(p.ElementAt(0), p.ElementAt(1)); });
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<int>(); return new Vector3Int(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2)); });
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector2(p.ElementAt(0), p.ElementAt(1)); });
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector3(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2)); });
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Vector4(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2), p.ElementAt(3)); });
-    TypeConversion.Register((ref string s) => { if (s == default) return default; var p = s.AsVector<float>(); return new Quaternion(p.ElementAt(0), p.ElementAt(1), p.ElementAt(2), p.ElementAt(3)); });
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (char)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (bool)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (sbyte)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (short)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (int)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (long)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (byte)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (ushort)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (uint)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (ulong)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (float)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (double)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (string)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (object)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2Int((int)v[0], (int)v[1]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector3Int((int)v[0], (int)v[1], (int)v[2]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2((float)v[0], (float)v[1]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector3((float)v[0], (float)v[1], (float)v[2]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector4((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Quaternion((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
   }
 
   internal object mObj;
@@ -62,7 +74,7 @@ public class Element : IDisposable
   public override int GetHashCode() => mObj.GetHashCode();
   public override string ToString() => PropertiezDump.ToString(mObj);
 
-  public virtual void SetProperty(string key, object value) => PropertyContainer.SetValue(mObj, key, value?.ToString());
+  public virtual void SetProps(JSValue props) { foreach (var item in (JSObject)props) PropertyContainer.SetValue(mObj, (string)item.Key, item.Value); }
   public virtual void SetActive(bool value) => throw new NotImplementedException();
   public virtual void SetParent(Element parent, Element beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
@@ -186,7 +198,7 @@ class ComponentElement : ObjectElement
       Types.Add(KeyValuePair.Create(type.Name.Uncapitalize(), type));
   }
 
-  protected ComponentElement(Type type) : base(new Dictionary<string, object>() { { string.Empty, type } }) { }
+  protected ComponentElement(Type type) : base(new List<object> { type }) { }
 
   public static new Element Create(object kind) => kind switch
   {
@@ -209,12 +221,12 @@ class ComponentElement : ObjectElement
     base.Dispose();
   }
 
-  public override void SetProperty(string key, object value)
+  public override void SetProps(JSValue props)
   {
-    if (mObj is Dictionary<string, object> props)
-      props[key] = value;
+    if (mObj is List<object> refs)
+      refs.Add(new JSReference(props));
     else
-      base.SetProperty(key, value);
+      base.SetProps(props);
   }
 
   public override void SetActive(bool value)
@@ -233,13 +245,13 @@ class ComponentElement : ObjectElement
       return;
     }
 
-    if (parent.mObj is GameObject && mObj is Dictionary<string, object> props)
+    if (parent.mObj is GameObject && mObj is List<object> refs)
     {
-      var type = (Type)props[string.Empty];
+      var type = (Type)refs.First();
       mObj = ((GameObject)parent.mObj).GetComponent(type) ?? ((GameObject)parent.mObj).AddComponent(type);
-      foreach (var prop in props)
-        if (prop.Key != string.Empty)
-          base.SetProperty(prop.Key, prop.Value);
+      foreach (var prop in refs.Skip(1))
+        using (var reference = (JSReference)prop)
+          base.SetProps(reference.GetValue());
     }
     else
       base.SetParent(parent, beforeChild);

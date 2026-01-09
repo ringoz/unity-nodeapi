@@ -36,10 +36,7 @@ export class Element {
 
 	toString(): string;
 
-	setProperty(
-		key: string,
-		value: Object,
-	): void;
+	setProps(props: any): void;
 
 	setActive(value: boolean): void;
 

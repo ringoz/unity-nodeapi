@@ -236,9 +236,7 @@ export function commitUpdate(instance: Element, type: Type, prevProps: Props, ne
       restNew[key] = undefined;
   }
 
-  for (const [key, newVal] of Object.entries(restNew)) {
-    instance.setProperty(key, newVal);
-  }
+  instance.setProps(restNew);
 }
 
 export function hideInstance(instance: Element | TextElement): void {
