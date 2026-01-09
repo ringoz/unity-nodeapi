@@ -50,29 +50,43 @@ export function createRoot(parent: Element) {
   };
 }
 
-type Vector3 = number[];
-
-interface Object {
-  name: string;
-}
-
-interface GameObject extends Object {
-}
-
-interface Component extends Object {
-}
-
-interface Transform extends Component {
-  localScale: Vector3;
-  localPosition: Vector3;
-}
-
 export type Props<T> = React.PropsWithChildren<Partial<T>> & React.RefAttributes<T>;
 
 export function /* @__PURE__ */ intrinsic<T>(type: string) {
   const render: React.FunctionComponent<Props<T>> = (props) => createElement(type, props);
   render.displayName = type;
   return render;
+}
+
+export function /* @__PURE__ */ asset<T = GameObject>(path: string) {
+  return lazy(async () => {
+    const $$$ = await Element.loadAssetAsync(path);
+    const render: React.FunctionComponent<Props<T>> = (props) => createElement("", { $$$, ...props });
+    render.displayName = path;
+    return { default: render };
+  });
+}
+
+export type Vector2 = [x: number, y: number];
+export type Vector3 = [x: number, y: number, z: number];
+export type Vector4 = [x: number, y: number, z: number, w: number];
+export type Quaternion = Vector4;
+
+//#region generated
+
+export interface Object {
+  name: string;
+}
+
+export interface GameObject extends Object {
+}
+
+export interface Component extends Object {
+}
+
+export interface Transform extends Component {
+  localScale: Vector3;
+  localPosition: Vector3;
 }
 
 export const GameObject = intrinsic<GameObject>("GameObject");
@@ -84,11 +98,4 @@ export const Quad = intrinsic<GameObject>("Quad");
 export const Sphere = intrinsic<GameObject>("Sphere");
 export const Transform = intrinsic<Transform>("Transform");
 
-export function /* @__PURE__ */ asset<T = GameObject>(path: string) {
-  return lazy(async () => {
-    const $$$ = await Element.loadAssetAsync(path);
-    const render: React.FunctionComponent<Props<T>> = (props) => createElement("", { $$$, ...props });
-    render.displayName = path;
-    return { default: render };
-  });
-}
+//#endregion generated
