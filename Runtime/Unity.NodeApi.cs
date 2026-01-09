@@ -223,8 +223,8 @@ class ComponentElement : ObjectElement
 
   public override void SetProps(JSValue props)
   {
-    if (mObj is List<object> refs)
-      refs.Add(new JSReference(props));
+    if (mObj is List<object> list)
+      list.Add(new JSReference(props));
     else
       base.SetProps(props);
   }
@@ -245,12 +245,12 @@ class ComponentElement : ObjectElement
       return;
     }
 
-    if (parent.mObj is GameObject && mObj is List<object> refs)
+    if (parent.mObj is GameObject && mObj is List<object> list)
     {
-      var type = (Type)refs.First();
+      var type = (Type)list.First();
       mObj = ((GameObject)parent.mObj).GetComponent(type) ?? ((GameObject)parent.mObj).AddComponent(type);
-      foreach (var prop in refs.Skip(1))
-        using (var reference = (JSReference)prop)
+      foreach (var props in list.Skip(1))
+        using (var reference = (JSReference)props)
           base.SetProps(reference.GetValue());
     }
     else
