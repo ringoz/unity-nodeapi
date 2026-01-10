@@ -18,6 +18,12 @@ using Unity.Properties;
 [assembly: GeneratePropertyBagsForType(typeof(Component))]
 [assembly: GeneratePropertyBagsForType(typeof(Transform))]
 [assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
+//[assembly: GeneratePropertyBagsForType(typeof(Animation))]
+[assembly: GeneratePropertyBagsForType(typeof(Renderer))]
+[assembly: GeneratePropertyBagsForType(typeof(MeshRenderer))]
+[assembly: GeneratePropertyBagsForType(typeof(MeshFilter))]
+[assembly: GeneratePropertyBagsForType(typeof(Mesh))]
+[assembly: GeneratePropertyBagsForType(typeof(Material))]
 
 [JSExport]
 public struct Rect
@@ -60,6 +66,14 @@ public class Element : IDisposable
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector3((float)v[0], (float)v[1], (float)v[2]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector4((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Quaternion((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Color((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Matrix4x4(new Vector4((float)v[0], (float)v[1], (float)v[2], (float)v[3]), new Vector4((float)v[4], (float)v[5], (float)v[6], (float)v[7]), new Vector4((float)v[8], (float)v[9], (float)v[10], (float)v[11]), new Vector4((float)v[12], (float)v[13], (float)v[14], (float)v[15])));
+  }
+
+  public static bool IsPropTypeSupported<T>()
+  {
+    var source = JSValue.Undefined;
+    return TypeConversion.TryConvert(ref source, out T destination);
   }
 
   internal object mObj;

@@ -28,6 +28,8 @@ export interface Loader { (path: string): Promise<Object>; }
 export class Element {
 	static loadAssetAsync: Loader;
 
+	static isPropTypeSupported<T>(): boolean;
+
 	dispose(): void;
 
 	equals(obj: Object): boolean;

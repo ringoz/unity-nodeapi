@@ -50,7 +50,21 @@ export function createRoot(parent: Element) {
   };
 }
 
-export type Props<T> = React.PropsWithChildren<Partial<T>> & React.RefAttributes<T>;
+type IfEquals<X, Y, A = X, B = never> =
+  (<T>() => T extends X ? 1 : 2) extends
+  (<T>() => T extends Y ? 1 : 2) ? A : B;
+
+type WritableKeys<T> = {
+  [P in keyof T]-?: IfEquals<
+    { [Q in P]: T[P] },
+    { -readonly [Q in P]: T[P] },
+    P
+  >
+}[keyof T];
+
+type PickWritable<T> = Pick<T, WritableKeys<T>>;
+
+export type Props<T> = React.PropsWithChildren<Partial<PickWritable<T>>> & React.RefAttributes<T>;
 
 export function /* @__PURE__ */ intrinsic<T>(type: string) {
   const render: React.FunctionComponent<Props<T>> = (props) => createElement(type, props);
@@ -67,11 +81,22 @@ export function /* @__PURE__ */ asset<T = GameObject>(path: string) {
   });
 }
 
-export type Object = { name: string };
+export type Boolean = boolean;
+export type Int16 = number;
+export type UInt16 = number;
+export type Int32 = number;
+export type UInt32 = number;
+export type Int64 = number;
+export type UInt64 = number;
+export type Single = number;
+export type Double = number;
+export type String = string;
 export type Vector2 = [x: number, y: number];
 export type Vector3 = [x: number, y: number, z: number];
 export type Vector4 = [x: number, y: number, z: number, w: number];
 export type Quaternion = Vector4;
+export type Color = [r: number, g: number, b: number, a: number];
+export type Matrix4x4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
 
 export const Capsule = intrinsic<GameObject>("Capsule");
 export const Cube = intrinsic<GameObject>("Cube");
@@ -82,11 +107,30 @@ export const Sphere = intrinsic<GameObject>("Sphere");
 
 //#region generated
 
-export interface GameObject extends Object {
+export interface ObjectBase {
+  name: String;
+//hideFlags: HideFlags;
+}
+
+export interface GameObject extends ObjectBase {
+//readonly transform: Transform;
+//readonly transformHandle: TransformHandle;
+  layer: Int32;
+  readonly activeSelf: Boolean;
+  readonly activeInHierarchy: Boolean;
+  isStatic: Boolean;
+  tag: String;
+//readonly scene: Scene;
+  readonly sceneCullingMask: UInt64;
+//readonly gameObject: GameObject;
 }
 export const GameObject = intrinsic<GameObject>("GameObject");
 
-export interface Component extends Object {
+export interface Component extends ObjectBase {
+//readonly transform: Transform;
+//readonly transformHandle: TransformHandle;
+//readonly gameObject: GameObject;
+  tag: String;
 }
 export const Component = intrinsic<Component>("Component");
 

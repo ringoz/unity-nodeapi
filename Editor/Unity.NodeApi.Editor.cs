@@ -46,13 +46,14 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
 
   static IEnumerable<Type> EnumCoreTypes()
   {
+    yield return typeof(UnityEngine.Object);
     yield return typeof(GameObject);
     yield return typeof(Component);
   }
 
   static IEnumerable<Type> EnumUserTypes()
   {
-    var types = PropertyBag.GetAllTypesWithAPropertyBag();
+    var types = PropertyBag.GetAllTypesWithAPropertyBag().Where(type => !EnumCoreTypes().Contains(type));
     return types.Where(type => EnumCoreTypes().Any(core => type.IsSubclassOf(core)));
   }
 
@@ -70,14 +71,35 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     return GetProperties(type).Where(p => !basePropNames.Contains(p.Name));
   }
 
+  static string TypeName(Type type)
+  {
+    return type == typeof(UnityEngine.Object) ? "ObjectBase" : type.Name;
+  }
+
+  static bool IsTypeSupported(Type type)
+  {
+    var method = typeof(Element).GetMethod(nameof(Element.IsPropTypeSupported));
+    return (bool)method.MakeGenericMethod(type).Invoke(null, null);
+  }
+
   static void EmitType(Type type, TextWriter writer)
   {
-    writer.WriteLine($"export interface {type.Name} extends {type.BaseType.Name} {{");
+    bool isObjectBase = type.BaseType == typeof(object);
+    if (isObjectBase)
+      writer.WriteLine($"export interface {TypeName(type)} {{");
+    else
+      writer.WriteLine($"export interface {TypeName(type)} extends {TypeName(type.BaseType)} {{");
+
     foreach (var property in GetOwnProperties(type))
-      writer.WriteLine($"  {(property.IsReadOnly ? "readonly " : "")}{property.Name}: {property.DeclaredValueType().Name};");
+    {
+      Type propType = property.DeclaredValueType();
+      writer.Write(IsTypeSupported(propType) ? "  " : "//");
+      writer.WriteLine($"{(property.IsReadOnly ? "readonly " : "")}{property.Name}: {TypeName(propType)};");
+    }
 
     writer.WriteLine($"}}");
-    writer.WriteLine($"export const {type.Name} = intrinsic<{type.Name}>(\"{type.Name}\");");
+    if (!isObjectBase)
+      writer.WriteLine($"export const {TypeName(type)} = intrinsic<{TypeName(type)}>(\"{TypeName(type)}\");");
   }
 
   static void GenerateTypings(IEnumerable<Type> types, string path)
