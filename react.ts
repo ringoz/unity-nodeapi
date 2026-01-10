@@ -67,35 +67,27 @@ export function /* @__PURE__ */ asset<T = GameObject>(path: string) {
   });
 }
 
+export type Object = { name: string };
 export type Vector2 = [x: number, y: number];
 export type Vector3 = [x: number, y: number, z: number];
 export type Vector4 = [x: number, y: number, z: number, w: number];
 export type Quaternion = Vector4;
 
-//#region generated
-
-export interface Object {
-  name: string;
-}
-
-export interface GameObject extends Object {
-}
-
-export interface Component extends Object {
-}
-
-export interface Transform extends Component {
-  localScale: Vector3;
-  localPosition: Vector3;
-}
-
-export const GameObject = intrinsic<GameObject>("GameObject");
 export const Capsule = intrinsic<GameObject>("Capsule");
 export const Cube = intrinsic<GameObject>("Cube");
 export const Cylinder = intrinsic<GameObject>("Cylinder");
 export const Plane = intrinsic<GameObject>("Plane");
 export const Quad = intrinsic<GameObject>("Quad");
 export const Sphere = intrinsic<GameObject>("Sphere");
-export const Transform = intrinsic<Transform>("Transform");
+
+//#region generated
+
+export interface GameObject extends Object {
+}
+export const GameObject = intrinsic<GameObject>("GameObject");
+
+export interface Component extends Object {
+}
+export const Component = intrinsic<Component>("Component");
 
 //#endregion generated
