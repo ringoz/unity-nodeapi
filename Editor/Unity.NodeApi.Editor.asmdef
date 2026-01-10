@@ -1,7 +1,9 @@
 {
     "name": "Unity.NodeApi.Editor",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+      "Unity.NodeApi"
+    ],
     "includePlatforms": [
       "Editor"
     ],

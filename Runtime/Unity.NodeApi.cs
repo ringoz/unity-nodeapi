@@ -13,7 +13,9 @@ using UnityEngine.Scripting;
 using Unity.Properties;
 
 [assembly: AlwaysLinkAssembly]
+[assembly: GeneratePropertyBagsForType(typeof(UnityEngine.Object))]
 [assembly: GeneratePropertyBagsForType(typeof(GameObject))]
+[assembly: GeneratePropertyBagsForType(typeof(Component))]
 [assembly: GeneratePropertyBagsForType(typeof(Transform))]
 [assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
 
