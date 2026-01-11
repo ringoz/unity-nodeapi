@@ -85,7 +85,7 @@ public class Element : IDisposable
   public override int GetHashCode() => mObj.GetHashCode();
   public override string ToString() => PropertiezDump.ToString(mObj);
 
-  public virtual void SetProps(JSValue props) { foreach (var item in (JSObject)props) PropertyContainer.SetValue(mObj, (string)item.Key, item.Value); }
+  public virtual void SetProps(JSValue props) { foreach (var item in (JSObject)props) PropertyContainer.SetValue(mObj, ((string)item.Key).Replace('-', '.'), item.Value); }
   public virtual void SetActive(bool value) => throw new NotImplementedException();
   public virtual void SetParent(Element parent, Element beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
