@@ -26,7 +26,7 @@ using Unity.Properties;
 [assembly: GeneratePropertyBagsForType(typeof(Material))]
 
 [JSExport]
-public struct Rect
+public struct DOMRect
 {
   public float x { get; init; }
   public float y { get; init; }
@@ -60,14 +60,19 @@ public class Element : IDisposable
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (double)v);
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (string)v);
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (object)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2Int((int)v[0], (int)v[1]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector3Int((int)v[0], (int)v[1], (int)v[2]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2((float)v[0], (float)v[1]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2Int((int)v[0], (int)v[1]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector3((float)v[0], (float)v[1], (float)v[2]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector3Int((int)v[0], (int)v[1], (int)v[2]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector4((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Quaternion((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Color((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Matrix4x4(new Vector4((float)v[0], (float)v[1], (float)v[2], (float)v[3]), new Vector4((float)v[4], (float)v[5], (float)v[6], (float)v[7]), new Vector4((float)v[8], (float)v[9], (float)v[10], (float)v[11]), new Vector4((float)v[12], (float)v[13], (float)v[14], (float)v[15])));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Color((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Rect((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new RectInt((int)v[0], (int)v[1], (int)v[2], (int)v[3]));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Bounds(new Vector3((float)v[0], (float)v[1], (float)v[2]), new Vector3((float)v[3], (float)v[4], (float)v[5])));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new BoundsInt(new Vector3Int((int)v[0], (int)v[1], (int)v[2]), new Vector3Int((int)v[3], (int)v[4], (int)v[5])));
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Version((int)v[0], (int)v[1], (int)v[2], (int)v[3]));
   }
 
   public static bool IsPropTypeSupported<T>()
@@ -89,7 +94,7 @@ public class Element : IDisposable
   public virtual void SetActive(bool value) => throw new NotImplementedException();
   public virtual void SetParent(Element parent, Element beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
-  public virtual Rect GetBoundingClientRect() => default;
+  public virtual DOMRect GetBoundingClientRect() => default;
 
   public static Element Create(object kind) => ComponentElement.Create(kind) ?? GameObjectElement.Create(kind);
   public static Element Search(string name) => GameObjectElement.Find(name);
@@ -170,7 +175,7 @@ class GameObjectElement : ObjectElement
       child.SetParent(((GameObject)Null.mObj).transform, false);
   }
 
-  public override Rect GetBoundingClientRect()
+  public override DOMRect GetBoundingClientRect()
   {
     var renderer = ((GameObject)mObj).GetComponent<Renderer>();
     if (renderer == null)
@@ -194,7 +199,7 @@ class GameObjectElement : ObjectElement
     var minX = corners.Min(corner => corner.x - 8) * 96 / Screen.dpi;
     var maxY = corners.Max(corner => Screen.height - corner.y) * 96 / Screen.dpi;
     var minY = corners.Min(corner => Screen.height - corner.y) * 96 / Screen.dpi;
-    return new Rect() { x = minX, y = minY, width = maxX - minX, height = maxY - minY };
+    return new DOMRect() { x = minX, y = minY, width = maxX - minX, height = maxY - minY };
   }
 }
 

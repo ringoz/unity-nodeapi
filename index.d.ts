@@ -5,7 +5,7 @@
 import './mscorlib';
 
 
-export class Rect extends ValueType {
+export class DOMRect extends ValueType {
 	x: number;
 
 	y: number;
@@ -49,7 +49,7 @@ export class Element {
 
 	clear(): void;
 
-	getBoundingClientRect(): Rect;
+	getBoundingClientRect(): DOMRect;
 
 	static create(kind: Object): Element;
 
