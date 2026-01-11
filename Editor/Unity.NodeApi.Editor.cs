@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Unity.Properties;
 using UnityEditor;
@@ -113,12 +114,19 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
 
       foreach (var property in GetOwnProperties(type))
       {
+        bool isArray = false;
         Type propType = property.DeclaredValueType();
-        if (propType.IsEnum && cache.Add(propType))
-          yield return $"export type {TypeName(propType)} = {string.Join(" | ", Enum.GetNames(propType).Select(name => $"'{name}'"))};";
+        if (propType.IsEnum)
+        {
+          if (isArray = property.Name.EndsWith("Flags"))
+            Assert.IsNotNull(propType.GetCustomAttribute<FlagsAttribute>(), $"{propType.Name} does not have FlagsAttribute");
+
+          if (cache.Add(propType))
+            yield return $"export type {TypeName(propType)} = {string.Join(" | ", Enum.GetNames(propType).Select(name => $"'{name}'"))};";
+        }
 
         writer.Write(IsPropTypeSupported(propType) ? "  " : "//");
-        writer.WriteLine($"{(property.IsReadOnly ? "readonly " : "")}{property.Name}: {PropTypeName(propType)};");
+        writer.WriteLine($"{(property.IsReadOnly ? "readonly " : "")}{property.Name}: {PropTypeName(propType)}{(isArray ? "[]": "")};");
       }
 
       writer.WriteLine($"}}");

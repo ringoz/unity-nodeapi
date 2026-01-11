@@ -220,7 +220,7 @@ export function commitMount(instance: Element, type: Type, props: Props, interna
 function isEqual(a: any, b: any) {
   if (a === b) return true;
   if (a instanceof Element && b instanceof Element && a.equals(b)) return true;
-  if (Array.isArray(a) && Array.isArray(b) && a.every((v, i) => v === b[i])) return true;
+  if (Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => v === b[i])) return true;
   return false;
 }
 

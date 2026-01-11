@@ -102,7 +102,11 @@ public class Element : IDisposable
         break;
 
       default:
-        PropertyContainer.SetValue(mPtr, key, val);
+        var part = key[key.Length - 1];
+        if (part.IsName && part.Name.EndsWith("Flags") && val.IsArray())
+          PropertyContainer.SetValue(mPtr, key, string.Join(", ", ((JSArray)val).Select(v => (string)v)));
+        else
+          PropertyContainer.SetValue(mPtr, key, val);
         break;
     }
   }
