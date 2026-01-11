@@ -116,9 +116,10 @@ export const Sphere = intrinsic<GameObject>("Sphere");
 
 //#region generated
 
+export type HideFlags = 'None' | 'HideInHierarchy' | 'HideInInspector' | 'DontSaveInEditor' | 'NotEditable' | 'DontSaveInBuild' | 'DontUnloadUnusedAsset' | 'DontSave' | 'HideAndDontSave';
 export interface ObjectBase {
   name: String;
-//hideFlags: HideFlags;
+  hideFlags: HideFlags;
 }
 
 export interface GameObject extends ObjectBase {

@@ -84,9 +84,11 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     return IsPtrType(type) ? $"Ptr<{name}>" : name;
   }
 
+  static ISet<Type> cache = new HashSet<Type>();
+
   static bool IsPropTypeSupported(Type type)
   {
-    if (IsPtrType(type)) return true;
+    if (IsPtrType(type) || cache.Contains(type)) return true;
     var method = typeof(Element).GetMethod(nameof(Element.IsPropTypeSupported));
     return (bool)method.MakeGenericMethod(type).Invoke(null, null);
   }
@@ -96,24 +98,35 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     return EnumCoreTypes().Contains(type) || EnumUserTypes().Contains(type);
   }
 
-  static void EmitType(Type type, TextWriter writer)
+  static IEnumerable<string> EmitType(Type type)
   {
-    bool isObjectBase = type.BaseType == typeof(object);
-    if (isObjectBase)
-      writer.WriteLine($"export interface {TypeName(type)} {{");
-    else
-      writer.WriteLine($"export interface {TypeName(type)} extends {TypeName(type.BaseType)} {{");
+    if (!cache.Add(type))
+      yield break;
 
-    foreach (var property in GetOwnProperties(type))
+    using (var writer = new StringWriter())
     {
-      Type propType = property.DeclaredValueType();
-      writer.Write(IsPropTypeSupported(propType) ? "  " : "//");
-      writer.WriteLine($"{(property.IsReadOnly ? "readonly " : "")}{property.Name}: {PropTypeName(propType)};");
-    }
+      bool isObjectBase = type.BaseType == typeof(object);
+      if (isObjectBase)
+        writer.WriteLine($"export interface {TypeName(type)} {{");
+      else
+        writer.WriteLine($"export interface {TypeName(type)} extends {TypeName(type.BaseType)} {{");
 
-    writer.WriteLine($"}}");
-    if (!isObjectBase)
-      writer.WriteLine($"export const {TypeName(type)} = intrinsic<{TypeName(type)}>(\"{TypeName(type)}\");");
+      foreach (var property in GetOwnProperties(type))
+      {
+        Type propType = property.DeclaredValueType();
+        if (propType.IsEnum && cache.Add(propType))
+          yield return $"export type {TypeName(propType)} = {string.Join(" | ", Enum.GetNames(propType).Select(name => $"'{name}'"))};";
+
+        writer.Write(IsPropTypeSupported(propType) ? "  " : "//");
+        writer.WriteLine($"{(property.IsReadOnly ? "readonly " : "")}{property.Name}: {PropTypeName(propType)};");
+      }
+
+      writer.WriteLine($"}}");
+      if (!isObjectBase)
+        writer.WriteLine($"export const {TypeName(type)} = intrinsic<{TypeName(type)}>(\"{TypeName(type)}\");");
+
+      yield return writer.ToString();
+    }
   }
 
   static void GenerateTypings(IEnumerable<Type> types, string path)
@@ -127,8 +140,8 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
       writer.WriteLine();
       foreach (Type type in types)
       {
-        EmitType(type, writer);
-        writer.WriteLine();
+        foreach (string text in EmitType(type))
+          writer.WriteLine(text);
       }
       writer.WriteLine("//#endregion generated");
       File.WriteAllText(path, source.ToString());
