@@ -53,6 +53,10 @@ public class Element : IDisposable
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (double)v);
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (string)v);
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (object)v);
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (int)v).ToArray());
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (float)v).ToArray());
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (string)v).ToArray());
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (object)v).ToArray());
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2((float)v[0], (float)v[1]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2Int((int)v[0], (int)v[1]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector3((float)v[0], (float)v[1], (float)v[2]));

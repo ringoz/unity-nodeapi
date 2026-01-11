@@ -118,9 +118,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
         Type propType = property.DeclaredValueType();
         if (propType.IsEnum)
         {
-          if (isArray = property.Name.EndsWith("Flags"))
-            Assert.IsNotNull(propType.GetCustomAttribute<FlagsAttribute>(), $"{propType.Name} does not have FlagsAttribute");
-
+          isArray = property.Name.EndsWith("Flags") && propType.GetCustomAttribute<FlagsAttribute>() != null;
           if (cache.Add(propType))
             yield return $"export type {TypeName(propType)} = {string.Join(" | ", Enum.GetNames(propType).Select(name => $"'{name}'"))};";
         }
