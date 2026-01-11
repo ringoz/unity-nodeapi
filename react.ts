@@ -64,7 +64,8 @@ type WritableKeys<T> = {
 
 type PickWritable<T> = Pick<T, WritableKeys<T>>;
 
-export type Props<T> = React.PropsWithChildren<Partial<PickWritable<T>>> & React.RefAttributes<T>;
+export type Attrs<T> = Partial<PickWritable<T>>;
+export type Props<T> = React.PropsWithChildren<Attrs<T>> & React.RefAttributes<T>;
 
 export function /* @__PURE__ */ intrinsic<T>(type: string) {
   const render: React.FunctionComponent<Props<T>> = (props) => createElement(type, props);
