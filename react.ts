@@ -81,6 +81,7 @@ export function /* @__PURE__ */ asset<T = GameObject>(path: string) {
   });
 }
 
+export type Ptr<T> = object;
 export type Boolean = boolean;
 export type Int16 = number;
 export type UInt16 = number;
@@ -120,7 +121,7 @@ export interface ObjectBase {
 }
 
 export interface GameObject extends ObjectBase {
-//readonly transform: Transform;
+  readonly transform: Ptr<Transform>;
 //readonly transformHandle: TransformHandle;
   layer: Int32;
   readonly activeSelf: Boolean;
@@ -129,16 +130,39 @@ export interface GameObject extends ObjectBase {
   tag: String;
 //readonly scene: Scene;
   readonly sceneCullingMask: UInt64;
-//readonly gameObject: GameObject;
+  readonly gameObject: Ptr<GameObject>;
 }
 export const GameObject = intrinsic<GameObject>("GameObject");
 
 export interface Component extends ObjectBase {
-//readonly transform: Transform;
+  readonly transform: Ptr<Transform>;
 //readonly transformHandle: TransformHandle;
-//readonly gameObject: GameObject;
+  readonly gameObject: Ptr<GameObject>;
   tag: String;
 }
 export const Component = intrinsic<Component>("Component");
+
+export interface Transform extends Component {
+  position: Vector3;
+  localPosition: Vector3;
+  eulerAngles: Vector3;
+  localEulerAngles: Vector3;
+  right: Vector3;
+  up: Vector3;
+  forward: Vector3;
+  rotation: Quaternion;
+  localRotation: Quaternion;
+  localScale: Vector3;
+  parent: Ptr<Transform>;
+  readonly worldToLocalMatrix: Matrix4x4;
+  readonly localToWorldMatrix: Matrix4x4;
+  readonly root: Ptr<Transform>;
+  readonly childCount: Int32;
+  readonly lossyScale: Vector3;
+  hasChanged: Boolean;
+  hierarchyCapacity: Int32;
+  readonly hierarchyCount: Int32;
+}
+export const Transform = intrinsic<Transform>("Transform");
 
 //#endregion generated

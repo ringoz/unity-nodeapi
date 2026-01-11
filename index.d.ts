@@ -26,13 +26,15 @@ export class DOMRect extends ValueType {
 export interface Loader { (path: string): Promise<Object>; }
 
 export class Element {
+	readonly ptr: Object;
+
 	static loadAssetAsync: Loader;
 
 	static isPropTypeSupported<T>(): boolean;
 
 	dispose(): void;
 
-	equals(obj: Object): boolean;
+	equals(ptr: Object): boolean;
 
 	getHashCode(): number;
 

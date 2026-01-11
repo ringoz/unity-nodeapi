@@ -81,16 +81,17 @@ public class Element : IDisposable
     return TypeConversion.TryConvert(ref source, out T destination);
   }
 
-  internal object mObj;
+  internal object mPtr;
+  public object Ptr => mPtr;
 
-  protected Element(object obj) => mObj = obj;
-  public virtual void Dispose() => (mObj as IDisposable)?.Dispose();
+  protected Element(object ptr) => mPtr = ptr;
+  public virtual void Dispose() => (mPtr as IDisposable)?.Dispose();
 
-  public override bool Equals(object obj) => (obj is Element instance) ? obj.Equals(instance.mObj) : base.Equals(obj);
-  public override int GetHashCode() => mObj.GetHashCode();
-  public override string ToString() => PropertiezDump.ToString(mObj);
+  public override bool Equals(object ptr) => (ptr is Element instance) ? ptr.Equals(instance.mPtr) : base.Equals(ptr);
+  public override int GetHashCode() => mPtr.GetHashCode();
+  public override string ToString() => PropertiezDump.ToString(mPtr);
 
-  public virtual void SetProps(JSValue props) { foreach (var item in (JSObject)props) PropertyContainer.SetValue(mObj, ((string)item.Key).Replace('-', '.'), item.Value); }
+  public virtual void SetProps(JSValue props) { foreach (var item in (JSObject)props) PropertyContainer.SetValue(mPtr, ((string)item.Key).Replace('-', '.'), item.Value); }
   public virtual void SetActive(bool value) => throw new NotImplementedException();
   public virtual void SetParent(Element parent, Element beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
@@ -109,17 +110,17 @@ public class Element : IDisposable
 
 class ObjectElement : Element
 {
-  protected ObjectElement(object obj) : base(obj) { }
+  protected ObjectElement(object ptr) : base(ptr) { }
 
   public override void Dispose()
   {
-    UnityEngine.Object.Destroy((UnityEngine.Object)mObj);
+    UnityEngine.Object.Destroy((UnityEngine.Object)mPtr);
   }
 }
 
 class GameObjectElement : ObjectElement
 {
-  protected GameObjectElement(object obj) : base(obj) { }
+  protected GameObjectElement(object ptr) : base(ptr) { }
 
   public static GameObjectElement Wrap(GameObject obj) => obj ? new GameObjectElement(obj) : null;
   public static GameObjectElement Find(string name) => Wrap(GameObject.Find(name));
@@ -129,9 +130,9 @@ class GameObjectElement : ObjectElement
   {
     get
     {
-      if (_null.mObj == null)
+      if (_null.mPtr == null)
       {
-        _null.mObj = new GameObject();
+        _null.mPtr = new GameObject();
         _null.SetActive(false);
       }
       return _null;
@@ -146,12 +147,12 @@ class GameObjectElement : ObjectElement
       string path => Resources.Load<GameObject>(path),
       _ => null
     };
-    return obj ? Wrap(UnityEngine.Object.Instantiate(obj, ((GameObject)Null.mObj).transform, false)) : null;
+    return obj ? Wrap(UnityEngine.Object.Instantiate(obj, ((GameObject)Null.mPtr).transform, false)) : null;
   }
 
   public override void SetActive(bool value)
   {
-    ((GameObject)mObj).SetActive(value);
+    ((GameObject)mPtr).SetActive(value);
   }
 
   public override void SetParent(Element parent, Element beforeChild = null)
@@ -159,11 +160,11 @@ class GameObjectElement : ObjectElement
     if (parent == null)
       parent = Null;
 
-    if (parent.mObj is GameObject)
+    if (parent.mPtr is GameObject)
     {
-      ((GameObject)mObj).transform.SetParent(((GameObject)parent.mObj).transform, false);
+      ((GameObject)mPtr).transform.SetParent(((GameObject)parent.mPtr).transform, false);
       if (beforeChild is GameObjectElement)
-        ((GameObject)mObj).transform.SetSiblingIndex(((GameObject)beforeChild.mObj).transform.GetSiblingIndex());
+        ((GameObject)mPtr).transform.SetSiblingIndex(((GameObject)beforeChild.mPtr).transform.GetSiblingIndex());
     }
     else
       base.SetParent(parent, beforeChild);
@@ -171,13 +172,13 @@ class GameObjectElement : ObjectElement
 
   public override void Clear()
   {
-    foreach (Transform child in ((GameObject)mObj).transform)
-      child.SetParent(((GameObject)Null.mObj).transform, false);
+    foreach (Transform child in ((GameObject)mPtr).transform)
+      child.SetParent(((GameObject)Null.mPtr).transform, false);
   }
 
   public override DOMRect GetBoundingClientRect()
   {
-    var renderer = ((GameObject)mObj).GetComponent<Renderer>();
+    var renderer = ((GameObject)mPtr).GetComponent<Renderer>();
     if (renderer == null)
       return base.GetBoundingClientRect();
 
@@ -226,7 +227,7 @@ class ComponentElement : ObjectElement
   public override void Dispose()
   {
     // Destroying the transform component is not allowed.
-    if (mObj is Transform transform)
+    if (mPtr is Transform transform)
     {
       transform.localPosition = Vector3.zero;
       transform.localRotation = Quaternion.identity;
@@ -239,7 +240,7 @@ class ComponentElement : ObjectElement
 
   public override void SetProps(JSValue props)
   {
-    if (mObj is List<object> list)
+    if (mPtr is List<object> list)
       list.Add(new JSReference(props));
     else
       base.SetProps(props);
@@ -247,8 +248,8 @@ class ComponentElement : ObjectElement
 
   public override void SetActive(bool value)
   {
-    if (mObj is Behaviour)
-      ((Behaviour)mObj).enabled = value;
+    if (mPtr is Behaviour)
+      ((Behaviour)mPtr).enabled = value;
     else
       base.SetActive(value);
   }
@@ -261,10 +262,10 @@ class ComponentElement : ObjectElement
       return;
     }
 
-    if (parent.mObj is GameObject && mObj is List<object> list)
+    if (parent.mPtr is GameObject && mPtr is List<object> list)
     {
       var type = (Type)list.First();
-      mObj = ((GameObject)parent.mObj).GetComponent(type) ?? ((GameObject)parent.mObj).AddComponent(type);
+      mPtr = ((GameObject)parent.mPtr).GetComponent(type) ?? ((GameObject)parent.mPtr).AddComponent(type);
       foreach (var props in list.Skip(1))
         using (var reference = (JSReference)props)
           base.SetProps(reference.GetValue());

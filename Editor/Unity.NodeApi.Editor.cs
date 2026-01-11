@@ -49,6 +49,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     yield return typeof(UnityEngine.Object);
     yield return typeof(GameObject);
     yield return typeof(Component);
+    yield return typeof(Transform);
   }
 
   static IEnumerable<Type> EnumUserTypes()
@@ -76,10 +77,22 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     return type == typeof(UnityEngine.Object) ? "ObjectBase" : type.Name;
   }
 
-  static bool IsTypeSupported(Type type)
+  static string PropTypeName(Type type)
   {
+    string name = TypeName(type);
+    return IsPtrType(type) ? $"Ptr<{name}>" : name;
+  }
+
+  static bool IsPropTypeSupported(Type type)
+  {
+    if (IsPtrType(type)) return true;
     var method = typeof(Element).GetMethod(nameof(Element.IsPropTypeSupported));
     return (bool)method.MakeGenericMethod(type).Invoke(null, null);
+  }
+
+  static bool IsPtrType(Type type)
+  {
+    return EnumCoreTypes().Contains(type) || EnumUserTypes().Contains(type);
   }
 
   static void EmitType(Type type, TextWriter writer)
@@ -93,8 +106,8 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     foreach (var property in GetOwnProperties(type))
     {
       Type propType = property.DeclaredValueType();
-      writer.Write(IsTypeSupported(propType) ? "  " : "//");
-      writer.WriteLine($"{(property.IsReadOnly ? "readonly " : "")}{property.Name}: {TypeName(propType)};");
+      writer.Write(IsPropTypeSupported(propType) ? "  " : "//");
+      writer.WriteLine($"{(property.IsReadOnly ? "readonly " : "")}{property.Name}: {PropTypeName(propType)};");
     }
 
     writer.WriteLine($"}}");
