@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Unity.Properties;
 using UnityEditor;
 using UnityEditor.Build;
@@ -118,11 +119,10 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
   static void GenerateTypings(IEnumerable<Type> types, string path)
   {
     Assert.IsTrue(File.Exists(path));
-    string preamble = File.ReadAllText(path).Split("//#region generated")[0];
 
-    using (StreamWriter writer = new StreamWriter(path))
+    var source = new StringBuilder(File.ReadAllText(path).Split("//#region generated")[0]);
+    using (var writer = new StringWriter(source))
     {
-      writer.Write(preamble);
       writer.WriteLine("//#region generated");
       writer.WriteLine();
       foreach (Type type in types)
@@ -131,6 +131,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
         writer.WriteLine();
       }
       writer.WriteLine("//#endregion generated");
+      File.WriteAllText(path, source.ToString());
     }
   }
 }
