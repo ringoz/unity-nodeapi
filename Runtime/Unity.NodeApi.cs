@@ -84,7 +84,30 @@ public class Element : IDisposable
   public override int GetHashCode() => mPtr.GetHashCode();
   public override string ToString() => PropertiezDump.ToString(mPtr);
 
-  public virtual void SetProps(JSValue props) { foreach (var item in (JSObject)props) PropertyContainer.SetValue(mPtr, ((string)item.Key).Replace('-', '.'), item.Value); }
+  static private PropertyPath PropPath(in JSValue key) => new PropertyPath(((string)key).Replace('-', '.'));
+  private void SetProp(in PropertyPath key, in JSValue val)
+  {
+    switch (val.TypeOf())
+    {
+      case JSValueType.String:
+        PropertyContainer.SetValue(mPtr, key, (string)val);
+        break;
+
+      case JSValueType.External:
+        var obj = val.TryGetValueExternal();
+        if (obj is UnityEngine.Object ueo)
+          PropertyContainer.SetValue(mPtr, key, ueo);
+        else
+          PropertyContainer.SetValue(mPtr, key, obj);
+        break;
+
+      default:
+        PropertyContainer.SetValue(mPtr, key, val);
+        break;
+    }
+  }
+
+  public virtual void SetProps(in JSValue props) { foreach (var item in (JSObject)props) SetProp(PropPath(item.Key), item.Value); }
   public virtual void SetActive(bool value) => throw new NotImplementedException();
   public virtual void SetParent(Element parent, Element beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
@@ -231,7 +254,7 @@ class ComponentElement : ObjectElement
     base.Dispose();
   }
 
-  public override void SetProps(JSValue props)
+  public override void SetProps(in JSValue props)
   {
     if (mPtr is List<object> list)
       list.Add(new JSReference(props));
