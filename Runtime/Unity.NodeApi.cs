@@ -17,13 +17,6 @@ using Unity.Properties;
 [assembly: GeneratePropertyBagsForType(typeof(GameObject))]
 [assembly: GeneratePropertyBagsForType(typeof(Component))]
 [assembly: GeneratePropertyBagsForType(typeof(Transform))]
-[assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
-//[assembly: GeneratePropertyBagsForType(typeof(Animation))]
-[assembly: GeneratePropertyBagsForType(typeof(Renderer))]
-[assembly: GeneratePropertyBagsForType(typeof(MeshRenderer))]
-[assembly: GeneratePropertyBagsForType(typeof(MeshFilter))]
-[assembly: GeneratePropertyBagsForType(typeof(Mesh))]
-[assembly: GeneratePropertyBagsForType(typeof(Material))]
 
 [JSExport]
 public struct DOMRect
