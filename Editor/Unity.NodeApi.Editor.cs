@@ -9,6 +9,7 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.UIElements;
 
 class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithContext
 {
@@ -52,6 +53,12 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     yield return typeof(GameObject);
     yield return typeof(Component);
     yield return typeof(Transform);
+    yield return typeof(Behaviour);
+    yield return typeof(MonoBehaviour);
+    yield return typeof(UIDocument);
+    yield return typeof(CallbackEventHandler);
+    yield return typeof(Focusable);
+    yield return typeof(VisualElement);
   }
 
   static IEnumerable<Type> EnumUserTypes()
@@ -128,7 +135,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
       }
 
       writer.WriteLine($"}}");
-      if (!isObjectBase)
+      if (typeof(Component).IsAssignableFrom(type) || !type.IsAbstract && !type.IsInterface && type.GetConstructor(Type.EmptyTypes) != null)
         writer.WriteLine($"export const {TypeName(type)} = intrinsic<{TypeName(type)}>(\"{TypeName(type)}\");");
 
       yield return writer.ToString();

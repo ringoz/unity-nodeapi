@@ -121,6 +121,7 @@ export interface ObjectBase {
   name: String;
   hideFlags: HideFlags[];
 }
+export const ObjectBase = intrinsic<ObjectBase>("ObjectBase");
 
 export interface GameObject extends ObjectBase {
   readonly transform: Ptr<Transform>;
@@ -166,5 +167,80 @@ export interface Transform extends Component {
   readonly hierarchyCount: Int32;
 }
 export const Transform = intrinsic<Transform>("Transform");
+
+export interface Behaviour extends Component {
+  enabled: Boolean;
+  readonly isActiveAndEnabled: Boolean;
+}
+export const Behaviour = intrinsic<Behaviour>("Behaviour");
+
+export interface MonoBehaviour extends Behaviour {
+//readonly destroyCancellationToken: CancellationToken;
+  useGUILayout: Boolean;
+  readonly didStart: Boolean;
+  readonly didAwake: Boolean;
+  runInEditMode: Boolean;
+}
+export const MonoBehaviour = intrinsic<MonoBehaviour>("MonoBehaviour");
+
+export type Position = 'Relative' | 'Absolute';
+export type WorldSpaceSizeMode = 'Dynamic' | 'Fixed';
+export type PivotReferenceSize = 'BoundingBox' | 'Layout';
+export type Pivot = 'Center' | 'TopLeft' | 'TopCenter' | 'TopRight' | 'LeftCenter' | 'RightCenter' | 'BottomLeft' | 'BottomCenter' | 'BottomRight';
+export interface UIDocument extends MonoBehaviour {
+//panelSettings: PanelSettings;
+  readonly parentUI: Ptr<UIDocument>;
+//visualTreeAsset: VisualTreeAsset;
+  readonly rootVisualElement: Ptr<VisualElement>;
+  position: Position;
+  worldSpaceSizeMode: WorldSpaceSizeMode;
+  worldSpaceSize: Vector2;
+  pivotReferenceSize: PivotReferenceSize;
+  pivot: Pivot;
+  sortingOrder: Single;
+//readonly runtimePanel: IRuntimePanel;
+}
+export const UIDocument = intrinsic<UIDocument>("UIDocument");
+
+export interface CallbackEventHandler {
+}
+
+export interface Focusable extends CallbackEventHandler {
+}
+
+export type UsageHints = 'None' | 'DynamicTransform' | 'GroupTransform' | 'MaskContainer' | 'DynamicColor' | 'DynamicPostProcessing' | 'LargePixelCoverage';
+export type PickingMode = 'Position' | 'Ignore';
+export type LanguageDirection = 'Inherit' | 'LTR' | 'RTL';
+export interface VisualElement extends Focusable {
+  viewDataKey: String;
+  userData: Object;
+  readonly canGrabFocus: Boolean;
+  disablePlayModeTint: Boolean;
+  usageHints: UsageHints;
+  readonly layout: Rect;
+  readonly contentRect: Rect;
+  readonly worldBound: Rect;
+  readonly localBound: Rect;
+  readonly worldTransform: Matrix4x4;
+  pickingMode: PickingMode;
+  name: String;
+  readonly enabledInHierarchy: Boolean;
+  enabledSelf: Boolean;
+  languageDirection: LanguageDirection;
+  visible: Boolean;
+  dataSource: Object;
+//dataSourcePath: PropertyPath;
+//readonly panel: IPanel;
+//readonly visualTreeAssetSource: VisualTreeAsset;
+  readonly childCount: Int32;
+//readonly style: IStyle;
+//readonly resolvedStyle: IResolvedStyle;
+//readonly styleSheets: VisualElementStyleSheetSet;
+  tooltip: String;
+  focusable: Boolean;
+  tabIndex: Int32;
+  delegatesFocus: Boolean;
+}
+export const VisualElement = intrinsic<VisualElement>("VisualElement");
 
 //#endregion generated

@@ -10,6 +10,7 @@ using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Scripting;
+using UnityEngine.UIElements;
 using Unity.Properties;
 
 [assembly: AlwaysLinkAssembly]
@@ -17,6 +18,12 @@ using Unity.Properties;
 [assembly: GeneratePropertyBagsForType(typeof(GameObject))]
 [assembly: GeneratePropertyBagsForType(typeof(Component))]
 [assembly: GeneratePropertyBagsForType(typeof(Transform))]
+[assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
+[assembly: GeneratePropertyBagsForType(typeof(MonoBehaviour))]
+[assembly: GeneratePropertyBagsForType(typeof(UIDocument))]
+[assembly: GeneratePropertyBagsForType(typeof(CallbackEventHandler))]
+[assembly: GeneratePropertyBagsForType(typeof(Focusable))]
+[assembly: GeneratePropertyBagsForType(typeof(VisualElement))]
 
 [JSExport]
 public struct DOMRect
