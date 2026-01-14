@@ -22,6 +22,8 @@ using Unity.Properties;
 [assembly: GeneratePropertyBagsForType(typeof(MonoBehaviour))]
 [assembly: GeneratePropertyBagsForType(typeof(UIDocument))]
 [assembly: GeneratePropertyBagsForType(typeof(VisualElement))]
+[assembly: GeneratePropertyBagsForType(typeof(BindableElement))]
+[assembly: GeneratePropertyBagsForType(typeof(TextElement))]
 
 [JSExport]
 public struct DOMRect

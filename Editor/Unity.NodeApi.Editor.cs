@@ -57,6 +57,8 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     yield return typeof(MonoBehaviour);
     yield return typeof(UIDocument);
     yield return typeof(VisualElement);
+    yield return typeof(BindableElement);
+    yield return typeof(TextElement);
   }
 
   static IEnumerable<Type> EnumUserTypes()
@@ -67,9 +69,11 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
 
   static IEnumerable<IProperty> GetProperties(Type type)
   {
+    if (type == null)
+      return Enumerable.Empty<IProperty>();
     var bag = PropertyBag.GetPropertyBag(type);
     if (bag == null)
-      return Enumerable.Empty<IProperty>();
+      return GetProperties(type.BaseType);
     return (IEnumerable<IProperty>)bag.GetType().GetMethod("GetProperties", Array.Empty<Type>()).Invoke(bag, null);
   }
 
@@ -89,7 +93,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
 
   static string TypeName(Type type)
   {
-    return type == typeof(UnityEngine.Object) ? "ObjectBase" : type.Name;
+    return type == typeof(UnityEngine.Object) ? "ObjectBase" : type.Name.Split('`').First();
   }
 
   static string PropTypeName(Type type)

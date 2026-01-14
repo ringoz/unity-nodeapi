@@ -92,6 +92,7 @@ export type Int64 = number;
 export type UInt64 = number;
 export type Single = number;
 export type Double = number;
+export type Char = string;
 export type String = string;
 export type Vector2 = [x: number, y: number];
 export type Vector2Int = Vector2;
@@ -234,7 +235,7 @@ export interface VisualElement {
   enabledSelf: Boolean;
   languageDirection: LanguageDirection;
   visible: Boolean;
-//generateVisualContent: Action`1;
+//generateVisualContent: Action;
   dataSource: Object;
 //dataSourcePath: PropertyPath;
 //dataSourceType: Type;
@@ -253,5 +254,23 @@ export interface VisualElement {
   tooltip: String;
 }
 export const VisualElement = intrinsic<VisualElement>("VisualElement");
+
+export interface BindableElement extends VisualElement {
+//binding: IBinding;
+  bindingPath: String;
+}
+export const BindableElement = intrinsic<BindableElement>("BindableElement");
+
+export interface TextElement extends BindableElement {
+//PostProcessTextVertices: Action;
+  text: String;
+  enableRichText: Boolean;
+  emojiFallbackSupport: Boolean;
+  parseEscapeSequences: Boolean;
+  displayTooltipWhenElided: Boolean;
+  readonly isElided: Boolean;
+//readonly selection: ITextSelection;
+}
+export const TextElement = intrinsic<TextElement>("TextElement");
 
 //#endregion generated
