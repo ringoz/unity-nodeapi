@@ -5,7 +5,7 @@
 import { createElement, lazy } from 'react';
 import Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { Element } from '.';
+import { Node } from '.';
 import * as FiberConfig from './reconciler.ts';
 
 const reconciler = Reconciler(FiberConfig);
@@ -13,7 +13,7 @@ reconciler.injectIntoDevTools(undefined as any);
 // @ts-ignore - reconciler types are not maintained
 reconciler.flushSync = reconciler.flushSyncFromReconciler;
 
-export function createRoot(parent: Element) {
+export function createRoot(parent: Node) {
   const isStrictMode = process.env.NODE_ENV !== 'production';
   const concurrentUpdatesByDefaultOverride = false;
   const identifierPrefix = '';
@@ -75,7 +75,7 @@ export function /* @__PURE__ */ intrinsic<T>(type: string) {
 
 export function /* @__PURE__ */ asset<T = GameObject>(path: string) {
   return lazy(async () => {
-    const $$$ = await Element.loadAssetAsync(path);
+    const $$$ = await Node.loadAssetAsync(path);
     const render: React.FunctionComponent<Props<T>> = (props) => createElement("", { $$$, ...props });
     render.displayName = path;
     return { default: render };

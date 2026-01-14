@@ -25,7 +25,7 @@ export class DOMRect extends ValueType {
 
 export interface Loader { (path: string): Promise<Object>; }
 
-export class Element {
+export class Node {
 	readonly ptr: Object;
 
 	static loadAssetAsync: Loader;
@@ -45,15 +45,15 @@ export class Element {
 	setActive(value: boolean): void;
 
 	setParent(
-		parent: Element,
-		beforeChild?: Element,
+		parent: Node,
+		beforeChild?: Node,
 	): void;
 
 	clear(): void;
 
 	getBoundingClientRect(): DOMRect;
 
-	static create(kind: Object): Element;
+	static create(kind: Object): Node;
 
-	static search(name: string): Element;
+	static search(name: string): Node;
 }

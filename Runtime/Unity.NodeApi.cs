@@ -42,9 +42,9 @@ public struct DOMRect
 public delegate Task<object> Loader(string path);
 
 [JSExport]
-public class Element : IDisposable
+public class Node : IDisposable
 {
-  static Element()
+  static Node()
   {
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (char)v);
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (bool)v);
@@ -88,10 +88,10 @@ public class Element : IDisposable
   internal object mPtr;
   public object Ptr => mPtr;
 
-  protected Element(object ptr) => mPtr = ptr;
+  protected Node(object ptr) => mPtr = ptr;
   public virtual void Dispose() => (mPtr as IDisposable)?.Dispose();
 
-  public override bool Equals(object ptr) => (ptr is Element instance) ? ptr.Equals(instance.mPtr) : base.Equals(ptr);
+  public override bool Equals(object ptr) => (ptr is Node instance) ? ptr.Equals(instance.mPtr) : base.Equals(ptr);
   public override int GetHashCode() => mPtr.GetHashCode();
   public override string ToString() => PropertiezDump.ToString(mPtr);
 
@@ -124,12 +124,12 @@ public class Element : IDisposable
 
   public virtual void SetProps(in JSValue props) { foreach (var item in (JSObject)props) SetProp(PropPath(item.Key), item.Value); }
   public virtual void SetActive(bool value) => throw new NotImplementedException();
-  public virtual void SetParent(Element parent, Element beforeChild = null) => throw new NotImplementedException();
+  public virtual void SetParent(Node parent, Node beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
   public virtual DOMRect GetBoundingClientRect() => default;
 
-  public static Element Create(object kind) => ComponentElement.Create(kind) ?? GameObjectElement.Create(kind);
-  public static Element Search(string name) => GameObjectElement.Find(name);
+  public static Node Create(object kind) => ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
+  public static Node Search(string name) => GameObjectNode.Find(name);
 
   public static Loader LoadAssetAsync { get; set; } = async (string path) =>
   {
@@ -139,9 +139,9 @@ public class Element : IDisposable
   };
 }
 
-class ObjectElement : Element
+class ObjectNode : Node
 {
-  protected ObjectElement(object ptr) : base(ptr) { }
+  protected ObjectNode(object ptr) : base(ptr) { }
 
   public override void Dispose()
   {
@@ -149,15 +149,15 @@ class ObjectElement : Element
   }
 }
 
-class GameObjectElement : ObjectElement
+class GameObjectNode : ObjectNode
 {
-  protected GameObjectElement(object ptr) : base(ptr) { }
+  protected GameObjectNode(object ptr) : base(ptr) { }
 
-  public static GameObjectElement Wrap(GameObject obj) => obj ? new GameObjectElement(obj) : null;
-  public static GameObjectElement Find(string name) => Wrap(GameObject.Find(name));
+  public static GameObjectNode Wrap(GameObject obj) => obj ? new GameObjectNode(obj) : null;
+  public static GameObjectNode Find(string name) => Wrap(GameObject.Find(name));
 
-  private static GameObjectElement _null = new GameObjectElement(null);
-  private static GameObjectElement Null
+  private static GameObjectNode _null = new GameObjectNode(null);
+  private static GameObjectNode Null
   {
     get
     {
@@ -170,7 +170,7 @@ class GameObjectElement : ObjectElement
     }
   }
 
-  public static new Element Create(object kind)
+  public static new Node Create(object kind)
   {
     var obj = kind switch
     {
@@ -186,7 +186,7 @@ class GameObjectElement : ObjectElement
     ((GameObject)mPtr).SetActive(value);
   }
 
-  public override void SetParent(Element parent, Element beforeChild = null)
+  public override void SetParent(Node parent, Node beforeChild = null)
   {
     if (parent == null)
       parent = Null;
@@ -194,7 +194,7 @@ class GameObjectElement : ObjectElement
     if (parent.mPtr is GameObject)
     {
       ((GameObject)mPtr).transform.SetParent(((GameObject)parent.mPtr).transform, false);
-      if (beforeChild is GameObjectElement)
+      if (beforeChild is GameObjectNode)
         ((GameObject)mPtr).transform.SetSiblingIndex(((GameObject)beforeChild.mPtr).transform.GetSiblingIndex());
     }
     else
@@ -235,23 +235,23 @@ class GameObjectElement : ObjectElement
   }
 }
 
-class ComponentElement : ObjectElement
+class ComponentNode : ObjectNode
 {
   public static IDictionary<string, Type> Types { get; } = new Dictionary<string, Type>();
 
-  static ComponentElement()
+  static ComponentNode()
   {
     var types = PropertyBag.GetAllTypesWithAPropertyBag();
     foreach (var type in types.Where(type => type.IsSubclassOf(typeof(Component))))
       Types.Add(KeyValuePair.Create(type.Name, type));
   }
 
-  protected ComponentElement(Type type) : base(new List<object> { type }) { }
+  protected ComponentNode(Type type) : base(new List<object> { type }) { }
 
-  public static new Element Create(object kind) => kind switch
+  public static new Node Create(object kind) => kind switch
   {
-    Type type => new ComponentElement(type),
-    string path => Types.TryGetValue(path, out Type type) ? new ComponentElement(type) : null,
+    Type type => new ComponentNode(type),
+    string path => Types.TryGetValue(path, out Type type) ? new ComponentNode(type) : null,
     _ => null
   };
 
@@ -285,7 +285,7 @@ class ComponentElement : ObjectElement
       base.SetActive(value);
   }
 
-  public override void SetParent(Element parent, Element beforeChild = null)
+  public override void SetParent(Node parent, Node beforeChild = null)
   {
     if (parent == null)
     {

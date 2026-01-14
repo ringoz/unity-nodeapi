@@ -97,7 +97,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
   static bool IsPropTypeSupported(Type type)
   {
     if (IsPtrType(type) || cache.Contains(type)) return true;
-    var method = typeof(Element).GetMethod(nameof(Element.IsPropTypeSupported));
+    var method = typeof(Node).GetMethod(nameof(Node.IsPropTypeSupported));
     return (bool)method.MakeGenericMethod(type).Invoke(null, null);
   }
 

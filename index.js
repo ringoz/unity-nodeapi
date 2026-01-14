@@ -9,5 +9,5 @@ export default exports;
 export const {
 	DOMRect,
 	Loader,
-	Element,
+	Node,
 } = exports;
