@@ -121,7 +121,6 @@ export interface ObjectBase {
   name: String;
   hideFlags: HideFlags[];
 }
-export const ObjectBase = intrinsic<ObjectBase>("ObjectBase");
 
 export interface GameObject extends ObjectBase {
   readonly transform: Ptr<Transform>;
@@ -202,44 +201,56 @@ export interface UIDocument extends MonoBehaviour {
 }
 export const UIDocument = intrinsic<UIDocument>("UIDocument");
 
-export interface CallbackEventHandler {
-}
-
-export interface Focusable extends CallbackEventHandler {
-}
-
 export type UsageHints = 'None' | 'DynamicTransform' | 'GroupTransform' | 'MaskContainer' | 'DynamicColor' | 'DynamicPostProcessing' | 'LargePixelCoverage';
 export type PickingMode = 'Position' | 'Ignore';
 export type LanguageDirection = 'Inherit' | 'LTR' | 'RTL';
-export interface VisualElement extends Focusable {
+export interface VisualElement {
+//readonly focusController: FocusController;
+  focusable: Boolean;
+  tabIndex: Int32;
+  delegatesFocus: Boolean;
+  readonly canGrabFocus: Boolean;
   viewDataKey: String;
   userData: Object;
-  readonly canGrabFocus: Boolean;
   disablePlayModeTint: Boolean;
   usageHints: UsageHints;
+  readonly scaledPixelsPerPoint: Single;
   readonly layout: Rect;
   readonly contentRect: Rect;
   readonly worldBound: Rect;
   readonly localBound: Rect;
   readonly worldTransform: Matrix4x4;
+  readonly hasActivePseudoState: Boolean;
+  readonly hasInactivePseudoState: Boolean;
+  readonly hasHoverPseudoState: Boolean;
+  readonly hasCheckedPseudoState: Boolean;
+  readonly hasEnabledPseudoState: Boolean;
+  readonly hasDisabledPseudoState: Boolean;
+  readonly hasFocusPseudoState: Boolean;
+  readonly hasRootPseudoState: Boolean;
   pickingMode: PickingMode;
   name: String;
   readonly enabledInHierarchy: Boolean;
   enabledSelf: Boolean;
   languageDirection: LanguageDirection;
   visible: Boolean;
+//generateVisualContent: Action`1;
   dataSource: Object;
 //dataSourcePath: PropertyPath;
+//dataSourceType: Type;
+//readonly experimental: IExperimentalFeatures;
+//readonly hierarchy: Hierarchy;
+  readonly parent: Ptr<VisualElement>;
 //readonly panel: IPanel;
+  readonly contentContainer: Ptr<VisualElement>;
 //readonly visualTreeAssetSource: VisualTreeAsset;
   readonly childCount: Int32;
+//readonly schedule: IVisualElementScheduler;
 //readonly style: IStyle;
 //readonly resolvedStyle: IResolvedStyle;
+//readonly customStyle: ICustomStyle;
 //readonly styleSheets: VisualElementStyleSheetSet;
   tooltip: String;
-  focusable: Boolean;
-  tabIndex: Int32;
-  delegatesFocus: Boolean;
 }
 export const VisualElement = intrinsic<VisualElement>("VisualElement");
 

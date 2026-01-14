@@ -21,8 +21,6 @@ using Unity.Properties;
 [assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
 [assembly: GeneratePropertyBagsForType(typeof(MonoBehaviour))]
 [assembly: GeneratePropertyBagsForType(typeof(UIDocument))]
-[assembly: GeneratePropertyBagsForType(typeof(CallbackEventHandler))]
-[assembly: GeneratePropertyBagsForType(typeof(Focusable))]
 [assembly: GeneratePropertyBagsForType(typeof(VisualElement))]
 
 [JSExport]

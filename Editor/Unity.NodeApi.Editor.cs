@@ -56,8 +56,6 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     yield return typeof(Behaviour);
     yield return typeof(MonoBehaviour);
     yield return typeof(UIDocument);
-    yield return typeof(CallbackEventHandler);
-    yield return typeof(Focusable);
     yield return typeof(VisualElement);
   }
 
@@ -79,6 +77,14 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
   {
     var basePropNames = GetProperties(type.BaseType).Select(p => p.Name);
     return GetProperties(type).Where(p => !basePropNames.Contains(p.Name));
+  }
+
+  static Type TypeBase(Type type)
+  {
+    Type result = type.BaseType;
+    while (result != null && PropertyBag.GetPropertyBag(result) == null)
+      result = result.BaseType;
+    return result;
   }
 
   static string TypeName(Type type)
@@ -113,11 +119,11 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
 
     using (var writer = new StringWriter())
     {
-      bool isObjectBase = type.BaseType == typeof(object);
-      if (isObjectBase)
-        writer.WriteLine($"export interface {TypeName(type)} {{");
+      Type typeBase = TypeBase(type);
+      if (typeBase != null)
+        writer.WriteLine($"export interface {TypeName(type)} extends {TypeName(typeBase)} {{");
       else
-        writer.WriteLine($"export interface {TypeName(type)} extends {TypeName(type.BaseType)} {{");
+        writer.WriteLine($"export interface {TypeName(type)} {{");
 
       foreach (var property in GetOwnProperties(type))
       {
@@ -135,7 +141,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
       }
 
       writer.WriteLine($"}}");
-      if (typeof(Component).IsAssignableFrom(type) || !type.IsAbstract && !type.IsInterface && type.GetConstructor(Type.EmptyTypes) != null)
+      if (typeof(UnityEngine.Object) != type && (typeof(UnityEngine.Object).IsAssignableFrom(type) || type.GetConstructor(Type.EmptyTypes) != null))
         writer.WriteLine($"export const {TypeName(type)} = intrinsic<{TypeName(type)}>(\"{TypeName(type)}\");");
 
       yield return writer.ToString();
