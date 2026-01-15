@@ -128,7 +128,7 @@ public class Node : IDisposable
   public virtual void Clear() => throw new NotImplementedException();
   public virtual DOMRect GetBoundingClientRect() => default;
 
-  public static Node Create(object kind) => ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
+  public static Node Create(object kind) => VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
   public static Node Search(string name) => GameObjectNode.Find(name);
 
   public static Loader LoadAssetAsync { get; set; } = async (string path) =>
@@ -227,8 +227,8 @@ class GameObjectNode : ObjectNode
       new Vector3( c.x - e.x, c.y - e.y, c.z - e.z ),
     }.Select(corner => Camera.main.WorldToScreenPoint(corner));
 
-    var maxX = corners.Max(corner => corner.x - 8) * 96 / Screen.dpi;
-    var minX = corners.Min(corner => corner.x - 8) * 96 / Screen.dpi;
+    var maxX = corners.Max(corner => corner.x) * 96 / Screen.dpi;
+    var minX = corners.Min(corner => corner.x) * 96 / Screen.dpi;
     var maxY = corners.Max(corner => Screen.height - corner.y) * 96 / Screen.dpi;
     var minY = corners.Min(corner => Screen.height - corner.y) * 96 / Screen.dpi;
     return new DOMRect() { x = minX, y = minY, width = maxX - minX, height = maxY - minY };
@@ -237,23 +237,14 @@ class GameObjectNode : ObjectNode
 
 class ComponentNode : ObjectNode
 {
-  public static IDictionary<string, Type> Types { get; } = new Dictionary<string, Type>();
-
-  static ComponentNode()
-  {
-    var types = PropertyBag.GetAllTypesWithAPropertyBag();
-    foreach (var type in types.Where(type => type.IsSubclassOf(typeof(Component))))
-      Types.Add(KeyValuePair.Create(type.Name, type));
-  }
-
   protected ComponentNode(Type type) : base(new List<object> { type }) { }
 
-  public static new Node Create(object kind) => kind switch
+  public static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(Component).IsAssignableFrom(type));
+  public static new Node Create(object kind)
   {
-    Type type => new ComponentNode(type),
-    string path => Types.TryGetValue(path, out Type type) ? new ComponentNode(type) : null,
-    _ => null
-  };
+    Type type = kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
+    return type != null ? new ComponentNode(type) : null;
+  }
 
   public override void Dispose()
   {
@@ -303,5 +294,54 @@ class ComponentNode : ObjectNode
     }
     else
       base.SetParent(parent, beforeChild);
+  }
+}
+
+class VisualElementNode : Node
+{
+  protected VisualElementNode(object ptr) : base(ptr) { }
+
+  public static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(VisualElement).IsAssignableFrom(type));
+  public static new Node Create(object kind)
+  {
+    Type type = kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
+    return type != null ? new VisualElementNode((VisualElement)Activator.CreateInstance(type)) : null;
+  }
+
+  public override void SetActive(bool value)
+  {
+    ((VisualElement)mPtr).visible = value;
+  }
+
+  public override void SetParent(Node parent, Node beforeChild = null)
+  {
+    if (parent == null)
+    {
+      ((VisualElement)mPtr).parent.Remove((VisualElement)mPtr);
+    }
+    else if (parent.mPtr is GameObject parentGameObject)
+    {
+      parentGameObject.GetComponent<UIDocument>().rootVisualElement.Add((VisualElement)mPtr);
+    }
+    else if (parent.mPtr is VisualElement parentElement)
+    {
+      if (beforeChild.mPtr is VisualElement beforeChildElement)
+        parentElement.Insert(parentElement.IndexOf(beforeChildElement), (VisualElement)mPtr);
+      else
+        parentElement.Add((VisualElement)mPtr);
+    }
+    else
+      base.SetParent(parent, beforeChild);
+  }
+
+  public override void Clear()
+  {
+    ((VisualElement)mPtr).Clear();
+  }
+
+  public override DOMRect GetBoundingClientRect()
+  {
+    Rect rc = ((VisualElement)mPtr).worldBound;
+    return new DOMRect() { x = rc.xMin, y = rc.yMin, width = rc.width, height = rc.height };
   }
 }
