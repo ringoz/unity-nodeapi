@@ -94,6 +94,7 @@ export type Single = number;
 export type Double = number;
 export type Char = string;
 export type String = string;
+export type PropertyPath = string;
 export type Vector2 = [x: number, y: number];
 export type Vector2Int = Vector2;
 export type Vector3 = [x: number, y: number, z: number];
@@ -237,7 +238,7 @@ export interface VisualElement {
   visible: Boolean;
 //generateVisualContent: Action;
   dataSource: Object;
-//dataSourcePath: PropertyPath;
+  dataSourcePath: PropertyPath;
 //dataSourceType: Type;
 //readonly experimental: IExperimentalFeatures;
 //readonly hierarchy: Hierarchy;
