@@ -190,17 +190,10 @@ class GameObjectNode : ObjectNode
 
   public override void SetParent(Node parent, Node beforeChild = null)
   {
-    if (parent == null)
-      parent = Null;
-
-    if (parent.mPtr is GameObject)
-    {
-      ((GameObject)mPtr).transform.SetParent(((GameObject)parent.mPtr).transform, false);
-      if (beforeChild is GameObjectNode)
-        ((GameObject)mPtr).transform.SetSiblingIndex(((GameObject)beforeChild.mPtr).transform.GetSiblingIndex());
-    }
-    else
-      base.SetParent(parent, beforeChild);
+    var parentGameObject = (GameObject)(parent ?? Null).mPtr;
+    ((GameObject)mPtr).transform.SetParent(parentGameObject.transform, false);
+    if (beforeChild?.mPtr is GameObject beforeChildGameObject)
+      ((GameObject)mPtr).transform.SetSiblingIndex(beforeChildGameObject.transform.GetSiblingIndex());
   }
 
   public override void Clear()
@@ -286,16 +279,14 @@ class ComponentNode : ObjectNode
       return;
     }
 
-    if (parent.mPtr is GameObject && mPtr is List<object> list)
-    {
-      var type = (Type)list.First();
-      mPtr = ((GameObject)parent.mPtr).GetComponent(type) ?? ((GameObject)parent.mPtr).AddComponent(type);
-      foreach (var props in list.Skip(1))
-        using (var reference = (JSReference)props)
-          base.SetProps(reference.GetValue());
-    }
-    else
-      base.SetParent(parent, beforeChild);
+    var parentGameObject = (GameObject)parent.mPtr;
+    var list = (List<object>)mPtr;
+    var type = (Type)list.First();
+
+    mPtr = parentGameObject.GetComponent(type) ?? parentGameObject.AddComponent(type);
+    foreach (var props in list.Skip(1))
+      using (var reference = (JSReference)props)
+        base.SetProps(reference.GetValue());
   }
 }
 
@@ -320,20 +311,20 @@ class VisualElementNode : Node
     if (parent == null)
     {
       ((VisualElement)mPtr).parent.Remove((VisualElement)mPtr);
+      return;
     }
-    else if (parent.mPtr is GameObject parentGameObject)
+
+    var parentElement = parent.mPtr as VisualElement;
+    if (parentElement == null)
     {
-      parentGameObject.GetComponent<UIDocument>().rootVisualElement.Add((VisualElement)mPtr);
+      var parentGameObject = (GameObject)parent.mPtr;
+      parentElement = parentGameObject.GetComponent<UIDocument>().rootVisualElement;
     }
-    else if (parent.mPtr is VisualElement parentElement)
-    {
-      if (beforeChild.mPtr is VisualElement beforeChildElement)
-        parentElement.Insert(parentElement.IndexOf(beforeChildElement), (VisualElement)mPtr);
-      else
-        parentElement.Add((VisualElement)mPtr);
-    }
+
+    if (beforeChild?.mPtr is VisualElement beforeChildElement)
+      parentElement.Insert(parentElement.IndexOf(beforeChildElement), (VisualElement)mPtr);
     else
-      base.SetParent(parent, beforeChild);
+      parentElement.Add((VisualElement)mPtr);
   }
 
   public override void Clear()
