@@ -32,10 +32,10 @@ public struct DOMRect
   public float y { get; init; }
   public float width { get; init; }
   public float height { get; init; }
-  public float left => x;
-  public float top => y;
-  public float right => x + width;
-  public float bottom => y + height;
+  public float left => x + 0.5f;
+  public float top => y + 0.5f;
+  public float right => left + width;
+  public float bottom => top + height;
 }
 
 [JSExport]
