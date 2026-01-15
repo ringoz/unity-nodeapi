@@ -214,7 +214,7 @@ export interface VisualElement {
   viewDataKey: String;
   userData: Object;
   disablePlayModeTint: Boolean;
-  usageHints: UsageHints;
+  usageHints: UsageHints[];
   readonly scaledPixelsPerPoint: Single;
   readonly layout: Rect;
   readonly contentRect: Rect;

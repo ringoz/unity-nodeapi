@@ -114,8 +114,8 @@ public class Node : IDisposable
 
       default:
         var part = key[key.Length - 1];
-        if (part.IsName && part.Name.EndsWith("Flags") && val.IsArray())
-          PropertyContainer.SetValue(mPtr, key, string.Join(", ", ((JSArray)val).Select(v => (string)v)));
+        if (part.IsName && (part.Name.EndsWith("Flags") || part.Name.EndsWith("Hints")) && val.IsArray())
+          PropertyContainer.SetValue(mPtr, key, string.Join(',', ((JSArray)val).Select(v => (string)v)));
         else
           PropertyContainer.SetValue(mPtr, key, val);
         break;
