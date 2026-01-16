@@ -96,7 +96,7 @@ public class Node : IDisposable
   public override int GetHashCode() => mPtr.GetHashCode();
   public override string ToString() => PropertiezDump.ToString(mPtr);
 
-  static private PropertyPath PropPath(in JSValue key) => new PropertyPath(((string)key).Replace('-', '.'));
+  private static PropertyPath PropPath(in JSValue key) => new PropertyPath(((string)key).Replace('-', '.'));
   private void SetProp(in PropertyPath key, in JSValue val)
   {
     switch (val.TypeOf())
@@ -130,7 +130,8 @@ public class Node : IDisposable
   public virtual void Clear() => throw new NotImplementedException();
   public virtual DOMRect GetBoundingClientRect() => default;
 
-  public static Node Create(object kind) => VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
+  private static Node CreateImpl(object kind) => VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
+  public static Node Create(object kind) => CreateImpl(kind is string path ? Resources.Load(path) ?? kind : kind);
   public static Node Search(string name) => GameObjectNode.Find(name);
 
   public static Loader LoadAssetAsync { get; set; } = async (string path) =>
@@ -174,13 +175,9 @@ class GameObjectNode : ObjectNode
 
   public static new Node Create(object kind)
   {
-    var obj = kind switch
-    {
-      GameObject prefab => prefab,
-      string path => Resources.Load<GameObject>(path),
-      _ => null
-    };
-    return obj ? Wrap(UnityEngine.Object.Instantiate(obj, ((GameObject)Null.mPtr).transform, false)) : null;
+    if (kind is GameObject prefab)
+      return Wrap(UnityEngine.Object.Instantiate(prefab, ((GameObject)Null.mPtr).transform, false));
+    return null;
   }
 
   public override void SetActive(bool value)
@@ -297,6 +294,9 @@ class VisualElementNode : Node
   public static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(VisualElement).IsAssignableFrom(type));
   public static new Node Create(object kind)
   {
+    if (kind is VisualTreeAsset uxml)
+      return new VisualElementNode(uxml.Instantiate());
+
     Type type = kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
     return type != null ? new VisualElementNode((VisualElement)Activator.CreateInstance(type)) : null;
   }
