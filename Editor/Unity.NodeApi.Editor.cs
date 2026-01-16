@@ -43,8 +43,8 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     PlayerSettings.WebGL.emscriptenArgs = m_emsdkArgs;
 
     string projectPath = Path.GetDirectoryName(Application.dataPath);
-    GenerateTypings(EnumCoreTypes(), projectPath + "/Packages/net.ringoz.unity.nodeapi/react.ts");
-    GenerateTypings(EnumUserTypes(), projectPath + "/index.ts");
+    GenerateTypings(EnumCoreTypes().ToArray(), projectPath + "/Packages/net.ringoz.unity.nodeapi/react.ts");
+    GenerateTypings(EnumUserTypes().ToArray(), projectPath + "/index.ts");
   }
 
   static IEnumerable<Type> EnumCoreTypes()
@@ -64,7 +64,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
   static IEnumerable<Type> EnumUserTypes()
   {
     var types = PropertyBag.GetAllTypesWithAPropertyBag().Where(type => !EnumCoreTypes().Contains(type));
-    return types.Where(type => EnumCoreTypes().Any(core => type.IsSubclassOf(core)));
+    return types.Where(type => EnumCoreTypes().Any(core => core.IsAssignableFrom(type)));
   }
 
   static IEnumerable<IProperty> GetProperties(Type type)
@@ -141,7 +141,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
         }
 
         writer.Write(IsPropTypeSupported(propType) ? "  " : "//");
-        writer.WriteLine($"{(property.IsReadOnly ? "readonly " : "")}{property.Name}: {PropTypeName(propType)}{(isArray ? "[]": "")};");
+        writer.WriteLine($"{(property.IsReadOnly ? "readonly " : "")}{property.Name}: {PropTypeName(propType)}{(isArray ? "[]" : "")};");
       }
 
       writer.WriteLine($"}}");
