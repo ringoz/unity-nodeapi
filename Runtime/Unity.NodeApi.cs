@@ -264,7 +264,7 @@ class ComponentNode : AttributeOverridesNode
   public static ComponentNode Find(object kind, GameObjectNode scope) => Find(ParseType(kind), scope);
   public static ComponentNode Find(Type type, GameObjectNode scope) => Wrap(((GameObject)scope.mPtr).GetComponent(type) ?? ((GameObject)scope.mPtr).AddComponent(type));
 
-  public static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(Component).IsAssignableFrom(type));
+  private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(Component).IsAssignableFrom(type));
   private static Type ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
 
   public static new Node Create(object kind)
@@ -296,18 +296,20 @@ class ComponentNode : AttributeOverridesNode
 
 class VisualElementNode : Node
 {
-  protected VisualElementNode(object ptr) : base(ptr) { }
+  protected VisualElementNode(VisualElement ptr) : base(ptr) { }
 
   public static VisualElementNode Wrap(VisualElement obj) => obj != null ? new VisualElementNode(obj) : null;
   public static VisualElementNode Find(object name, VisualElementNode scope) => Wrap(((VisualElement)scope.mPtr).Query(name.ToString()));
 
-  public static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(VisualElement).IsAssignableFrom(type));
+  private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(VisualElement).IsAssignableFrom(type));
+  private static Type ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
+
   public static new Node Create(object kind)
   {
     if (kind is VisualTreeAsset uxml)
       return new VisualElementNode(uxml.Instantiate());
 
-    Type type = kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
+    Type type = ParseType(kind);
     return type != null ? new VisualElementNode((VisualElement)Activator.CreateInstance(type)) : null;
   }
 
