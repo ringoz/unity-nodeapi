@@ -140,7 +140,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
             yield return $"export type {TypeName(propType)} = {string.Join(" | ", Enum.GetNames(propType).Select(name => $"'{name}'"))};";
         }
 
-        writer.Write(IsPropTypeSupported(propType) ? "  " : "//");
+        writer.Write(IsPropTypeSupported(propType) ? "  " : "  //");
         writer.WriteLine($"{(property.IsReadOnly ? "readonly " : "")}{property.Name}: {PropTypeName(propType)}{(isArray ? "[]" : "")};");
       }
 

@@ -130,13 +130,13 @@ export interface ObjectBase {
 
 export interface GameObject extends ObjectBase {
   readonly transform: Ptr<Transform>;
-//readonly transformHandle: TransformHandle;
+  //readonly transformHandle: TransformHandle;
   layer: Int32;
   readonly activeSelf: Boolean;
   readonly activeInHierarchy: Boolean;
   isStatic: Boolean;
   tag: String;
-//readonly scene: Scene;
+  //readonly scene: Scene;
   readonly sceneCullingMask: UInt64;
   readonly gameObject: Ptr<GameObject>;
 }
@@ -144,7 +144,7 @@ export const GameObject = intrinsic<GameObject>("GameObject");
 
 export interface Component extends ObjectBase {
   readonly transform: Ptr<Transform>;
-//readonly transformHandle: TransformHandle;
+  //readonly transformHandle: TransformHandle;
   readonly gameObject: Ptr<GameObject>;
   tag: String;
 }
@@ -180,7 +180,7 @@ export interface Behaviour extends Component {
 export const Behaviour = intrinsic<Behaviour>("Behaviour");
 
 export interface MonoBehaviour extends Behaviour {
-//readonly destroyCancellationToken: CancellationToken;
+  //readonly destroyCancellationToken: CancellationToken;
   useGUILayout: Boolean;
   readonly didStart: Boolean;
   readonly didAwake: Boolean;
@@ -193,9 +193,9 @@ export type WorldSpaceSizeMode = 'Dynamic' | 'Fixed';
 export type PivotReferenceSize = 'BoundingBox' | 'Layout';
 export type Pivot = 'Center' | 'TopLeft' | 'TopCenter' | 'TopRight' | 'LeftCenter' | 'RightCenter' | 'BottomLeft' | 'BottomCenter' | 'BottomRight';
 export interface UIDocument extends MonoBehaviour {
-//panelSettings: PanelSettings;
+  //panelSettings: PanelSettings;
   readonly parentUI: Ptr<UIDocument>;
-//visualTreeAsset: VisualTreeAsset;
+  //visualTreeAsset: VisualTreeAsset;
   readonly rootVisualElement: Ptr<VisualElement>;
   position: Position;
   worldSpaceSizeMode: WorldSpaceSizeMode;
@@ -203,7 +203,7 @@ export interface UIDocument extends MonoBehaviour {
   pivotReferenceSize: PivotReferenceSize;
   pivot: Pivot;
   sortingOrder: Single;
-//readonly runtimePanel: IRuntimePanel;
+  //readonly runtimePanel: IRuntimePanel;
 }
 export const UIDocument = intrinsic<UIDocument>("UIDocument");
 
@@ -211,7 +211,7 @@ export type UsageHints = 'None' | 'DynamicTransform' | 'GroupTransform' | 'MaskC
 export type PickingMode = 'Position' | 'Ignore';
 export type LanguageDirection = 'Inherit' | 'LTR' | 'RTL';
 export interface VisualElement {
-//readonly focusController: FocusController;
+  //readonly focusController: FocusController;
   focusable: Boolean;
   tabIndex: Int32;
   delegatesFocus: Boolean;
@@ -240,41 +240,41 @@ export interface VisualElement {
   enabledSelf: Boolean;
   languageDirection: LanguageDirection;
   visible: Boolean;
-//generateVisualContent: Action;
+  //generateVisualContent: Action;
   dataSource: Object;
   dataSourcePath: PropertyPath;
-//dataSourceType: Type;
-//readonly experimental: IExperimentalFeatures;
-//readonly hierarchy: Hierarchy;
+  //dataSourceType: Type;
+  //readonly experimental: IExperimentalFeatures;
+  //readonly hierarchy: Hierarchy;
   readonly parent: Ptr<VisualElement>;
-//readonly panel: IPanel;
+  //readonly panel: IPanel;
   readonly contentContainer: Ptr<VisualElement>;
-//readonly visualTreeAssetSource: VisualTreeAsset;
+  //readonly visualTreeAssetSource: VisualTreeAsset;
   readonly childCount: Int32;
-//readonly schedule: IVisualElementScheduler;
-//readonly style: IStyle;
-//readonly resolvedStyle: IResolvedStyle;
-//readonly customStyle: ICustomStyle;
-//readonly styleSheets: VisualElementStyleSheetSet;
+  //readonly schedule: IVisualElementScheduler;
+  //readonly style: IStyle;
+  //readonly resolvedStyle: IResolvedStyle;
+  //readonly customStyle: ICustomStyle;
+  //readonly styleSheets: VisualElementStyleSheetSet;
   tooltip: String;
 }
 export const VisualElement = intrinsic<VisualElement>("VisualElement");
 
 export interface BindableElement extends VisualElement {
-//binding: IBinding;
+  //binding: IBinding;
   bindingPath: String;
 }
 export const BindableElement = intrinsic<BindableElement>("BindableElement");
 
 export interface TextElement extends BindableElement {
-//PostProcessTextVertices: Action;
+  //PostProcessTextVertices: Action;
   text: String;
   enableRichText: Boolean;
   emojiFallbackSupport: Boolean;
   parseEscapeSequences: Boolean;
   displayTooltipWhenElided: Boolean;
   readonly isElided: Boolean;
-//readonly selection: ITextSelection;
+  //readonly selection: ITextSelection;
 }
 export const TextElement = intrinsic<TextElement>("TextElement");
 
