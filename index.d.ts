@@ -34,7 +34,7 @@ export class Node {
 
 	dispose(): void;
 
-	equals(ptr: Object): boolean;
+	equals(other: Object): boolean;
 
 	getHashCode(): number;
 
@@ -55,5 +55,8 @@ export class Node {
 
 	static create(kind: Object): Node;
 
-	static search(name: string): Node;
+	static search(
+		name: Object,
+		scope?: Node,
+	): Node;
 }

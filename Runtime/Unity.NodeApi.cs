@@ -92,7 +92,7 @@ public class Node : IDisposable
   protected Node(object ptr) => mPtr = ptr;
   public virtual void Dispose() => (mPtr as IDisposable)?.Dispose();
 
-  public override bool Equals(object ptr) => (ptr is Node instance) ? ptr.Equals(instance.mPtr) : base.Equals(ptr);
+  public override bool Equals(object other) => (GetType() == other.GetType()) ? Equals(mPtr, ((Node)other).mPtr) : base.Equals(other);
   public override int GetHashCode() => mPtr.GetHashCode();
   public override string ToString() => PropertiezDump.ToString(mPtr);
 
@@ -130,9 +130,9 @@ public class Node : IDisposable
   public virtual void Clear() => throw new NotImplementedException();
   public virtual DOMRect GetBoundingClientRect() => default;
 
-  private static Node CreateImpl(object kind) => VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
+  private static Node CreateImpl(object kind) => AttributeOverridesNode.Create(kind) ?? VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
   public static Node Create(object kind) => CreateImpl(kind is string path ? Resources.Load(path) ?? kind : kind);
-  public static Node Search(string name) => GameObjectNode.Find(name);
+  public static Node Search(object name, Node scope = null) => scope is VisualElementNode root ? VisualElementNode.Find(name, root) : scope is GameObjectNode gobj ? ComponentNode.Find(name, gobj) : GameObjectNode.Find((string)name);
 
   public static Loader LoadAssetAsync { get; set; } = async (string path) =>
   {
@@ -142,17 +142,40 @@ public class Node : IDisposable
   };
 }
 
-class ObjectNode : Node
+class AttributeOverridesNode : Node
 {
-  protected ObjectNode(object ptr) : base(ptr) { }
+  protected AttributeOverridesNode(object obj) : base(obj) { }
+  protected AttributeOverridesNode(string name) : base(new List<object> { name }) { }
 
-  public override void Dispose()
+  public static new Node Create(object kind) => kind switch
   {
-    UnityEngine.Object.Destroy((UnityEngine.Object)mPtr);
+    string name => name.StartsWith("#") ? new AttributeOverridesNode(name.Substring(1)) : null,
+    _ => null
+  };
+
+  public override void SetProps(in JSValue props)
+  {
+    if (mPtr is List<object> list)
+      list.Add(new JSReference(props));
+    else
+      base.SetProps(props);
+  }
+
+  public override void SetParent(Node parent, Node beforeChild = null)
+  {
+    var list = (List<object>)mPtr;
+    var name = list.First();
+
+    mPtr = Search(name, parent).mPtr;
+    Assert.IsNotNull(mPtr, $"{name} not found in {parent.mPtr}");
+
+    foreach (var props in list.Skip(1))
+      using (var reference = (JSReference)props)
+        base.SetProps(reference.GetValue());
   }
 }
 
-class GameObjectNode : ObjectNode
+class GameObjectNode : Node
 {
   protected GameObjectNode(object ptr) : base(ptr) { }
 
@@ -178,6 +201,11 @@ class GameObjectNode : ObjectNode
     if (kind is GameObject prefab)
       return Wrap(UnityEngine.Object.Instantiate(prefab, ((GameObject)Null.mPtr).transform, false));
     return null;
+  }
+
+  public override void Dispose()
+  {
+    UnityEngine.Object.Destroy((GameObject)mPtr);
   }
 
   public override void SetActive(bool value)
@@ -227,37 +255,22 @@ class GameObjectNode : ObjectNode
   }
 }
 
-class ComponentNode : ObjectNode
+class ComponentNode : AttributeOverridesNode
 {
   protected ComponentNode(Type type) : base(new List<object> { type }) { }
+  protected ComponentNode(Component comp) : base(comp) { }
+
+  public static ComponentNode Wrap(Component obj) => obj != null ? new ComponentNode(obj) : null;
+  public static ComponentNode Find(object kind, GameObjectNode scope) => Find(ParseType(kind), scope);
+  public static ComponentNode Find(Type type, GameObjectNode scope) => Wrap(((GameObject)scope.mPtr).GetComponent(type) ?? ((GameObject)scope.mPtr).AddComponent(type));
 
   public static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(Component).IsAssignableFrom(type));
+  private static Type ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
+
   public static new Node Create(object kind)
   {
-    Type type = kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
+    Type type = ParseType(kind);
     return type != null ? new ComponentNode(type) : null;
-  }
-
-  public override void Dispose()
-  {
-    // Destroying the transform component is not allowed.
-    if (mPtr is Transform transform)
-    {
-      transform.localPosition = Vector3.zero;
-      transform.localRotation = Quaternion.identity;
-      transform.localScale = Vector3.one;
-      return;
-    }
-
-    base.Dispose();
-  }
-
-  public override void SetProps(in JSValue props)
-  {
-    if (mPtr is List<object> list)
-      list.Add(new JSReference(props));
-    else
-      base.SetProps(props);
   }
 
   public override void SetActive(bool value)
@@ -270,26 +283,23 @@ class ComponentNode : ObjectNode
 
   public override void SetParent(Node parent, Node beforeChild = null)
   {
-    if (parent == null)
+    if (parent == null && mPtr is Transform transform)
     {
-      Dispose();
+      transform.localPosition = Vector3.zero;
+      transform.localRotation = Quaternion.identity;
+      transform.localScale = Vector3.one;
       return;
     }
-
-    var parentGameObject = (GameObject)parent.mPtr;
-    var list = (List<object>)mPtr;
-    var type = (Type)list.First();
-
-    mPtr = parentGameObject.GetComponent(type) ?? parentGameObject.AddComponent(type);
-    foreach (var props in list.Skip(1))
-      using (var reference = (JSReference)props)
-        base.SetProps(reference.GetValue());
+    base.SetParent(parent, beforeChild);
   }
 }
 
 class VisualElementNode : Node
 {
   protected VisualElementNode(object ptr) : base(ptr) { }
+
+  public static VisualElementNode Wrap(VisualElement obj) => obj != null ? new VisualElementNode(obj) : null;
+  public static VisualElementNode Find(object name, VisualElementNode scope) => Wrap(((VisualElement)scope.mPtr).Query(name.ToString()));
 
   public static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(VisualElement).IsAssignableFrom(type));
   public static new Node Create(object kind)

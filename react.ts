@@ -82,6 +82,10 @@ export function /* @__PURE__ */ asset<T = GameObject>(path: string) {
   });
 }
 
+export function AttributeOverrides({ elementName, ...props }: { elementName: string } & Props<any>) {
+  return createElement(`#${elementName}`, props);
+}
+
 export type Ptr<T> = object;
 export type Boolean = boolean;
 export type Int16 = number;
