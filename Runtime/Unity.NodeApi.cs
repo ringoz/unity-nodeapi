@@ -102,8 +102,8 @@ public class Node : IDisposable
     switch (val.TypeOf())
     {
       case JSValueType.String:
-        try { PropertyContainer.SetValue(mPtr, key, (string)val); }
-        catch { PropertyContainer.SetValue(mPtr, key, val); }
+        if (!PropertyContainer.TrySetValue(mPtr, key, (string)val))
+          PropertyContainer.SetValue(mPtr, key, val);
         break;
 
       case JSValueType.External:
