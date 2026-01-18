@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
@@ -86,6 +87,8 @@ public class Node : IDisposable
     return TypeConversion.TryConvert(ref source, out T destination);
   }
 
+  protected static readonly ConditionalWeakTable<object, Node> Wrappers = new();
+
   internal object mPtr;
   public virtual object Ptr => mPtr;
 
@@ -144,7 +147,7 @@ public class Node : IDisposable
 
 class AttributeOverridesNode : Node
 {
-  internal object mName;
+  protected object mName;
 
   public override object Ptr => mPtr is JSReference ? null : mPtr;
 
@@ -193,8 +196,8 @@ class GameObjectNode : Node
 {
   protected GameObjectNode(object ptr) : base(ptr) { }
 
-  public static GameObjectNode Wrap(GameObject obj) => obj ? new GameObjectNode(obj) : null;
-  public static GameObjectNode Find(string name) => Wrap(GameObject.Find(name));
+  public static Node Wrap(GameObject obj) => obj ? (GameObjectNode)Wrappers.GetValue(obj, (obj) => new GameObjectNode(obj)) : null;
+  public static Node Find(string name) => Wrap(GameObject.Find(name));
 
   private static GameObjectNode _null = new GameObjectNode(null);
   private static GameObjectNode Null
@@ -273,9 +276,9 @@ class ComponentNode : AttributeOverridesNode
 {
   protected ComponentNode(object obj) : base(obj) { }
 
-  public static ComponentNode Wrap(Component obj) => obj != null ? new ComponentNode(obj) { mName = obj.GetType() } : null;
-  public static ComponentNode Find(object kind, GameObjectNode scope) => Find(ParseType(kind), scope);
-  public static ComponentNode Find(Type type, GameObjectNode scope) => Wrap(((GameObject)scope.mPtr).GetComponent(type) ?? ((GameObject)scope.mPtr).AddComponent(type));
+  public static Node Wrap(Component obj) => obj != null ? Wrappers.GetValue(obj, (obj) => new ComponentNode(obj) { mName = obj.GetType() }) : null;
+  public static Node Find(object kind, GameObjectNode scope) => Find(ParseType(kind), scope);
+  public static Node Find(Type type, GameObjectNode scope) => Wrap(((GameObject)scope.mPtr).GetComponent(type) ?? ((GameObject)scope.mPtr).AddComponent(type));
 
   private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(Component).IsAssignableFrom(type));
   private static Type ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
@@ -309,10 +312,10 @@ class ComponentNode : AttributeOverridesNode
 
 class VisualElementNode : Node
 {
-  protected VisualElementNode(VisualElement ptr) : base(ptr) { }
+  protected VisualElementNode(object ptr) : base(ptr) { }
 
-  public static VisualElementNode Wrap(VisualElement obj) => obj != null ? new VisualElementNode(obj) : null;
-  public static VisualElementNode Find(object name, VisualElementNode scope) => Wrap(((VisualElement)scope.mPtr).Query(name.ToString()));
+  public static Node Wrap(VisualElement obj) => obj != null ? Wrappers.GetValue(obj, (obj) => new VisualElementNode(obj)) : null;
+  public static Node Find(object name, VisualElementNode scope) => Wrap(((VisualElement)scope.mPtr).Query(name.ToString()));
 
   private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(VisualElement).IsAssignableFrom(type));
   private static Type ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
