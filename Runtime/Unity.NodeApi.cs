@@ -87,7 +87,7 @@ public class Node : IDisposable
   }
 
   internal object mPtr;
-  public object Ptr => mPtr;
+  public virtual object Ptr => mPtr;
 
   protected Node(object ptr) => mPtr = ptr;
   public virtual void Dispose() => (mPtr as IDisposable)?.Dispose();
@@ -144,34 +144,48 @@ public class Node : IDisposable
 
 class AttributeOverridesNode : Node
 {
+  internal object mName;
+
+  public override object Ptr => mPtr is JSReference ? null : mPtr;
+
   protected AttributeOverridesNode(object obj) : base(obj) { }
-  protected AttributeOverridesNode(string name) : base(new List<object> { name }) { }
 
   public static new Node Create(object kind) => kind switch
   {
-    string name => name.StartsWith("#") ? new AttributeOverridesNode(name.Substring(1)) : null,
+    string name => name.StartsWith("#") ? new AttributeOverridesNode(null) { mName = name.Substring(1) } : null,
     _ => null
   };
 
+  public override void Dispose() => (mPtr as JSReference)?.Dispose();
+
   public override void SetProps(in JSValue props)
   {
-    if (mPtr is List<object> list)
-      list.Add(new JSReference(props));
+    if (mPtr is JSReference reference)
+    {
+      reference.Dispose();
+      mPtr = null;
+    }
+
+    if (mPtr == null)
+      mPtr = new JSReference(props);
     else
       base.SetProps(props);
   }
 
   public override void SetParent(Node parent, Node beforeChild = null)
   {
-    var list = (List<object>)mPtr;
-    var name = list.First();
+    if (parent == null)
+    {
+      mPtr = null;
+      return;
+    }
 
-    mPtr = Search(name, parent).mPtr;
-    Assert.IsNotNull(mPtr, $"{name} not found in {parent.mPtr}");
-
-    foreach (var props in list.Skip(1))
-      using (var reference = (JSReference)props)
-        base.SetProps(reference.GetValue());
+    using (var reference = (JSReference)mPtr)
+    {
+      mPtr = Search(mName, parent)?.mPtr;
+      Assert.IsNotNull(mPtr, $"{mName} not found in {parent.mPtr}");
+      base.SetProps(reference.GetValue());
+    }
   }
 }
 
@@ -257,10 +271,9 @@ class GameObjectNode : Node
 
 class ComponentNode : AttributeOverridesNode
 {
-  protected ComponentNode(Type type) : base(new List<object> { type }) { }
-  protected ComponentNode(Component comp) : base(comp) { }
+  protected ComponentNode(object obj) : base(obj) { }
 
-  public static ComponentNode Wrap(Component obj) => obj != null ? new ComponentNode(obj) : null;
+  public static ComponentNode Wrap(Component obj) => obj != null ? new ComponentNode(obj) { mName = obj.GetType() } : null;
   public static ComponentNode Find(object kind, GameObjectNode scope) => Find(ParseType(kind), scope);
   public static ComponentNode Find(Type type, GameObjectNode scope) => Wrap(((GameObject)scope.mPtr).GetComponent(type) ?? ((GameObject)scope.mPtr).AddComponent(type));
 
@@ -270,7 +283,7 @@ class ComponentNode : AttributeOverridesNode
   public static new Node Create(object kind)
   {
     Type type = ParseType(kind);
-    return type != null ? new ComponentNode(type) : null;
+    return type != null ? new ComponentNode(null) { mName = type } : null;
   }
 
   public override void SetActive(bool value)
