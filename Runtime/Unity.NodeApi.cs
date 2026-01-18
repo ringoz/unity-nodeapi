@@ -97,7 +97,7 @@ public class Node : IDisposable
 
   public override bool Equals(object other) => (GetType() == other.GetType()) ? Equals(mPtr, ((Node)other).mPtr) : base.Equals(other);
   public override int GetHashCode() => mPtr.GetHashCode();
-  public override string ToString() => PropertiezDump.ToString(mPtr);
+  public override string ToString() => $"[{GetType().Name}] {mPtr}";
 
   private static PropertyPath PropPath(in JSValue key) => new PropertyPath(((string)key).Replace('-', '.'));
   private void SetProp(in PropertyPath key, in JSValue val)
@@ -161,6 +161,8 @@ class AttributeOverridesNode : Node
 
   public override void Dispose() => (mPtr as JSReference)?.Dispose();
 
+  public override string ToString() => $"[#{mName}] {mPtr}";
+
   public override void SetProps(in JSValue props)
   {
     if (mPtr is JSReference reference)
@@ -196,7 +198,7 @@ class GameObjectNode : Node
 {
   protected GameObjectNode(object ptr) : base(ptr) { }
 
-  public static Node Wrap(GameObject obj) => obj ? (GameObjectNode)Wrappers.GetValue(obj, (obj) => new GameObjectNode(obj)) : null;
+  public static Node Wrap(GameObject obj) => obj != null ? Wrappers.GetValue(obj, obj => new GameObjectNode(obj)) : null;
   public static Node Find(string name) => Wrap(GameObject.Find(name));
 
   private static GameObjectNode _null = new GameObjectNode(null);
@@ -276,9 +278,9 @@ class ComponentNode : AttributeOverridesNode
 {
   protected ComponentNode(object obj) : base(obj) { }
 
-  public static Node Wrap(Component obj) => obj != null ? Wrappers.GetValue(obj, (obj) => new ComponentNode(obj) { mName = obj.GetType() }) : null;
-  public static Node Find(object kind, GameObjectNode scope) => Find(ParseType(kind), scope);
-  public static Node Find(Type type, GameObjectNode scope) => Wrap(((GameObject)scope.mPtr).GetComponent(type) ?? ((GameObject)scope.mPtr).AddComponent(type));
+  public static Node Wrap(Component obj) => obj != null ? Wrappers.GetValue(obj, obj => new ComponentNode(obj) { mName = obj.GetType() }) : null;
+  public static Node Find(Type type, Node scope) => Wrap(((GameObject)scope.mPtr).GetComponent(type) ?? ((GameObject)scope.mPtr).AddComponent(type));
+  public static Node Find(object kind, Node scope) => Find(ParseType(kind), scope);
 
   private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(Component).IsAssignableFrom(type));
   private static Type ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
@@ -299,14 +301,20 @@ class ComponentNode : AttributeOverridesNode
 
   public override void SetParent(Node parent, Node beforeChild = null)
   {
-    if (parent == null && mPtr is Transform transform)
+    if (parent == null)
     {
-      transform.localPosition = Vector3.zero;
-      transform.localRotation = Quaternion.identity;
-      transform.localScale = Vector3.one;
-      return;
+      Wrappers.Remove(mPtr);
+      if (mPtr is Transform transform)
+      {
+        transform.localPosition = Vector3.zero;
+        transform.localRotation = Quaternion.identity;
+        transform.localScale = Vector3.one;
+      }
     }
+    
     base.SetParent(parent, beforeChild);
+    if (parent != null)
+      Wrappers.AddOrUpdate(mPtr, this);
   }
 }
 
@@ -314,8 +322,8 @@ class VisualElementNode : Node
 {
   protected VisualElementNode(object ptr) : base(ptr) { }
 
-  public static Node Wrap(VisualElement obj) => obj != null ? Wrappers.GetValue(obj, (obj) => new VisualElementNode(obj)) : null;
-  public static Node Find(object name, VisualElementNode scope) => Wrap(((VisualElement)scope.mPtr).Query(name.ToString()));
+  public static Node Wrap(VisualElement obj) => obj != null ? Wrappers.GetValue(obj, obj => new VisualElementNode(obj)) : null;
+  public static Node Find(object name, Node scope) => Wrap(((VisualElement)scope.mPtr).Query(name.ToString()));
 
   private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(VisualElement).IsAssignableFrom(type));
   private static Type ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
