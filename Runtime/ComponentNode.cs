@@ -13,7 +13,7 @@ class ComponentNode : AttributeOverridesNode
   protected ComponentNode(object obj) : base(obj) { }
 
   public static Node Wrap(Component obj) => obj != null ? Wrappers.GetValue(obj, obj => new ComponentNode(obj) { mName = obj.GetType() }) : null;
-  public static Node Find(Type type, Node scope) => Wrap(((GameObject)scope.mPtr).GetComponent(type) ?? ((GameObject)scope.mPtr).AddComponent(type));
+  public static Node Find(Type type, Node scope) => Wrap(((GameObject)scope.mPtr).GetOrAddComponent(type));
   public static Node Find(object kind, Node scope) => Find(ParseType(kind), scope);
 
   private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(Component).IsAssignableFrom(type));

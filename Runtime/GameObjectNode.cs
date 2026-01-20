@@ -2,11 +2,66 @@
  Copyright (c) Vladimir Davidovich. All rights reserved.
 ***********************************************************************/
 
+using System;
 using System.Linq;
 using UnityEngine;
+using Unity.Properties;
 
 class GameObjectNode : Node
 {
+  abstract class EventBehaviour : MonoBehaviour
+  {
+    public Action action;
+  }
+
+  sealed class EventProperty<TBehaviour> : Property<GameObject, Action> where TBehaviour : EventBehaviour
+  {
+    public override string Name => typeof(TBehaviour).Name;
+    public override bool IsReadOnly => false;
+    public override Action GetValue(ref GameObject container) => container.GetComponent<TBehaviour>()?.action;
+    public override void SetValue(ref GameObject container, Action value) => container.GetOrAddComponent<TBehaviour>().action = value;
+  }
+
+  sealed class onAwake : EventBehaviour { void Awake() => action?.Invoke(); }
+  sealed class onStart : EventBehaviour { void Start() => action?.Invoke(); }
+  sealed class onUpdate : EventBehaviour { void Update() => action?.Invoke(); }
+  sealed class onFixedUpdate : EventBehaviour { void FixedUpdate() => action?.Invoke(); }
+  sealed class onLateUpdate : EventBehaviour { void LateUpdate() => action?.Invoke(); }
+  sealed class onDestroy : EventBehaviour { void OnDestroy() => action?.Invoke(); }
+  sealed class onEnable : EventBehaviour { void OnEnable() => action?.Invoke(); }
+  sealed class onDisable : EventBehaviour { void OnDisable() => action?.Invoke(); }
+  sealed class onBecameInvisible : EventBehaviour { void OnBecameInvisible() => action?.Invoke(); }
+  sealed class onBecameVisible : EventBehaviour { void OnBecameVisible() => action?.Invoke(); }
+  sealed class onMouseDown : EventBehaviour { void OnMouseDown() => action?.Invoke(); }
+  sealed class onMouseDrag : EventBehaviour { void OnMouseDrag() => action?.Invoke(); }
+  sealed class onMouseEnter : EventBehaviour { void OnMouseEnter() => action?.Invoke(); }
+  sealed class onMouseExit : EventBehaviour { void OnMouseExit() => action?.Invoke(); }
+  sealed class onMouseOver : EventBehaviour { void OnMouseOver() => action?.Invoke(); }
+  sealed class onMouseUp : EventBehaviour { void OnMouseUp() => action?.Invoke(); }
+  sealed class onMouseUpAsButton : EventBehaviour { void OnMouseUpAsButton() => action?.Invoke(); }
+
+  static GameObjectNode()
+  {
+    var bag = (ContainerPropertyBagEx<GameObject>)PropertyBag.GetPropertyBag<GameObject>();
+    bag.AddProperty(new EventProperty<onAwake>());
+    bag.AddProperty(new EventProperty<onStart>());
+    bag.AddProperty(new EventProperty<onUpdate>());
+    bag.AddProperty(new EventProperty<onFixedUpdate>());
+    bag.AddProperty(new EventProperty<onLateUpdate>());
+    bag.AddProperty(new EventProperty<onDestroy>());
+    bag.AddProperty(new EventProperty<onEnable>());
+    bag.AddProperty(new EventProperty<onDisable>());
+    bag.AddProperty(new EventProperty<onBecameInvisible>());
+    bag.AddProperty(new EventProperty<onBecameVisible>());
+    bag.AddProperty(new EventProperty<onMouseDown>());
+    bag.AddProperty(new EventProperty<onMouseDrag>());
+    bag.AddProperty(new EventProperty<onMouseEnter>());
+    bag.AddProperty(new EventProperty<onMouseExit>());
+    bag.AddProperty(new EventProperty<onMouseOver>());
+    bag.AddProperty(new EventProperty<onMouseUp>());
+    bag.AddProperty(new EventProperty<onMouseUpAsButton>());
+  }
+
   protected GameObjectNode(object ptr) : base(ptr) { }
 
   public static Node Wrap(GameObject obj) => obj != null ? Wrappers.GetValue(obj, obj => new GameObjectNode(obj)) : null;
@@ -82,5 +137,22 @@ class GameObjectNode : Node
     var maxY = corners.Max(corner => Screen.height - corner.y) * 96 / Screen.dpi;
     var minY = corners.Min(corner => Screen.height - corner.y) * 96 / Screen.dpi;
     return new DOMRect() { x = minX, y = minY, width = maxX - minX, height = maxY - minY };
+  }
+}
+
+public static class GameObjectExtensions
+{
+  public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
+  {
+    if (!gameObject.TryGetComponent<T>(out T component))
+      component = gameObject.AddComponent<T>();
+    return component;
+  }
+
+  public static Component GetOrAddComponent(this GameObject gameObject, Type type)
+  {
+    if (!gameObject.TryGetComponent(type, out Component component))
+      component = gameObject.AddComponent(type);
+    return component;
   }
 }

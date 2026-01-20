@@ -26,6 +26,19 @@ public struct DOMRect
 [JSExport]
 public delegate Task<object> Loader(string path);
 
+static class JSValueExtensions
+{
+  public static Action ToAction(this JSValue value)
+  {
+    var reference = new JSReference(value);
+    return new Action(() =>
+    {
+      using (new JSValueScope())
+        reference.GetValue().Call();
+    });
+  }
+}
+
 [JSExport]
 public class Node : IDisposable
 {
@@ -49,6 +62,7 @@ public class Node : IDisposable
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (float)v).ToArray());
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (string)v).ToArray());
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (object)v).ToArray());
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction());
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new PropertyPath((string)v));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2((float)v[0], (float)v[1]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2Int((int)v[0], (int)v[1]));

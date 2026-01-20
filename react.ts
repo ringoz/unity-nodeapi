@@ -94,6 +94,7 @@ export type Single = number;
 export type Double = number;
 export type Char = string;
 export type String = string;
+export type Action = () => void;
 export type PropertyPath = string;
 export type Vector2 = [x: number, y: number];
 export type Vector2Int = Vector2;
@@ -135,6 +136,23 @@ export interface GameObject extends ObjectBase {
   //readonly scene: Scene;
   readonly sceneCullingMask: UInt64;
   readonly gameObject: Ptr<GameObject>;
+  onAwake: Action;
+  onStart: Action;
+  onUpdate: Action;
+  onFixedUpdate: Action;
+  onLateUpdate: Action;
+  onDestroy: Action;
+  onEnable: Action;
+  onDisable: Action;
+  onBecameInvisible: Action;
+  onBecameVisible: Action;
+  onMouseDown: Action;
+  onMouseDrag: Action;
+  onMouseEnter: Action;
+  onMouseExit: Action;
+  onMouseOver: Action;
+  onMouseUp: Action;
+  onMouseUpAsButton: Action;
 }
 export const GameObject = intrinsic<GameObject>("GameObject");
 
