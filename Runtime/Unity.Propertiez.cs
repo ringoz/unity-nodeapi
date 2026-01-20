@@ -6,6 +6,14 @@ using System.Text;
 using System.Collections.Generic;
 using Unity.Properties;
 
+namespace Unity.Properties
+{
+  public abstract class ContainerPropertyBagEx<TContainer> : ContainerPropertyBag<TContainer>
+  {
+    public new void AddProperty<TValue>(Property<TContainer, TValue> property) => base.AddProperty(property);
+  }
+}
+
 class PropertiezDump : PropertyVisitor
 {
   public delegate void WriteLine(string line);
