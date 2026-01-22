@@ -103,24 +103,24 @@ public class Node : IDisposable
     switch (val.TypeOf())
     {
       case JSValueType.String:
-        if (!PropertyContainer.TrySetValue(mPtr, key, (string)val))
-          PropertyContainer.SetValue(mPtr, key, val);
+        if (!Propertiez.TrySetValue(mPtr, key, (string)val, out _))
+          Propertiez.SetValue(mPtr, key, val);
         break;
 
       case JSValueType.External:
         var obj = val.TryGetValueExternal();
         if (obj is UnityEngine.Object ueo)
-          PropertyContainer.SetValue(mPtr, key, ueo);
+          Propertiez.SetValue(mPtr, key, ueo);
         else
-          PropertyContainer.SetValue(mPtr, key, obj);
+          Propertiez.SetValue(mPtr, key, obj);
         break;
 
       default:
         var part = key[key.Length - 1];
         if (part.IsName && (part.Name.EndsWith("Flags") || part.Name.EndsWith("Hints")) && val.IsArray())
-          PropertyContainer.SetValue(mPtr, key, string.Join(',', ((JSArray)val).Select(v => (string)v)));
+          Propertiez.SetValue(mPtr, key, string.Join(',', ((JSArray)val).Select(v => (string)v)));
         else
-          PropertyContainer.SetValue(mPtr, key, val);
+          Propertiez.SetValue(mPtr, key, val);
         break;
     }
   }

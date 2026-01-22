@@ -70,6 +70,21 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     return types.Where(type => EnumCoreTypes().Any(core => core.IsAssignableFrom(type)));
   }
 
+  class PropNameComparer : EqualityComparer<IProperty>
+  {
+    public static EqualityComparer<IProperty> Instance = new PropNameComparer();
+
+    public override bool Equals(IProperty x, IProperty y)
+    {
+      return x.Name.Equals(y.Name);
+    }
+
+    public override int GetHashCode(IProperty obj)
+    {
+      return obj.Name.GetHashCode();
+    }
+  }
+
   static IEnumerable<IProperty> GetProperties(Type type)
   {
     if (type == null)
@@ -77,20 +92,21 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     var bag = PropertyBag.GetPropertyBag(type);
     if (bag == null)
       return GetProperties(type.BaseType);
-    return (IEnumerable<IProperty>)bag.GetType().GetMethod("GetProperties", Array.Empty<Type>()).Invoke(bag, null);
+    var props = (IEnumerable<IProperty>)bag.GetType().GetMethod("GetProperties", Array.Empty<Type>()).Invoke(bag, null);
+    return props.Union(GetProperties(type.BaseType), PropNameComparer.Instance);
   }
 
   static IEnumerable<IProperty> GetOwnProperties(Type type)
   {
-    var basePropNames = GetProperties(type.BaseType).Select(p => p.Name);
-    return GetProperties(type).Where(p => !basePropNames.Contains(p.Name));
+    return GetProperties(type).Except(GetProperties(type.BaseType), PropNameComparer.Instance);
   }
 
   static Type TypeBase(Type type)
   {
-    Type result = type.BaseType;
-    while (result != null && PropertyBag.GetPropertyBag(result) == null)
-      result = result.BaseType;
+    Type result;
+    for (result = type.BaseType; result != null; result = result.BaseType)
+      if (PropertyBag.GetPropertyBag(result) != null)
+        break;
     return result;
   }
 
