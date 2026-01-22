@@ -9,7 +9,6 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.UIElements;
 
 class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithContext
 {
@@ -52,16 +51,9 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
 
   static IEnumerable<Type> EnumCoreTypes()
   {
-    yield return typeof(UnityEngine.Object);
-    yield return typeof(GameObject);
-    yield return typeof(Component);
-    yield return typeof(Transform);
-    yield return typeof(Behaviour);
-    yield return typeof(MonoBehaviour);
-    yield return typeof(UIDocument);
-    yield return typeof(VisualElement);
-    yield return typeof(BindableElement);
-    yield return typeof(TextElement);
+    var assembly = typeof(Node).Assembly;
+    var attribs = assembly.GetCustomAttributes(typeof(GeneratePropertyBagsForTypeAttribute));
+    return attribs.Select((attrib) => ((GeneratePropertyBagsForTypeAttribute)attrib).Type);
   }
 
   static IEnumerable<Type> EnumUserTypes()
