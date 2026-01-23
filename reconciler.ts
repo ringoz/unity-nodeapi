@@ -75,15 +75,15 @@ export const supportsMicrotasks = true;
 export const scheduleMicrotask = queueMicrotask;
 
 let currentUpdatePriority = Constants.NoEventPriority;
-export function setCurrentUpdatePriority(newPriority: Reconciler.Lane) {
+export function setCurrentUpdatePriority(newPriority: Reconciler.EventPriority) {
   currentUpdatePriority = newPriority;
 }
 
-export function getCurrentUpdatePriority(): Reconciler.Lane {
+export function getCurrentUpdatePriority(): Reconciler.EventPriority {
   return currentUpdatePriority;
 }
 
-export function resolveUpdatePriority(): Reconciler.Lane {
+export function resolveUpdatePriority(): Reconciler.EventPriority {
   if (currentUpdatePriority)
     return currentUpdatePriority;
   const event = window?.event;

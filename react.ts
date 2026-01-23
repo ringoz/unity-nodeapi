@@ -10,8 +10,6 @@ import * as FiberConfig from './reconciler.ts';
 
 const reconciler = Reconciler(FiberConfig);
 reconciler.injectIntoDevTools(undefined as any);
-// @ts-ignore - reconciler types are not maintained
-reconciler.flushSync = reconciler.flushSyncFromReconciler;
 
 export function createRoot(parent: Node) {
   const isStrictMode = process.env.NODE_ENV !== 'production';
@@ -21,7 +19,6 @@ export function createRoot(parent: Node) {
   const onCaughtError = (reconciler as any).defaultOnCaughtError;
   const onRecoverableError = (reconciler as any).defaultOnRecoverableError;
   const onDefaultTransitionIndicator = () => { };
-  const transitionCallbacks = null;
   const root = reconciler.createContainer(
     parent,
     Constants.ConcurrentRoot,
@@ -32,8 +29,7 @@ export function createRoot(parent: Node) {
     onUncaughtError,
     onCaughtError,
     onRecoverableError,
-    onDefaultTransitionIndicator,
-    transitionCallbacks
+    onDefaultTransitionIndicator
   );
   return {
     render: (component: React.ReactNode) => new Promise<void>((resolve, reject) => {
@@ -44,8 +40,13 @@ export function createRoot(parent: Node) {
       }
     }),
     unmount: () => {
-      reconciler.flushSync(() => reconciler.updateContainer(null, root, null));
-      return Promise.resolve();
+      try {
+        reconciler.updateContainerSync(null, root, null);
+        reconciler.flushSyncWork();
+        return Promise.resolve();
+      } catch (e) {
+        return Promise.reject(e);
+      }
     }
   };
 }
