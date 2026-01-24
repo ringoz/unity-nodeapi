@@ -6,6 +6,7 @@ import { createElement, lazy } from 'react';
 import Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
 import { Node } from '.';
+import { BsodBoundary } from './bsod.tsx';
 import * as FiberConfig from './reconciler.ts';
 
 const reconciler = Reconciler(FiberConfig);
@@ -34,6 +35,7 @@ export function createRoot(parent: Node) {
   return {
     render: (component: React.ReactNode) => new Promise<void>((resolve, reject) => {
       try {
+        isStrictMode || (component = createElement(BsodBoundary, null, component));
         reconciler.updateContainer(component, root, null, resolve);
       } catch (e) {
         reject(e);
