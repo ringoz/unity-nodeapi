@@ -32,7 +32,7 @@ export function createInstance<T extends Node>(type: Type, props: Props, root: C
 }
 
 export function createTextInstance(text: string, root: Container, hostContext: HostContext, internalHandle: Reconciler.OpaqueHandle): TextNode {
-  throw new Error('Method not implemented.');
+  return createInstance('TextElement', { text }, root, hostContext, internalHandle);
 }
 
 export const appendInitialChild = appendChild;
@@ -42,7 +42,7 @@ export function finalizeInitialChildren(instance: Node, type: Type, props: Props
 }
 
 export function shouldSetTextContent(type: Type, props: Props): boolean {
-  return false;
+  return typeof props.children === 'string';
 }
 
 export function getRootHostContext(root: Container): HostContext | null {
@@ -206,11 +206,11 @@ export function removeChildFromContainer(container: Container, child: Node | Tex
 }
 
 export function resetTextContent(instance: Node): void {
-  throw new Error('Method not implemented.');
+  instance.setProps({ ['text']: undefined });
 }
 
-export function commitTextUpdate(textInstance: TextNode, oldText: string, newText: string): void {
-  throw new Error('Method not implemented.');
+export function commitTextUpdate(instance: TextNode, oldText: string, newText: string): void {
+  instance.setProps({ ['text']: newText });
 }
 
 export function commitMount(instance: Node, type: Type, props: Props, internalInstanceHandle: Reconciler.OpaqueHandle): void {
@@ -227,10 +227,12 @@ function isEqual(a: any, b: any) {
 export function commitUpdate(instance: Node, type: Type, prevProps: Props, nextProps: Props, internalHandle: Reconciler.OpaqueHandle): void {
   const { ref: refOld, children: childrenOld, ...restOld } = prevProps;
   const { ref: refNew, children: childrenNew, ...restNew } = nextProps;
+  if (shouldSetTextContent(type, prevProps)) restOld['text'] = childrenOld;
+  if (shouldSetTextContent(type, nextProps)) restNew['text'] = childrenNew;
 
   if (instance.ptr) {
     for (const [key, oldVal] of Object.entries(restOld)) {
-      const newVal = nextProps[key];
+      const newVal = restNew[key];
       if (isEqual(oldVal, newVal))
         delete restNew[key];
       else if (newVal === undefined)
