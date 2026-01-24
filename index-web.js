@@ -10,6 +10,18 @@ const { Module } = await createUnityInstance(document.querySelector("#unity-canv
   productVersion,
 });
 
+Module.errorHandler = () => true;
+window.onerror = (message, file, line, column, error) => {
+  const stack = error?.stack;
+  const ErrorOverlay = customElements?.get('vite-error-overlay');
+  if (ErrorOverlay) {
+    const loc = line && column ? { file, line, column } : undefined;
+    document.body.appendChild(new ErrorOverlay({ message, stack, loc }))
+  } else {
+    window.alert(message + '\n' + stack);
+  }
+};
+
 import { getDefaultContext } from './Runtime/include/emnapi.mjs';
 const exports = Module.emnapiInit({ context: getDefaultContext() });
 export default exports;
