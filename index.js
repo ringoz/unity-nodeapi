@@ -8,6 +8,7 @@ export default exports;
 
 export const {
 	DOMRect,
+	Event,
 	Loader,
 	Node,
 } = exports;

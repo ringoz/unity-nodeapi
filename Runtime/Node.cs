@@ -26,6 +26,20 @@ public struct DOMRect
 }
 
 [JSExport]
+public abstract class Event
+{
+  public virtual string Type => GetType().Name;
+  public virtual long TimeStamp => 0L;
+  public virtual bool Bubbles => false;
+  public virtual object Target => null!;
+  public virtual object CurrentTarget => null!;
+  public virtual bool DefaultPrevented => false;
+  public virtual void StopPropagation() {}
+  public virtual void StopImmediatePropagation() {}
+  public virtual void PreventDefault() {}
+}
+
+[JSExport]
 public delegate Task<object> Loader(string path);
 
 static class JSValueExtensions
@@ -140,6 +154,9 @@ public class Node : IDisposable
   public virtual void SetParent(Node? parent, Node? beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
   public virtual DOMRect? GetBoundingClientRect() => null;
+
+  private static Event? mEvent = null;
+  public static Event? Event => mEvent;
 
   private static Node? CreateImpl(object kind) => AttributeOverridesNode.Create(kind) ?? VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
   public static Node? Create(object kind) => CreateImpl(kind is string path ? Resources.Load(path) ?? kind : kind);

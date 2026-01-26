@@ -23,10 +23,32 @@ export class DOMRect extends ValueType {
 	readonly bottom: number;
 }
 
+export class Event {
+	readonly type: string;
+
+	readonly timeStamp: number;
+
+	readonly bubbles: boolean;
+
+	readonly target: Object;
+
+	readonly currentTarget: Object;
+
+	readonly defaultPrevented: boolean;
+
+	stopPropagation(): void;
+
+	stopImmediatePropagation(): void;
+
+	preventDefault(): void;
+}
+
 export interface Loader { (path: string): Promise<Object>; }
 
 export class Node {
 	readonly ptr: Object;
+
+	static readonly event?: Event;
 
 	static loadAssetAsync: Loader;
 
