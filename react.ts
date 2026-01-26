@@ -257,7 +257,7 @@ export interface VisualElement {
   enabledSelf: Boolean;
   languageDirection: LanguageDirection;
   visible: Boolean;
-  //generateVisualContent: Action;
+  //generateVisualContent: Action<MeshGenerationContext>;
   dataSource: Object;
   dataSourcePath: PropertyPath;
   //dataSourceType: Type;
@@ -284,7 +284,7 @@ export interface BindableElement extends VisualElement {
 export const BindableElement = intrinsic<BindableElement>("BindableElement");
 
 export interface TextElement extends BindableElement {
-  //PostProcessTextVertices: Action;
+  //PostProcessTextVertices: Action<GlyphsEnumerable>;
   text: String;
   enableRichText: Boolean;
   emojiFallbackSupport: Boolean;

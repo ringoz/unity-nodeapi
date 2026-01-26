@@ -102,9 +102,21 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     return result;
   }
 
-  static string TypeName(Type type)
+  static string TypeName(Type type, bool allowGenericArgs = true)
   {
-    return type == typeof(UnityEngine.Object) ? "ObjectBase" : type.Name.Split('`').First();
+    if (type == typeof(UnityEngine.Object))
+      return "ObjectBase";
+
+    if (!type.IsGenericType)
+      return type.Name;
+
+    // Extract the name without the backtick and arity (e.g., "List`1" -> "List")
+    string genericName = type.Name.Substring(0, type.Name.IndexOf('`'));
+    if (!allowGenericArgs) return genericName;
+
+    // Recursively format each generic argument
+    var genericArguments = type.GetGenericArguments().Select(t => TypeName(t));
+    return $"{genericName}<{string.Join(", ", genericArguments)}>";
   }
 
   static string PropTypeName(Type type)
@@ -157,7 +169,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
 
       writer.WriteLine($"}}");
       if (typeof(UnityEngine.Object) != type && (typeof(UnityEngine.Object).IsAssignableFrom(type) || type.GetConstructor(Type.EmptyTypes) != null))
-        writer.WriteLine($"export const {TypeName(type)} = intrinsic<{TypeName(type)}>(\"{TypeName(type)}\");");
+        writer.WriteLine($"export const {TypeName(type, false)} = intrinsic<{TypeName(type)}>(\"{type.Name}\");");
 
       yield return writer.ToString();
     }
