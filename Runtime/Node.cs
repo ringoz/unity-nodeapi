@@ -10,6 +10,8 @@ using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
 using Unity.Properties;
 
+#nullable enable
+
 [JSExport]
 public struct DOMRect
 {
@@ -101,8 +103,8 @@ public class Node : IDisposable
   protected Node(object ptr) => mPtr = ptr;
   public virtual void Dispose() => (mPtr as IDisposable)?.Dispose();
 
-  public override bool Equals(object other) => (GetType() == other.GetType()) ? Equals(mPtr, ((Node)other).mPtr) : base.Equals(other);
-  public override int GetHashCode() => mPtr.GetHashCode();
+  public override bool Equals(object? other) => (GetType() == other?.GetType()) ? Equals(mPtr, ((Node)other).mPtr) : base.Equals(other);
+  public override int GetHashCode() => mPtr?.GetHashCode() ?? 0;
   public override string ToString() => $"[{GetType().Name}] {mPtr}";
 
   private static PropertyPath PropPath(in JSValue key) => new PropertyPath(((string)key).Replace('-', '.'));
@@ -135,13 +137,13 @@ public class Node : IDisposable
 
   public virtual void SetProps(in JSValue props) { foreach (var item in (JSObject)props) SetProp(PropPath(item.Key), item.Value); }
   public virtual void SetActive(bool value) => throw new NotImplementedException();
-  public virtual void SetParent(Node parent, Node beforeChild = null) => throw new NotImplementedException();
+  public virtual void SetParent(Node? parent, Node? beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
-  public virtual DOMRect GetBoundingClientRect() => default;
+  public virtual DOMRect? GetBoundingClientRect() => null;
 
-  private static Node CreateImpl(object kind) => AttributeOverridesNode.Create(kind) ?? VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
-  public static Node Create(object kind) => CreateImpl(kind is string path ? Resources.Load(path) ?? kind : kind);
-  public static Node Search(object name, Node scope = null) => scope is VisualElementNode root ? VisualElementNode.Find(name, root) : scope is GameObjectNode gobj ? ComponentNode.Find(name, gobj) : GameObjectNode.Find((string)name);
+  private static Node? CreateImpl(object kind) => AttributeOverridesNode.Create(kind) ?? VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
+  public static Node? Create(object kind) => CreateImpl(kind is string path ? Resources.Load(path) ?? kind : kind);
+  public static Node? Search(object name, Node? scope = null) => scope is VisualElementNode root ? VisualElementNode.Find(name, root) : scope is GameObjectNode gobj ? ComponentNode.Find(name, gobj) : GameObjectNode.Find((string)name);
 
   public static Loader LoadAssetAsync { get; set; } = async (string path) =>
   {

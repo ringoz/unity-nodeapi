@@ -34,7 +34,7 @@ export class Node {
 
 	dispose(): void;
 
-	equals(other: Object): boolean;
+	equals(other: Object | undefined): boolean;
 
 	getHashCode(): number;
 
@@ -45,18 +45,18 @@ export class Node {
 	setActive(value: boolean): void;
 
 	setParent(
-		parent: Node,
+		parent: Node | undefined,
 		beforeChild?: Node,
 	): void;
 
 	clear(): void;
 
-	getBoundingClientRect(): DOMRect;
+	getBoundingClientRect(): DOMRect | undefined;
 
-	static create(kind: Object): Node;
+	static create(kind: Object): Node | undefined;
 
 	static search(
 		name: Object,
 		scope?: Node,
-	): Node;
+	): Node | undefined;
 }

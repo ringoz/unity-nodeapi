@@ -7,6 +7,8 @@ using System.Linq;
 using UnityEngine;
 using Unity.Properties;
 
+#nullable enable
+
 class GameObjectNode : Node
 {
   abstract class EventBehaviour : MonoBehaviour
@@ -18,7 +20,7 @@ class GameObjectNode : Node
   {
     public override string Name => typeof(TBehaviour).Name;
     public override bool IsReadOnly => false;
-    public override Action GetValue(ref GameObject container) => container.GetComponent<TBehaviour>()?.action;
+    public override Action GetValue(ref GameObject container) => container.GetComponent<TBehaviour>()?.action!;
     public override void SetValue(ref GameObject container, Action value) => container.GetOrAddComponent<TBehaviour>().action = value;
   }
 
@@ -64,10 +66,10 @@ class GameObjectNode : Node
 
   protected GameObjectNode(object ptr) : base(ptr) { }
 
-  public static Node Wrap(GameObject obj) => obj != null ? Wrappers.GetValue(obj, obj => new GameObjectNode(obj)) : null;
-  public static Node Find(string name) => Wrap(GameObject.Find(name));
+  public static Node? Wrap(GameObject? obj) => obj != null ? Wrappers.GetValue(obj, obj => new GameObjectNode(obj)) : null;
+  public static Node? Find(string name) => Wrap(GameObject.Find(name));
 
-  private static GameObjectNode _null = new GameObjectNode(null);
+  private static GameObjectNode _null = new GameObjectNode(null!);
   private static GameObjectNode Null
   {
     get
@@ -81,7 +83,7 @@ class GameObjectNode : Node
     }
   }
 
-  public static new Node Create(object kind)
+  public static new Node? Create(object kind)
   {
     if (kind is GameObject prefab)
       return Wrap(UnityEngine.Object.Instantiate(prefab, ((GameObject)Null.mPtr).transform, false));
@@ -98,7 +100,7 @@ class GameObjectNode : Node
     ((GameObject)mPtr).SetActive(value);
   }
 
-  public override void SetParent(Node parent, Node beforeChild = null)
+  public override void SetParent(Node? parent, Node? beforeChild)
   {
     var parentGameObject = (GameObject)(parent ?? Null).mPtr;
     ((GameObject)mPtr).transform.SetParent(parentGameObject.transform, false);
@@ -112,7 +114,7 @@ class GameObjectNode : Node
       child.SetParent(((GameObject)Null.mPtr).transform, false);
   }
 
-  public override DOMRect GetBoundingClientRect()
+  public override DOMRect? GetBoundingClientRect()
   {
     var renderer = ((GameObject)mPtr).GetComponent<Renderer>();
     if (renderer == null)

@@ -8,21 +8,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Properties;
 
+#nullable enable
+
 class ComponentNode : AttributeOverridesNode
 {
   protected ComponentNode(object obj) : base(obj) { }
 
-  public static Node Wrap(Component obj) => obj != null ? Wrappers.GetValue(obj, obj => new ComponentNode(obj) { mName = obj.GetType() }) : null;
-  public static Node Find(Type type, Node scope) => Wrap(((GameObject)scope.mPtr).GetOrAddComponent(type));
-  public static Node Find(object kind, Node scope) => Find(ParseType(kind), scope);
+  public static Node? Wrap(Component? obj) => obj != null ? Wrappers.GetValue(obj, obj => new ComponentNode(obj) { mName = obj.GetType() }) : null;
+  public static Node? Find(Type type, Node scope) => Wrap(((GameObject)scope.mPtr).GetOrAddComponent(type));
+  public static Node? Find(object kind, Node scope) => Find(ParseType(kind)!, scope);
 
   private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(Component).IsAssignableFrom(type));
-  private static Type ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
+  private static Type? ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
 
-  public static new Node Create(object kind)
+  public static new Node? Create(object kind)
   {
-    Type type = ParseType(kind);
-    return type != null ? new ComponentNode(null) { mName = type } : null;
+    Type? type = ParseType(kind);
+    return type != null ? new ComponentNode(null!) { mName = type } : null;
   }
 
   public override void SetActive(bool value)
@@ -33,7 +35,7 @@ class ComponentNode : AttributeOverridesNode
       base.SetActive(value);
   }
 
-  public override void SetParent(Node parent, Node beforeChild = null)
+  public override void SetParent(Node? parent, Node? beforeChild)
   {
     if (parent == null)
     {

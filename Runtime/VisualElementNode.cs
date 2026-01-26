@@ -9,22 +9,24 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Unity.Properties;
 
+#nullable enable
+
 class VisualElementNode : Node
 {
   protected VisualElementNode(object ptr) : base(ptr) { }
 
-  public static Node Wrap(VisualElement obj) => obj != null ? Wrappers.GetValue(obj, obj => new VisualElementNode(obj)) : null;
-  public static Node Find(object name, Node scope) => Wrap(((VisualElement)scope.mPtr).Query(name.ToString()));
+  public static Node? Wrap(VisualElement? obj) => obj != null ? Wrappers.GetValue(obj, obj => new VisualElementNode(obj)) : null;
+  public static Node? Find(object name, Node scope) => Wrap(((VisualElement)scope.mPtr).Query(name.ToString()));
 
   private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(VisualElement).IsAssignableFrom(type));
-  private static Type ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
+  private static Type? ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());
 
-  public static new Node Create(object kind)
+  public static new Node? Create(object kind)
   {
     if (kind is VisualTreeAsset uxml)
       return new VisualElementNode(uxml.Instantiate());
 
-    Type type = ParseType(kind);
+    Type? type = ParseType(kind);
     return type != null ? new VisualElementNode((VisualElement)Activator.CreateInstance(type)) : null;
   }
 
@@ -33,7 +35,7 @@ class VisualElementNode : Node
     ((VisualElement)mPtr).visible = value;
   }
 
-  public override void SetParent(Node parent, Node beforeChild = null)
+  public override void SetParent(Node? parent, Node? beforeChild)
   {
     if (parent == null)
     {
@@ -59,7 +61,7 @@ class VisualElementNode : Node
     ((VisualElement)mPtr).Clear();
   }
 
-  public override DOMRect GetBoundingClientRect()
+  public override DOMRect? GetBoundingClientRect()
   {
     Rect rc = ((VisualElement)mPtr).worldBound;
     return new DOMRect() { x = rc.xMin, y = rc.yMin, width = rc.width, height = rc.height };
