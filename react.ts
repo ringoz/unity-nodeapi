@@ -98,6 +98,7 @@ export type Double = number;
 export type Char = string;
 export type String = string;
 export type List<T> = T[];
+export type IEnumerable<T> = Iterable<T>;
 export type Action = () => void;
 export type PropertyPath = string;
 export type Vector2 = [x: number, y: number];
