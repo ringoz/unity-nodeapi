@@ -23,5 +23,16 @@ window.onerror = (message, file, line, column, error) => {
 };
 
 import { getDefaultContext } from './Runtime/include/emnapi.mjs';
-const exports = Module.emnapiInit({ context: getDefaultContext() });
+const context = getDefaultContext();
+const exports = Module.emnapiInit({ context });
 export default exports;
+
+const raf = window.requestAnimationFrame;
+window.requestAnimationFrame = (callback) => raf((time) => {
+  const scope = context.openScope();
+  try {
+    callback(time);
+  } finally {
+    context.closeScope(scope);
+  }
+});

@@ -28,13 +28,15 @@ export class Event {
 
 	readonly timeStamp: number;
 
-	readonly bubbles: boolean;
-
 	readonly target: Object;
 
 	readonly currentTarget: Object;
 
+	readonly bubbles: boolean;
+
 	readonly defaultPrevented: boolean;
+
+	dispose(): void;
 
 	stopPropagation(): void;
 

@@ -26,17 +26,18 @@ public struct DOMRect
 }
 
 [JSExport]
-public abstract class Event
+public abstract class Event : IDisposable
 {
+  public abstract void Dispose();
   public virtual string Type => GetType().Name;
-  public virtual long TimeStamp => 0L;
-  public virtual bool Bubbles => false;
+  public virtual long TimeStamp => (long)(Time.unscaledTime * 1000.0f);
   public virtual object Target => null!;
-  public virtual object CurrentTarget => null!;
+  public virtual object CurrentTarget => Target;
+  public virtual bool Bubbles => false;
   public virtual bool DefaultPrevented => false;
-  public virtual void StopPropagation() {}
-  public virtual void StopImmediatePropagation() {}
-  public virtual void PreventDefault() {}
+  public virtual void StopPropagation() { }
+  public virtual void StopImmediatePropagation() { }
+  public virtual void PreventDefault() { }
 }
 
 [JSExport]
@@ -49,8 +50,18 @@ static class JSValueExtensions
     var reference = new JSReference(value);
     return new Action(() =>
     {
-      using (new JSValueScope())
-        reference.GetValue().Call();
+      using var scope = new JSValueScope(JSValueScopeType.Callback);
+      reference.GetValue().Call();
+    });
+  }
+
+  public static Action<A> ToAction<A>(this JSValue value) where A : class
+  {
+    var reference = new JSReference(value);
+    return new Action<A>((A a) =>
+    {
+      using var scope = new JSValueScope(JSValueScopeType.Callback);
+      reference.GetValue().Call(JSValue.Undefined, scope.RuntimeContext.GetOrCreateObjectWrapper(a));
     });
   }
 }
@@ -87,6 +98,7 @@ public class Node : IDisposable
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (string)v));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (object)v));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction());
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<Event>());
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new PropertyPath((string)v));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2((float)v[0], (float)v[1]));
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2Int((int)v[0], (int)v[1]));
@@ -157,6 +169,13 @@ public class Node : IDisposable
 
   private static Event? mEvent = null;
   public static Event? Event => mEvent;
+
+  internal static void InvokeHandler(Action<Event>? handler, Event e)
+  {
+    var was = mEvent; mEvent = e;
+    try { handler?.Invoke(e); }
+    finally { mEvent = was; e.Dispose(); }
+  }
 
   private static Node? CreateImpl(object kind) => AttributeOverridesNode.Create(kind) ?? VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
   public static Node? Create(object kind) => CreateImpl(kind is string path ? Resources.Load(path) ?? kind : kind);

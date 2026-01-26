@@ -9,38 +9,54 @@ using Unity.Properties;
 
 #nullable enable
 
+class GameObjectEvent : Event
+{
+  GameObject? mTarget;
+
+  public static readonly UnityEngine.Pool.ObjectPool<GameObjectEvent> Pool = new(() => new GameObjectEvent(), null, v => v.Reset());
+  public GameObjectEvent Reset(GameObject? target = null)
+  {
+    mTarget = target;
+    return this;
+  }
+
+  public override void Dispose() => Pool.Release(this);
+  public override object Target => mTarget!;
+}
+
 class GameObjectNode : Node
 {
   abstract class EventBehaviour : MonoBehaviour
   {
-    public Action action;
+    internal Action<Event> handler;
+    internal void Invoke() => InvokeHandler(handler, GameObjectEvent.Pool.Get().Reset(gameObject));
   }
 
-  sealed class EventProperty<TBehaviour> : Property<GameObject, Action> where TBehaviour : EventBehaviour
+  sealed class EventProperty<TBehaviour> : Property<GameObject, Action<Event>> where TBehaviour : EventBehaviour
   {
     public override string Name => typeof(TBehaviour).Name;
     public override bool IsReadOnly => false;
-    public override Action GetValue(ref GameObject container) => container.GetComponent<TBehaviour>()?.action!;
-    public override void SetValue(ref GameObject container, Action value) => container.GetOrAddComponent<TBehaviour>().action = value;
+    public override Action<Event> GetValue(ref GameObject container) => container.GetComponent<TBehaviour>()?.handler!;
+    public override void SetValue(ref GameObject container, Action<Event> value) => container.GetOrAddComponent<TBehaviour>().handler = value;
   }
 
-  sealed class onAwake : EventBehaviour { void Awake() => action?.Invoke(); }
-  sealed class onStart : EventBehaviour { void Start() => action?.Invoke(); }
-  sealed class onUpdate : EventBehaviour { void Update() => action?.Invoke(); }
-  sealed class onFixedUpdate : EventBehaviour { void FixedUpdate() => action?.Invoke(); }
-  sealed class onLateUpdate : EventBehaviour { void LateUpdate() => action?.Invoke(); }
-  sealed class onDestroy : EventBehaviour { void OnDestroy() => action?.Invoke(); }
-  sealed class onEnable : EventBehaviour { void OnEnable() => action?.Invoke(); }
-  sealed class onDisable : EventBehaviour { void OnDisable() => action?.Invoke(); }
-  sealed class onBecameInvisible : EventBehaviour { void OnBecameInvisible() => action?.Invoke(); }
-  sealed class onBecameVisible : EventBehaviour { void OnBecameVisible() => action?.Invoke(); }
-  sealed class onMouseDown : EventBehaviour { void OnMouseDown() => action?.Invoke(); }
-  sealed class onMouseDrag : EventBehaviour { void OnMouseDrag() => action?.Invoke(); }
-  sealed class onMouseEnter : EventBehaviour { void OnMouseEnter() => action?.Invoke(); }
-  sealed class onMouseExit : EventBehaviour { void OnMouseExit() => action?.Invoke(); }
-  sealed class onMouseOver : EventBehaviour { void OnMouseOver() => action?.Invoke(); }
-  sealed class onMouseUp : EventBehaviour { void OnMouseUp() => action?.Invoke(); }
-  sealed class onMouseUpAsButton : EventBehaviour { void OnMouseUpAsButton() => action?.Invoke(); }
+  sealed class onAwake : EventBehaviour { void Awake() => Invoke(); }
+  sealed class onStart : EventBehaviour { void Start() => Invoke(); }
+  sealed class onUpdate : EventBehaviour { void Update() => Invoke(); }
+  sealed class onFixedUpdate : EventBehaviour { void FixedUpdate() => Invoke(); }
+  sealed class onLateUpdate : EventBehaviour { void LateUpdate() => Invoke(); }
+  sealed class onDestroy : EventBehaviour { void OnDestroy() => Invoke(); }
+  sealed class onEnable : EventBehaviour { void OnEnable() => Invoke(); }
+  sealed class onDisable : EventBehaviour { void OnDisable() => Invoke(); }
+  sealed class onBecameInvisible : EventBehaviour { void OnBecameInvisible() => Invoke(); }
+  sealed class onBecameVisible : EventBehaviour { void OnBecameVisible() => Invoke(); }
+  sealed class onMouseDown : EventBehaviour { void OnMouseDown() => Invoke(); }
+  sealed class onMouseDrag : EventBehaviour { void OnMouseDrag() => Invoke(); }
+  sealed class onMouseEnter : EventBehaviour { void OnMouseEnter() => Invoke(); }
+  sealed class onMouseExit : EventBehaviour { void OnMouseExit() => Invoke(); }
+  sealed class onMouseOver : EventBehaviour { void OnMouseOver() => Invoke(); }
+  sealed class onMouseUp : EventBehaviour { void OnMouseUp() => Invoke(); }
+  sealed class onMouseUpAsButton : EventBehaviour { void OnMouseUpAsButton() => Invoke(); }
 
   static GameObjectNode()
   {
