@@ -86,6 +86,8 @@ export class RoutedEvent extends Event {
 
 	readonly currentTarget: Object;
 
+	readonly relatedTarget?: Object;
+
 	readonly bubbles: boolean;
 
 	readonly isPropagationStopped: boolean;

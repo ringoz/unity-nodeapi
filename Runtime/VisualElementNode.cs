@@ -27,6 +27,7 @@ public class RoutedEvent : Event
   public override long Timestamp => mEvent!.timestamp;
   public override object Target => mEvent!.target;
   public object CurrentTarget => mEvent!.currentTarget;
+  public object? RelatedTarget => (mEvent as IFocusEvent)?.relatedTarget;
   public bool Bubbles => mEvent!.bubbles;
   public bool IsPropagationStopped => mEvent!.isPropagationStopped;
   public void StopPropagation() => mEvent!.StopPropagation();
@@ -127,6 +128,10 @@ class VisualElementNode : Node
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<PointerEvent>());
 
     var bag = (ContainerPropertyBagEx<VisualElement>)PropertyBag.GetPropertyBag<VisualElement>();
+    bag.AddProperty(new EventProperty<RoutedEvent, BlurEvent>());
+    bag.AddProperty(new EventProperty<RoutedEvent, FocusEvent>());
+    bag.AddProperty(new EventProperty<RoutedEvent, FocusOutEvent>());
+    bag.AddProperty(new EventProperty<RoutedEvent, FocusInEvent>());
     bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<bool>>());
     bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<int>>());
     bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<float>>());
