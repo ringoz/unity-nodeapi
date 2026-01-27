@@ -28,16 +28,16 @@ public struct DOMRect
 [JSExport]
 public abstract class Event : IDisposable
 {
+  public override string ToString() => $"[{GetType().Name}] {Type}";
   public abstract void Dispose();
   public virtual string Type => GetType().Name;
-  public virtual long TimeStamp => (long)(Time.unscaledTime * 1000.0f);
+  public virtual long Timestamp => (long)(Time.unscaledTime * 1000.0f);
   public virtual object Target => null!;
   public virtual object CurrentTarget => Target;
   public virtual bool Bubbles => false;
-  public virtual bool DefaultPrevented => false;
+  public virtual bool IsPropagationStopped => false;
   public virtual void StopPropagation() { }
   public virtual void StopImmediatePropagation() { }
-  public virtual void PreventDefault() { }
 }
 
 [JSExport]

@@ -26,7 +26,7 @@ export class DOMRect extends ValueType {
 export class Event {
 	readonly type: string;
 
-	readonly timeStamp: number;
+	readonly timestamp: number;
 
 	readonly target: Object;
 
@@ -34,15 +34,15 @@ export class Event {
 
 	readonly bubbles: boolean;
 
-	readonly defaultPrevented: boolean;
+	readonly isPropagationStopped: boolean;
+
+	toString(): string;
 
 	dispose(): void;
 
 	stopPropagation(): void;
 
 	stopImmediatePropagation(): void;
-
-	preventDefault(): void;
 }
 
 export interface Loader { (path: string): Promise<Object>; }
