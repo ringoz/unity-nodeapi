@@ -116,6 +116,8 @@ export class PointerEvent extends RoutedEvent {
 
 	readonly deltaPosition: number[];
 
+	readonly wheelDelta: number[];
+
 	readonly deltaTime: number;
 
 	readonly clickCount: number;

@@ -277,6 +277,7 @@ export interface VisualElement {
   //readonly styleSheets: VisualElementStyleSheetSet;
   tooltip: String;
   onClick: Action<PointerEvent>;
+  onWheel: Action<PointerEvent>;
   onPointerCapture: Action<PointerEvent>;
   onPointerCaptureOut: Action<PointerEvent>;
   onPointerDown: Action<PointerEvent>;
