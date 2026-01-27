@@ -123,6 +123,24 @@ export class ChangeEvent extends RoutedEvent {
 	readonly newRect: number[];
 }
 
+export class KeyboardEvent extends RoutedEvent {
+	constructor();
+
+	readonly character: string;
+
+	readonly keyCode: number;
+
+	readonly shiftKey: boolean;
+
+	readonly ctrlKey: boolean;
+
+	readonly commandKey: boolean;
+
+	readonly altKey: boolean;
+
+	readonly actionKey: boolean;
+}
+
 export class PointerEvent extends RoutedEvent {
 	constructor();
 

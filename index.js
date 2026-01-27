@@ -13,5 +13,6 @@ export const {
 	Node,
 	RoutedEvent,
 	ChangeEvent,
+	KeyboardEvent,
 	PointerEvent,
 } = exports;

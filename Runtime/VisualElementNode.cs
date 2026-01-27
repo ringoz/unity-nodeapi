@@ -50,32 +50,44 @@ public class ChangeEvent : RoutedEvent
 }
 
 [JSExport]
+public class KeyboardEvent : RoutedEvent
+{
+  public string Character => ((IKeyboardEvent)mEvent!).character.ToString();
+  public int KeyCode => (int)((IKeyboardEvent)mEvent!).keyCode;
+  public bool ShiftKey => ((IKeyboardEvent)mEvent!).shiftKey;
+  public bool CtrlKey => ((IKeyboardEvent)mEvent!).ctrlKey;
+  public bool CommandKey => ((IKeyboardEvent)mEvent!).commandKey;
+  public bool AltKey => ((IKeyboardEvent)mEvent!).altKey;
+  public bool ActionKey => ((IKeyboardEvent)mEvent!).actionKey;
+}
+
+[JSExport]
 public class PointerEvent : RoutedEvent
 {
-  public int pointerId => (mEvent as IPointerEvent)?.pointerId ?? PointerId.mousePointerId;
-  public string pointerType => (mEvent as IPointerEvent)?.pointerType ?? "mouse";
-  public bool isPrimary => (mEvent as IPointerEvent)?.isPrimary ?? true;
-  public int button => (mEvent as IPointerEvent)?.button ?? ((IMouseEvent)mEvent!).button;
-  public int pressedButtons => (mEvent as IPointerEvent)?.pressedButtons ?? ((IMouseEvent)mEvent!).pressedButtons;
-  public float[] position => (mEvent as IPointerEvent)?.position.ToArray() ?? ((IMouseEvent)mEvent!).mousePosition.ToArray();
-  public float[] localPosition => (mEvent as IPointerEvent)?.localPosition.ToArray() ?? ((IMouseEvent)mEvent!).localMousePosition.ToArray();
-  public float[] deltaPosition => (mEvent as IPointerEvent)?.deltaPosition.ToArray() ?? ((IMouseEvent)mEvent!).mouseDelta.ToArray();
-  public float[] wheelDelta => (mEvent as WheelEvent)?.delta.ToArray() ?? Vector3.zero.ToArray();
-  public float deltaTime => (mEvent as IPointerEvent)?.deltaTime ?? 0;
-  public int clickCount => (mEvent as IPointerEvent)?.clickCount ?? ((IMouseEvent)mEvent!).clickCount;
-  public float pressure => (mEvent as IPointerEvent)?.pressure ?? 0;
-  public float tangentialPressure => (mEvent as IPointerEvent)?.tangentialPressure ?? 0;
-  public float altitudeAngle => (mEvent as IPointerEvent)?.altitudeAngle ?? 0;
-  public float azimuthAngle => (mEvent as IPointerEvent)?.azimuthAngle ?? 0;
-  public float twist => (mEvent as IPointerEvent)?.twist ?? 0;
-  public float[] tilt => (mEvent as IPointerEvent)?.tilt.ToArray() ?? Vector2.zero.ToArray();
-  public float[] radius => (mEvent as IPointerEvent)?.radius.ToArray() ?? Vector2.zero.ToArray();
-  public float[] radiusVariance => (mEvent as IPointerEvent)?.radiusVariance.ToArray() ?? Vector2.zero.ToArray();
-  public bool shiftKey => (mEvent as IPointerEvent)?.shiftKey ?? ((IMouseEvent)mEvent!).shiftKey;
-  public bool ctrlKey => (mEvent as IPointerEvent)?.ctrlKey ?? ((IMouseEvent)mEvent!).ctrlKey;
-  public bool commandKey => (mEvent as IPointerEvent)?.commandKey ?? ((IMouseEvent)mEvent!).commandKey;
-  public bool altKey => (mEvent as IPointerEvent)?.altKey ?? ((IMouseEvent)mEvent!).altKey;
-  public bool actionKey => (mEvent as IPointerEvent)?.actionKey ?? ((IMouseEvent)mEvent!).actionKey;
+  public int PointerId => (mEvent as IPointerEvent)?.pointerId ?? UnityEngine.UIElements.PointerId.mousePointerId;
+  public string PointerType => (mEvent as IPointerEvent)?.pointerType ?? "mouse";
+  public bool IsPrimary => (mEvent as IPointerEvent)?.isPrimary ?? true;
+  public int Button => (mEvent as IPointerEvent)?.button ?? ((IMouseEvent)mEvent!).button;
+  public int PressedButtons => (mEvent as IPointerEvent)?.pressedButtons ?? ((IMouseEvent)mEvent!).pressedButtons;
+  public float[] Position => (mEvent as IPointerEvent)?.position.ToArray() ?? ((IMouseEvent)mEvent!).mousePosition.ToArray();
+  public float[] LocalPosition => (mEvent as IPointerEvent)?.localPosition.ToArray() ?? ((IMouseEvent)mEvent!).localMousePosition.ToArray();
+  public float[] DeltaPosition => (mEvent as IPointerEvent)?.deltaPosition.ToArray() ?? ((IMouseEvent)mEvent!).mouseDelta.ToArray();
+  public float[] WheelDelta => (mEvent as WheelEvent)?.delta.ToArray() ?? Vector3.zero.ToArray();
+  public float DeltaTime => (mEvent as IPointerEvent)?.deltaTime ?? 0;
+  public int ClickCount => (mEvent as IPointerEvent)?.clickCount ?? ((IMouseEvent)mEvent!).clickCount;
+  public float Pressure => (mEvent as IPointerEvent)?.pressure ?? 0;
+  public float TangentialPressure => (mEvent as IPointerEvent)?.tangentialPressure ?? 0;
+  public float AltitudeAngle => (mEvent as IPointerEvent)?.altitudeAngle ?? 0;
+  public float AzimuthAngle => (mEvent as IPointerEvent)?.azimuthAngle ?? 0;
+  public float Twist => (mEvent as IPointerEvent)?.twist ?? 0;
+  public float[] Tilt => (mEvent as IPointerEvent)?.tilt.ToArray() ?? Vector2.zero.ToArray();
+  public float[] Radius => (mEvent as IPointerEvent)?.radius.ToArray() ?? Vector2.zero.ToArray();
+  public float[] RadiusVariance => (mEvent as IPointerEvent)?.radiusVariance.ToArray() ?? Vector2.zero.ToArray();
+  public bool ShiftKey => (mEvent as IPointerEvent)?.shiftKey ?? ((IMouseEvent)mEvent!).shiftKey;
+  public bool CtrlKey => (mEvent as IPointerEvent)?.ctrlKey ?? ((IMouseEvent)mEvent!).ctrlKey;
+  public bool CommandKey => (mEvent as IPointerEvent)?.commandKey ?? ((IMouseEvent)mEvent!).commandKey;
+  public bool AltKey => (mEvent as IPointerEvent)?.altKey ?? ((IMouseEvent)mEvent!).altKey;
+  public bool ActionKey => (mEvent as IPointerEvent)?.actionKey ?? ((IMouseEvent)mEvent!).actionKey;
 }
 
 class VisualElementNode : Node
@@ -125,6 +137,7 @@ class VisualElementNode : Node
   {
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<RoutedEvent>());
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<ChangeEvent>());
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<KeyboardEvent>());
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<PointerEvent>());
 
     var bag = (ContainerPropertyBagEx<VisualElement>)PropertyBag.GetPropertyBag<VisualElement>();
@@ -139,6 +152,8 @@ class VisualElementNode : Node
     bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<Rect>>());
     bag.AddProperty(new EventProperty<ChangeEvent, InputEvent>());
     bag.AddProperty(new EventProperty<ChangeEvent, GeometryChangedEvent>());
+    bag.AddProperty(new EventProperty<KeyboardEvent, KeyDownEvent>());
+    bag.AddProperty(new EventProperty<KeyboardEvent, KeyUpEvent>());
     bag.AddProperty(new EventProperty<PointerEvent, ClickEvent>());
     bag.AddProperty(new EventProperty<PointerEvent, WheelEvent>());
     bag.AddProperty(new EventProperty<PointerEvent, PointerCaptureEvent>());

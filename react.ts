@@ -5,7 +5,7 @@
 import { createElement, lazy } from 'react';
 import Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { ChangeEvent, Event, Node, PointerEvent, RoutedEvent } from '.';
+import { ChangeEvent, Event, KeyboardEvent, Node, PointerEvent, RoutedEvent } from '.';
 import { BsodBoundary } from './bsod.tsx';
 import * as FiberConfig from './reconciler.ts';
 
@@ -287,6 +287,8 @@ export interface VisualElement {
   onChangeRect: Action<ChangeEvent>;
   onInput: Action<ChangeEvent>;
   onGeometryChanged: Action<ChangeEvent>;
+  onKeyDown: Action<KeyboardEvent>;
+  onKeyUp: Action<KeyboardEvent>;
   onClick: Action<PointerEvent>;
   onWheel: Action<PointerEvent>;
   onPointerCapture: Action<PointerEvent>;
