@@ -86,25 +86,22 @@ export function getCurrentUpdatePriority(): Reconciler.EventPriority {
 export function resolveUpdatePriority(): Reconciler.EventPriority {
   if (currentUpdatePriority)
     return currentUpdatePriority;
-  const event = window?.event;
+  const event = Node.event;
   switch (event?.type) {
-    case 'click':
-    case 'contextmenu':
-    case 'dblclick':
-    case 'pointercancel':
-    case 'pointerdown':
-    case 'pointerup':
-    case 'keydown':
-    case 'keyup':
-    case 'keypress':
-    case 'resize':
+    case 'ClickEvent':
+    case 'PointerCancelEvent':
+    case 'PointerDownEvent':
+    case 'PointerUpEvent':
+    case 'KeyDownEvent':
+    case 'KeyUpEvent':
+    case 'GeometryChangedEvent':
       return Constants.DiscreteEventPriority;
-    case 'pointermove':
-    case 'pointerout':
-    case 'pointerover':
-    case 'pointerenter':
-    case 'pointerleave':
-    case 'wheel':
+    case 'PointerMoveEvent':
+    case 'PointerOutEvent':
+    case 'PointerOverEvent':
+    case 'PointerEnterEvent':
+    case 'PointerLeaveEvent':
+    case 'WheelEvent':
       return Constants.ContinuousEventPriority;
     default:
       return Constants.DefaultEventPriority;
