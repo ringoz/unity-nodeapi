@@ -44,8 +44,6 @@ export class Node {
 
 	static loadAssetAsync: Loader;
 
-	static isPropTypeSupported<T>(): boolean;
-
 	dispose(): void;
 
 	equals(other: Object | undefined): boolean;

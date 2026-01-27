@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.JavaScript.NodeApi;
 using Unity.Properties;
 using UnityEditor;
 using UnityEditor.Build;
@@ -126,10 +127,16 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
 
   static ISet<Type> cache = new HashSet<Type>();
 
+  static bool IsPropTypeSupported<T>()
+  {
+    var source = JSValue.Undefined;
+    return TypeConversion.TryConvert(ref source, out T destination);
+  }
+
   static bool IsPropTypeSupported(Type type)
   {
     if (IsPtrType(type) || cache.Contains(type)) return true;
-    var method = typeof(Node).GetMethod(nameof(Node.IsPropTypeSupported));
+    var method = typeof(UnityNodeApiBuild).GetMethod(nameof(IsPropTypeSupported));
     return (bool)method.MakeGenericMethod(type).Invoke(null, null);
   }
 

@@ -115,12 +115,6 @@ public class Node : IDisposable
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Version((int)v[0], (int)v[1], (int)v[2], (int)v[3]));
   }
 
-  public static bool IsPropTypeSupported<T>()
-  {
-    var source = JSValue.Undefined;
-    return TypeConversion.TryConvert(ref source, out T destination);
-  }
-
   protected static readonly ConditionalWeakTable<object, Node> Wrappers = new();
 
   internal object mPtr;
