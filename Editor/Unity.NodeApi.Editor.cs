@@ -42,7 +42,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     PlayerSettings.WebGL.emscriptenArgs = m_emsdkArgs;
 
     // force class loads
-    Node.Search(null);
+    Node.Create("");
 
     string projectPath = Path.GetDirectoryName(Application.dataPath);
     GenerateTypings(EnumCoreTypes().ToArray(), projectPath + "/Packages/net.ringoz.unity.nodeapi/react.ts");

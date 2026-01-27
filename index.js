@@ -11,4 +11,5 @@ export const {
 	Event,
 	Loader,
 	Node,
+	RoutedEvent,
 } = exports;

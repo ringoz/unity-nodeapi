@@ -33,11 +33,6 @@ public abstract class Event : IDisposable
   public virtual string Type => GetType().Name;
   public virtual long Timestamp => (long)(Time.unscaledTime * 1000.0f);
   public virtual object Target => null!;
-  public virtual object CurrentTarget => Target;
-  public virtual bool Bubbles => false;
-  public virtual bool IsPropagationStopped => false;
-  public virtual void StopPropagation() { }
-  public virtual void StopImmediatePropagation() { }
 }
 
 [JSExport]

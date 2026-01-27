@@ -276,6 +276,7 @@ export interface VisualElement {
   //readonly customStyle: ICustomStyle;
   //readonly styleSheets: VisualElementStyleSheetSet;
   tooltip: String;
+  onClick: Action<Event>;
 }
 export const VisualElement = intrinsic<VisualElement>("VisualElement");
 

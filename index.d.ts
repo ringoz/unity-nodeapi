@@ -30,19 +30,9 @@ export class Event {
 
 	readonly target: Object;
 
-	readonly currentTarget: Object;
-
-	readonly bubbles: boolean;
-
-	readonly isPropagationStopped: boolean;
-
 	toString(): string;
 
 	dispose(): void;
-
-	stopPropagation(): void;
-
-	stopImmediatePropagation(): void;
 }
 
 export interface Loader { (path: string): Promise<Object>; }
@@ -83,4 +73,24 @@ export class Node {
 		name: Object,
 		scope?: Node,
 	): Node | undefined;
+}
+
+export class RoutedEvent extends Event {
+	readonly type: string;
+
+	readonly timestamp: number;
+
+	readonly target: Object;
+
+	readonly currentTarget: Object;
+
+	readonly bubbles: boolean;
+
+	readonly isPropagationStopped: boolean;
+
+	dispose(): void;
+
+	stopPropagation(): void;
+
+	stopImmediatePropagation(): void;
 }
