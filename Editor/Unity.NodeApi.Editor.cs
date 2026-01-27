@@ -44,23 +44,22 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     // force class loads
     Node.Create("");
 
-    string projectPath = Path.GetDirectoryName(Application.dataPath);
-    GenerateTypings(EnumCoreTypes().ToArray(), projectPath + "/Packages/net.ringoz.unity.nodeapi/react.ts");
-    GenerateTypings(EnumUserTypes().ToArray(), projectPath + "/index.ts");
-  }
-
-  static IEnumerable<Type> EnumCoreTypes()
-  {
     var assembly = typeof(Node).Assembly;
     var attribs = assembly.GetCustomAttributes(typeof(GeneratePropertyBagsForTypeAttribute));
-    return attribs.Select((attrib) => ((GeneratePropertyBagsForTypeAttribute)attrib).Type);
+    var coreTypes = attribs.Select((attrib) => ((GeneratePropertyBagsForTypeAttribute)attrib).Type).ToArray();
+    CoreTypes = new HashSet<Type>(coreTypes);
+
+    var types = PropertyBag.GetAllTypesWithAPropertyBag().Where(type => !CoreTypes.Contains(type));
+    var userTypes = types.Where(type => CoreTypes.Any(core => core.IsAssignableFrom(type))).ToArray();
+    UserTypes = new HashSet<Type>(userTypes);
+
+    string projectPath = Path.GetDirectoryName(Application.dataPath);
+    GenerateTypings(coreTypes, projectPath + "/Packages/net.ringoz.unity.nodeapi/react.ts");
+    GenerateTypings(userTypes, projectPath + "/index.ts");
   }
 
-  static IEnumerable<Type> EnumUserTypes()
-  {
-    var types = PropertyBag.GetAllTypesWithAPropertyBag().Where(type => !EnumCoreTypes().Contains(type));
-    return types.Where(type => EnumCoreTypes().Any(core => core.IsAssignableFrom(type)));
-  }
+  static ISet<Type> CoreTypes;
+  static ISet<Type> UserTypes;
 
   class PropNameComparer : EqualityComparer<IProperty>
   {
@@ -136,7 +135,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
 
   static bool IsPtrType(Type type)
   {
-    return EnumCoreTypes().Contains(type) || EnumUserTypes().Contains(type);
+    return CoreTypes.Contains(type) || UserTypes.Contains(type);
   }
 
   static IEnumerable<string> EmitType(Type type)
