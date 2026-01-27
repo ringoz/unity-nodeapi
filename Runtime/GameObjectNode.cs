@@ -13,14 +13,14 @@ class GameObjectEvent : Event
 {
   GameObject? mTarget;
 
-  public static readonly UnityEngine.Pool.ObjectPool<GameObjectEvent> Pool = new(() => new GameObjectEvent(), null, v => v.Reset());
-  public GameObjectEvent Reset(GameObject? target = null)
+  internal static readonly GameObjectEvent Pool = new();
+  internal GameObjectEvent Reset(GameObject? target = null)
   {
     mTarget = target;
     return this;
   }
 
-  public override void Dispose() => Pool.Release(this);
+  public override void Dispose() => Reset();
   public override object Target => mTarget!;
 }
 
@@ -29,7 +29,7 @@ class GameObjectNode : Node
   abstract class EventBehaviour : MonoBehaviour
   {
     internal Action<Event> handler;
-    internal void Invoke() => InvokeHandler(handler, GameObjectEvent.Pool.Get().Reset(gameObject));
+    internal void Invoke() => InvokeHandler(handler, GameObjectEvent.Pool.Reset(gameObject));
   }
 
   sealed class EventProperty<TBehaviour> : Property<GameObject, Action<Event>> where TBehaviour : EventBehaviour
