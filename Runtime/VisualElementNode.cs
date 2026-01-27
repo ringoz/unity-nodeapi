@@ -141,6 +141,8 @@ class VisualElementNode : Node
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<PointerEvent>());
 
     var bag = (ContainerPropertyBagEx<VisualElement>)PropertyBag.GetPropertyBag<VisualElement>();
+    bag.AddProperty(new EventProperty<RoutedEvent, AttachToPanelEvent>());
+    bag.AddProperty(new EventProperty<RoutedEvent, DetachFromPanelEvent>());
     bag.AddProperty(new EventProperty<RoutedEvent, BlurEvent>());
     bag.AddProperty(new EventProperty<RoutedEvent, FocusEvent>());
     bag.AddProperty(new EventProperty<RoutedEvent, FocusOutEvent>());

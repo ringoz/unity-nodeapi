@@ -276,6 +276,8 @@ export interface VisualElement {
   //readonly customStyle: ICustomStyle;
   //readonly styleSheets: VisualElementStyleSheetSet;
   tooltip: String;
+  onAttachToPanel: Action<RoutedEvent>;
+  onDetachFromPanel: Action<RoutedEvent>;
   onBlur: Action<RoutedEvent>;
   onFocus: Action<RoutedEvent>;
   onFocusOut: Action<RoutedEvent>;
