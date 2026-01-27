@@ -43,8 +43,8 @@ public class ChangeEvent : RoutedEvent
   public int NewInt32 => ((ChangeEvent<int>)mEvent!).newValue;
   public float OldSingle => ((ChangeEvent<float>)mEvent!).previousValue;
   public float NewSingle => ((ChangeEvent<float>)mEvent!).newValue;
-  public string OldString => ((ChangeEvent<string>)mEvent!).previousValue;
-  public string NewString => ((ChangeEvent<string>)mEvent!).newValue;
+  public string OldString => (mEvent as InputEvent)?.previousData ?? ((ChangeEvent<string>)mEvent!).previousValue;
+  public string NewString => (mEvent as InputEvent)?.newData ?? ((ChangeEvent<string>)mEvent!).newValue;
   public float[] OldRect => (mEvent as GeometryChangedEvent)?.oldRect.ToArray() ?? ((ChangeEvent<Rect>)mEvent!).previousValue.ToArray();
   public float[] NewRect => (mEvent as GeometryChangedEvent)?.newRect.ToArray() ?? ((ChangeEvent<Rect>)mEvent!).newValue.ToArray();
 }
@@ -136,6 +136,8 @@ class VisualElementNode : Node
     bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<int>>());
     bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<float>>());
     bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<string>>());
+    bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<Rect>>());
+    bag.AddProperty(new EventProperty<ChangeEvent, InputEvent>());
     bag.AddProperty(new EventProperty<ChangeEvent, GeometryChangedEvent>());
     bag.AddProperty(new EventProperty<PointerEvent, ClickEvent>());
     bag.AddProperty(new EventProperty<PointerEvent, WheelEvent>());

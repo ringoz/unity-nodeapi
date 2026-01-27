@@ -284,6 +284,8 @@ export interface VisualElement {
   onChangeInt32: Action<ChangeEvent>;
   onChangeSingle: Action<ChangeEvent>;
   onChangeString: Action<ChangeEvent>;
+  onChangeRect: Action<ChangeEvent>;
+  onInput: Action<ChangeEvent>;
   onGeometryChanged: Action<ChangeEvent>;
   onClick: Action<PointerEvent>;
   onWheel: Action<PointerEvent>;
