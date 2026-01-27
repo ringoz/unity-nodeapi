@@ -184,11 +184,11 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     {
       writer.WriteLine("//#region generated");
       writer.WriteLine();
-      foreach (Type type in types)
-      {
-        foreach (string text in EmitType(type))
-          writer.WriteLine(text);
-      }
+      
+      var texts = types.SelectMany(type => EmitType(type));
+      foreach (string text in texts)
+        writer.WriteLine(text);
+
       writer.WriteLine("//#endregion generated");
       File.WriteAllText(path, source.ToString());
     }
