@@ -63,6 +63,7 @@ static class JSValueExtensions
   public static float[] ToArray(this Vector2 value) => new float[] { value.x, value.y };
   public static float[] ToArray(this Vector3 value) => new float[] { value.x, value.y, value.z };
   public static float[] ToArray(this Vector4 value) => new float[] { value.x, value.y, value.z, value.w };
+  public static float[] ToArray(this Rect value) => new float[] { value.x, value.y, value.width, value.height };
 }
 
 [JSExport]

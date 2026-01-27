@@ -34,10 +34,23 @@ public class RoutedEvent : Event
 }
 
 [JSExport]
+public class ChangeEvent : RoutedEvent
+{
+  public bool OldBoolean => ((ChangeEvent<bool>)mEvent!).previousValue;
+  public bool NewBoolean => ((ChangeEvent<bool>)mEvent!).newValue;
+  public int OldInt32 => ((ChangeEvent<int>)mEvent!).previousValue;
+  public int NewInt32 => ((ChangeEvent<int>)mEvent!).newValue;
+  public float OldSingle => ((ChangeEvent<float>)mEvent!).previousValue;
+  public float NewSingle => ((ChangeEvent<float>)mEvent!).newValue;
+  public string OldString => ((ChangeEvent<string>)mEvent!).previousValue;
+  public string NewString => ((ChangeEvent<string>)mEvent!).newValue;
+  public float[] OldRect => (mEvent as GeometryChangedEvent)?.oldRect.ToArray() ?? ((ChangeEvent<Rect>)mEvent!).previousValue.ToArray();
+  public float[] NewRect => (mEvent as GeometryChangedEvent)?.newRect.ToArray() ?? ((ChangeEvent<Rect>)mEvent!).newValue.ToArray();
+}
+
+[JSExport]
 public class PointerEvent : RoutedEvent
 {
-  public PointerEvent() { }
-
   public int pointerId => (mEvent as IPointerEvent)?.pointerId ?? PointerId.mousePointerId;
   public string pointerType => (mEvent as IPointerEvent)?.pointerType ?? "mouse";
   public bool isPrimary => (mEvent as IPointerEvent)?.isPrimary ?? true;
@@ -101,7 +114,7 @@ class VisualElementNode : Node
       }
     }
 
-    public override string Name { get; } = $"on{typeof(TEventType).Name.Replace("Event", "")}";
+    public override string Name { get; } = $"on{typeof(TEventType).Name.Replace("Event", "").Replace("`1", "")}{typeof(TEventType).GetGenericArguments().Select(t => t.Name).FirstOrDefault()}";
     public override bool IsReadOnly => false;
     public override Action<TEvent> GetValue(ref VisualElement container) => Handler.Get(container)!;
     public override void SetValue(ref VisualElement container, Action<TEvent> value) => Handler.Set(container, value);
@@ -110,9 +123,15 @@ class VisualElementNode : Node
   static VisualElementNode()
   {
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<RoutedEvent>());
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<ChangeEvent>());
     TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<PointerEvent>());
 
     var bag = (ContainerPropertyBagEx<VisualElement>)PropertyBag.GetPropertyBag<VisualElement>();
+    bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<bool>>());
+    bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<int>>());
+    bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<float>>());
+    bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<string>>());
+    bag.AddProperty(new EventProperty<ChangeEvent, GeometryChangedEvent>());
     bag.AddProperty(new EventProperty<PointerEvent, ClickEvent>());
     bag.AddProperty(new EventProperty<PointerEvent, WheelEvent>());
     bag.AddProperty(new EventProperty<PointerEvent, PointerCaptureEvent>());

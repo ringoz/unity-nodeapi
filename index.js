@@ -12,5 +12,6 @@ export const {
 	Loader,
 	Node,
 	RoutedEvent,
+	ChangeEvent,
 	PointerEvent,
 } = exports;

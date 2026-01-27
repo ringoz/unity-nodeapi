@@ -97,6 +97,30 @@ export class RoutedEvent extends Event {
 	stopImmediatePropagation(): void;
 }
 
+export class ChangeEvent extends RoutedEvent {
+	constructor();
+
+	readonly oldBoolean: boolean;
+
+	readonly newBoolean: boolean;
+
+	readonly oldInt32: number;
+
+	readonly newInt32: number;
+
+	readonly oldSingle: number;
+
+	readonly newSingle: number;
+
+	readonly oldString: string;
+
+	readonly newString: string;
+
+	readonly oldRect: number[];
+
+	readonly newRect: number[];
+}
+
 export class PointerEvent extends RoutedEvent {
 	constructor();
 
