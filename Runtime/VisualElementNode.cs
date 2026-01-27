@@ -15,10 +15,9 @@ using Microsoft.JavaScript.NodeApi;
 [JSExport]
 public class RoutedEvent : Event
 {
-  internal RoutedEvent() { }
-  EventBase? mEvent;
+  public RoutedEvent() { }
 
-  internal static readonly RoutedEvent Pool = new();
+  protected EventBase? mEvent;
   internal RoutedEvent Reset(EventBase? evt = null)
   {
     mEvent = evt;
@@ -36,20 +35,96 @@ public class RoutedEvent : Event
   public void StopImmediatePropagation() => mEvent!.StopImmediatePropagation();
 }
 
+[JSExport]
+public class PointerEvent : RoutedEvent
+{
+  public PointerEvent() { }
+
+  public int pointerId => ((IPointerEvent)mEvent!).pointerId;
+  public string pointerType => ((IPointerEvent)mEvent!).pointerType;
+  public bool isPrimary => ((IPointerEvent)mEvent!).isPrimary;
+  public int button => ((IPointerEvent)mEvent!).button;
+  public int pressedButtons => ((IPointerEvent)mEvent!).pressedButtons;
+  public float[] position => ((IPointerEvent)mEvent!).position.ToArray();
+  public float[] localPosition => ((IPointerEvent)mEvent!).localPosition.ToArray();
+  public float[] deltaPosition => ((IPointerEvent)mEvent!).deltaPosition.ToArray();
+  public float deltaTime => ((IPointerEvent)mEvent!).deltaTime;
+  public int clickCount => ((IPointerEvent)mEvent!).clickCount;
+  public float pressure => ((IPointerEvent)mEvent!).pressure;
+  public float tangentialPressure => ((IPointerEvent)mEvent!).tangentialPressure;
+  public float altitudeAngle => ((IPointerEvent)mEvent!).altitudeAngle;
+  public float azimuthAngle => ((IPointerEvent)mEvent!).azimuthAngle;
+  public float twist => ((IPointerEvent)mEvent!).twist;
+  public float[] tilt => ((IPointerEvent)mEvent!).tilt.ToArray();
+  public float[] radius => ((IPointerEvent)mEvent!).radius.ToArray();
+  public float[] radiusVariance => ((IPointerEvent)mEvent!).radiusVariance.ToArray();
+  public bool shiftKey => ((IPointerEvent)mEvent!).shiftKey;
+  public bool ctrlKey => ((IPointerEvent)mEvent!).ctrlKey;
+  public bool commandKey => ((IPointerEvent)mEvent!).commandKey;
+  public bool altKey => ((IPointerEvent)mEvent!).altKey;
+  public bool actionKey => ((IPointerEvent)mEvent!).actionKey;
+}
+
 class VisualElementNode : Node
 {
-  sealed class EventProperty<TEventType> : Property<VisualElement, Action<Event>> where TEventType : EventBase<TEventType>, new()
+  sealed class EventProperty<TEvent, TEventType> : Property<VisualElement, Action<TEvent>>
+    where TEvent : RoutedEvent, new()
+    where TEventType : EventBase<TEventType>, new()
   {
+    static readonly TEvent Pool = new TEvent();
+
+    sealed class Handler
+    {
+      internal Action<TEvent>? callback;
+      internal void Invoke(TEventType evt) => InvokeHandler(callback, (TEvent)Pool.Reset(evt));
+
+      internal static Action<TEvent>? Get(VisualElement element)
+      {
+        var props = element.GetUserProps();
+        if (!props.TryGetValue(typeof(TEventType), out var prop))
+          return null;
+
+        var handler = (Handler)prop;
+        return handler.callback;
+      }
+
+      internal static void Set(VisualElement element, Action<TEvent>? callback)
+      {
+        var props = element.GetUserProps();
+        if (!props.TryGetValue(typeof(TEventType), out var prop))
+          props.Add(typeof(TEventType), prop = new Handler());
+
+        var handler = (Handler)prop;
+        if ((handler.callback = callback) != null)
+          element.RegisterCallback<TEventType>(handler.Invoke);
+        else
+          element.UnregisterCallback<TEventType>(handler.Invoke);
+      }
+    }
+
     public override string Name { get; } = $"on{typeof(TEventType).Name.Replace("Event", "")}";
     public override bool IsReadOnly => false;
-    public override Action<Event> GetValue(ref VisualElement container) => container.GetEventHandler<TEventType>()!;
-    public override void SetValue(ref VisualElement container, Action<Event> value) => container.SetEventHandler<TEventType>(value);
+    public override Action<TEvent> GetValue(ref VisualElement container) => Handler.Get(container)!;
+    public override void SetValue(ref VisualElement container, Action<TEvent> value) => Handler.Set(container, value);
   }
 
   static VisualElementNode()
   {
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<RoutedEvent>());
+    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<PointerEvent>());
+
     var bag = (ContainerPropertyBagEx<VisualElement>)PropertyBag.GetPropertyBag<VisualElement>();
-    bag.AddProperty(new EventProperty<ClickEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, ClickEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, PointerCaptureEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, PointerCaptureOutEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, PointerDownEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, PointerUpEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, PointerMoveEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, PointerEnterEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, PointerLeaveEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, PointerOverEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, PointerOutEvent>());
+    bag.AddProperty(new EventProperty<PointerEvent, PointerCancelEvent>());
   }
 
   protected VisualElementNode(object ptr) : base(ptr) { }
@@ -113,36 +188,5 @@ public static class VisualElementExtensions
   {
     element.userData ??= new Dictionary<object, object>();
     return (Dictionary<object, object>)element.userData;
-  }
-
-  sealed class EventHandler<TEventType> where TEventType : EventBase<TEventType>, new()
-  {
-    public Action<Event>? handler;
-    public void Invoke(TEventType evt) => Node.InvokeHandler(handler, RoutedEvent.Pool.Reset(evt));
-  }
-
-  public static Action<Event>? GetEventHandler<TEventType>(this VisualElement element) where TEventType : EventBase<TEventType>, new()
-  {
-    var props = element.GetUserProps();
-    if (!props.TryGetValue(typeof(TEventType), out var prop))
-      return null;
-
-    var callback = (EventHandler<TEventType>)prop;
-    return callback.handler;
-  }
-
-  public static void SetEventHandler<TEventType>(this VisualElement element, Action<Event>? handler) where TEventType : EventBase<TEventType>, new()
-  {
-    var props = element.GetUserProps();
-    if (!props.TryGetValue(typeof(TEventType), out var prop))
-      props.Add(typeof(TEventType), prop = new EventHandler<TEventType>());
-
-    var callback = (EventHandler<TEventType>)prop;
-    callback.handler = handler;
-
-    if (handler != null)
-      element.RegisterCallback<TEventType>(callback.Invoke);
-    else
-      element.UnregisterCallback<TEventType>(callback.Invoke);
   }
 }

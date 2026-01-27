@@ -12,4 +12,5 @@ export const {
 	Loader,
 	Node,
 	RoutedEvent,
+	PointerEvent,
 } = exports;

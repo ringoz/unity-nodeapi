@@ -59,6 +59,10 @@ static class JSValueExtensions
       reference.GetValue().Call(JSValue.Undefined, scope.RuntimeContext.GetOrCreateObjectWrapper(a));
     });
   }
+
+  public static float[] ToArray(this Vector2 value) => new float[] { value.x, value.y };
+  public static float[] ToArray(this Vector3 value) => new float[] { value.x, value.y, value.z };
+  public static float[] ToArray(this Vector4 value) => new float[] { value.x, value.y, value.z, value.w };
 }
 
 [JSExport]
@@ -165,7 +169,7 @@ public class Node : IDisposable
   private static Event? mEvent = null;
   public static Event? Event => mEvent;
 
-  internal static void InvokeHandler(Action<Event>? handler, Event e)
+  internal static void InvokeHandler<TEvent>(Action<TEvent>? handler, TEvent e) where TEvent : Event
   {
     var was = mEvent; mEvent = e;
     try { handler?.Invoke(e); }

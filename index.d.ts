@@ -76,6 +76,8 @@ export class Node {
 }
 
 export class RoutedEvent extends Event {
+	constructor();
+
 	readonly type: string;
 
 	readonly timestamp: number;
@@ -93,4 +95,54 @@ export class RoutedEvent extends Event {
 	stopPropagation(): void;
 
 	stopImmediatePropagation(): void;
+}
+
+export class PointerEvent extends RoutedEvent {
+	constructor();
+
+	readonly pointerId: number;
+
+	readonly pointerType: string;
+
+	readonly isPrimary: boolean;
+
+	readonly button: number;
+
+	readonly pressedButtons: number;
+
+	readonly position: number[];
+
+	readonly localPosition: number[];
+
+	readonly deltaPosition: number[];
+
+	readonly deltaTime: number;
+
+	readonly clickCount: number;
+
+	readonly pressure: number;
+
+	readonly tangentialPressure: number;
+
+	readonly altitudeAngle: number;
+
+	readonly azimuthAngle: number;
+
+	readonly twist: number;
+
+	readonly tilt: number[];
+
+	readonly radius: number[];
+
+	readonly radiusVariance: number[];
+
+	readonly shiftKey: boolean;
+
+	readonly ctrlKey: boolean;
+
+	readonly commandKey: boolean;
+
+	readonly altKey: boolean;
+
+	readonly actionKey: boolean;
 }

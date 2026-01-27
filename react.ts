@@ -5,7 +5,7 @@
 import { createElement, lazy } from 'react';
 import Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { Node } from '.';
+import { Event, Node, PointerEvent } from '.';
 import { BsodBoundary } from './bsod.tsx';
 import * as FiberConfig from './reconciler.ts';
 
@@ -276,7 +276,17 @@ export interface VisualElement {
   //readonly customStyle: ICustomStyle;
   //readonly styleSheets: VisualElementStyleSheetSet;
   tooltip: String;
-  onClick: Action<Event>;
+  onClick: Action<PointerEvent>;
+  onPointerCapture: Action<PointerEvent>;
+  onPointerCaptureOut: Action<PointerEvent>;
+  onPointerDown: Action<PointerEvent>;
+  onPointerUp: Action<PointerEvent>;
+  onPointerMove: Action<PointerEvent>;
+  onPointerEnter: Action<PointerEvent>;
+  onPointerLeave: Action<PointerEvent>;
+  onPointerOver: Action<PointerEvent>;
+  onPointerOut: Action<PointerEvent>;
+  onPointerCancel: Action<PointerEvent>;
 }
 export const VisualElement = intrinsic<VisualElement>("VisualElement");
 
