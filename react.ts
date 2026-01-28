@@ -141,6 +141,7 @@ export interface GameObject extends ObjectBase {
   //readonly scene: Scene;
   readonly sceneCullingMask: UInt64;
   readonly gameObject: Ptr<GameObject>;
+  onMessage: Action<Event>;
   onAwake: Action<Event>;
   onStart: Action<Event>;
   onUpdate: Action<Event>;

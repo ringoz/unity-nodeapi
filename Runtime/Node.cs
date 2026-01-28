@@ -33,6 +33,7 @@ public abstract class Event : IDisposable
   public virtual string Type => GetType().Name;
   public virtual long Timestamp => (long)(Time.unscaledTime * 1000.0f);
   public virtual object Target => null!;
+  public virtual JSValue? Value => default;
 }
 
 [JSExport]
@@ -159,6 +160,7 @@ public class Node : IDisposable
   public virtual void SetActive(bool value) => throw new NotImplementedException();
   public virtual void SetParent(Node? parent, Node? beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
+  public virtual void Invoke(string methodName, in JSValue value = default) => mPtr.GetType().GetMethod(methodName)?.Invoke(mPtr, value != default ? new object[] { value } : Array.Empty<object>());
   public virtual DOMRect? GetBoundingClientRect() => null;
 
   private static Event? mEvent = null;

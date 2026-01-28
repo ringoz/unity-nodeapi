@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
 using Unity.Properties;
 
@@ -11,25 +12,27 @@ using Unity.Properties;
 
 class GameObjectEvent : Event
 {
-  GameObject? mTarget;
-
-  internal static readonly GameObjectEvent Pool = new();
-  internal GameObjectEvent Reset(GameObject? target = null)
+  protected GameObject? mTarget;
+  protected JSValue mValue;
+  internal GameObjectEvent Reset(GameObject? target = default, JSValue value = default)
   {
     mTarget = target;
+    mValue = value;
     return this;
   }
 
   public override void Dispose() => Reset();
   public override object Target => mTarget!;
+  public override JSValue? Value => mValue;
 }
 
 class GameObjectNode : Node
 {
   abstract class EventBehaviour : MonoBehaviour
   {
+    static readonly GameObjectEvent Pool = new();
     internal Action<Event> handler;
-    internal void Invoke() => InvokeHandler(handler, GameObjectEvent.Pool.Reset(gameObject));
+    internal void Invoke(in JSValue value = default) => InvokeHandler(handler, Pool.Reset(gameObject, value));
   }
 
   sealed class EventProperty<TBehaviour> : Property<GameObject, Action<Event>> where TBehaviour : EventBehaviour
@@ -40,6 +43,7 @@ class GameObjectNode : Node
     public override void SetValue(ref GameObject container, Action<Event> value) => container.GetOrAddComponent<TBehaviour>().handler = value;
   }
 
+  sealed class onMessage : EventBehaviour { public void Message(JSValue value) => Invoke(value); }
   sealed class onAwake : EventBehaviour { void Awake() => Invoke(); }
   sealed class onStart : EventBehaviour { void Start() => Invoke(); }
   sealed class onUpdate : EventBehaviour { void Update() => Invoke(); }
@@ -61,6 +65,7 @@ class GameObjectNode : Node
   static GameObjectNode()
   {
     var bag = (ContainerPropertyBagEx<GameObject>)PropertyBag.GetPropertyBag<GameObject>();
+    bag.AddProperty(new EventProperty<onMessage>());
     bag.AddProperty(new EventProperty<onAwake>());
     bag.AddProperty(new EventProperty<onStart>());
     bag.AddProperty(new EventProperty<onUpdate>());
@@ -128,6 +133,11 @@ class GameObjectNode : Node
   {
     foreach (Transform child in ((GameObject)mPtr).transform)
       child.SetParent(((GameObject)Null.mPtr).transform, false);
+  }
+
+  public override void Invoke(string methodName, in JSValue value)
+  {
+    ((GameObject)mPtr).SendMessage(methodName, value);
   }
 
   public override DOMRect? GetBoundingClientRect()

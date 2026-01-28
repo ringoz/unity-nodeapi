@@ -30,6 +30,8 @@ export class Event {
 
 	readonly target: Object;
 
+	readonly value?: any;
+
 	toString(): string;
 
 	dispose(): void;
@@ -62,6 +64,11 @@ export class Node {
 	): void;
 
 	clear(): void;
+
+	invoke(
+		methodName: string,
+		value?: any,
+	): void;
 
 	getBoundingClientRect(): DOMRect | undefined;
 
