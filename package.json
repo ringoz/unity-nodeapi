@@ -1,19 +1,18 @@
 {
 	"name": "net.ringoz.unity.nodeapi",
-	"type": "module",
-	"types": "./index.d.ts",
-	"exports": {
-		".": "./index.js",
-		"./react": "./react.ts"
-	},
-	"displayName": "Unity Node API",
 	"version": "0.1.0",
-	"unity": "6000.3",
-	"unityRelease": "0f1",
+	"displayName": "Unity Node API",
 	"description": "A React renderer for Unity",
 	"author": {
 		"name": "Vladimir Davidovich",
 		"url": "https://ringoz.net",
 		"email": "vladimir.davidovich@outlook.com"
+	},
+	"unity": "6000.3",
+	"unityRelease": "0f1",
+	"types": "./index.d.ts",
+	"exports": {
+		".": "./index.js",
+		"./react": "./react.ts"
 	}
 }
