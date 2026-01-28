@@ -34,7 +34,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
         PlayerSettings.SetAdditionalIl2CppArgs(m_il2cppArgs + " --linker-flags=\"-LPackages/net.ringoz.unity.nodeapi/Runtime/lib -lfcontext -undefined dynamic_lookup\"");
         break;
       case BuildTarget.WebGL:
-        PlayerSettings.WebGL.emscriptenArgs = m_emsdkArgs + " -sEXPORTED_FUNCTIONS=['_malloc','_free','_napi_register_wasm_v1','_node_api_module_get_api_version_v1'] -sEXTRA_EXPORTED_RUNTIME_METHODS=['emnapiInit']";
+        PlayerSettings.WebGL.emscriptenArgs = m_emsdkArgs + " -sEXPORTED_FUNCTIONS=['_main','_malloc','_free','_napi_register_wasm_v1','_node_api_module_get_api_version_v1'] -sEXTRA_EXPORTED_RUNTIME_METHODS=['emnapiInit']";
         break;
     }
   }
