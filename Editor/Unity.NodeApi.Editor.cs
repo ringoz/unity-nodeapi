@@ -11,10 +11,12 @@ using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.Assertions;
 
+#nullable enable
+
 class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithContext
 {
-  string m_il2cppArgs;
-  string m_emsdkArgs;
+  string? m_il2cppArgs;
+  string? m_emsdkArgs;
 
   public int callbackOrder { get => 0; }
 
@@ -59,8 +61,8 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     GenerateTypings(userTypes, projectPath + "/index.ts");
   }
 
-  static ISet<Type> CoreTypes;
-  static ISet<Type> UserTypes;
+  static ISet<Type> CoreTypes = null!;
+  static ISet<Type> UserTypes = null!;
 
   class PropNameComparer : EqualityComparer<IProperty>
   {
@@ -93,7 +95,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     return GetProperties(type).Except(GetProperties(type.BaseType), PropNameComparer.Instance);
   }
 
-  static Type TypeBase(Type type)
+  static Type? TypeBase(Type type)
   {
     Type result;
     for (result = type.BaseType; result != null; result = result.BaseType)
@@ -125,19 +127,19 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     return IsPtrType(type) ? $"Ptr<{name}>" : name;
   }
 
-  static ISet<Type> cache = new HashSet<Type>();
-
-  static bool IsPropTypeSupported<T>()
+  public static bool IsPropTypeSupported<T>()
   {
     var source = JSValue.Undefined;
     return TypeConversion.TryConvert(ref source, out T destination);
   }
 
+  static MethodInfo IsPropTypeSupportedMethod = typeof(UnityNodeApiBuild).GetMethod(nameof(IsPropTypeSupported), Array.Empty<Type>());
+  static ISet<Type> cache = new HashSet<Type>();
+
   static bool IsPropTypeSupported(Type type)
   {
     if (IsPtrType(type) || cache.Contains(type)) return true;
-    var method = typeof(UnityNodeApiBuild).GetMethod(nameof(IsPropTypeSupported));
-    return (bool)method.MakeGenericMethod(type).Invoke(null, null);
+    return (bool)IsPropTypeSupportedMethod.MakeGenericMethod(type).Invoke(null, null);
   }
 
   static bool IsPtrType(Type type)
@@ -152,7 +154,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
 
     using (var writer = new StringWriter())
     {
-      Type typeBase = TypeBase(type);
+      Type? typeBase = TypeBase(type);
       if (typeBase != null)
         writer.WriteLine($"export interface {TypeName(type)} extends {TypeName(typeBase)} {{");
       else
