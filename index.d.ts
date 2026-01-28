@@ -28,7 +28,7 @@ export class Event {
 
 	readonly timestamp: number;
 
-	readonly target: Object;
+	readonly target: Node;
 
 	readonly value?: any;
 
@@ -87,11 +87,11 @@ export class RoutedEvent extends Event {
 
 	readonly timestamp: number;
 
-	readonly target: Object;
+	readonly target: Node;
 
-	readonly currentTarget: Object;
+	readonly currentTarget: Node;
 
-	readonly relatedTarget?: Object;
+	readonly relatedTarget?: Node;
 
 	readonly bubbles: boolean;
 

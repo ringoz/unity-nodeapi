@@ -25,9 +25,9 @@ public class RoutedEvent : Event
   public override void Dispose() => Reset();
   public override string Type => mEvent!.GetType().Name;
   public override long Timestamp => mEvent!.timestamp;
-  public override object Target => mEvent!.target;
-  public object CurrentTarget => mEvent!.currentTarget;
-  public object? RelatedTarget => (mEvent as IFocusEvent)?.relatedTarget;
+  public override Node Target => VisualElementNode.Wrap((VisualElement)mEvent!.target)!;
+  public Node CurrentTarget => VisualElementNode.Wrap((VisualElement)mEvent!.currentTarget)!;
+  public Node? RelatedTarget => VisualElementNode.Wrap((VisualElement?)(mEvent as IFocusEvent)?.relatedTarget);
   public bool Bubbles => mEvent!.bubbles;
   public bool IsPropagationStopped => mEvent!.isPropagationStopped;
   public void StopPropagation() => mEvent!.StopPropagation();

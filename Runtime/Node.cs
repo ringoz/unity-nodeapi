@@ -32,7 +32,7 @@ public abstract class Event : IDisposable
   public abstract void Dispose();
   public virtual string Type => GetType().Name;
   public virtual long Timestamp => (long)(Time.unscaledTime * 1000.0f);
-  public virtual object Target => null!;
+  public abstract Node Target { get; }
   public virtual JSValue? Value => default;
 }
 

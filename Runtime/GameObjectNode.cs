@@ -22,7 +22,7 @@ class GameObjectEvent : Event
   }
 
   public override void Dispose() => Reset();
-  public override object Target => mTarget!;
+  public override Node Target => GameObjectNode.Wrap(mTarget)!;
   public override JSValue? Value => mValue;
 }
 
