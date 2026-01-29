@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Microsoft.JavaScript.NodeApi;
 using Unity.Properties;
 using UnityEditor;
 using UnityEditor.Build;
@@ -127,13 +126,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     return IsPtrType(type) ? $"Ptr<{name}>" : name;
   }
 
-  public static bool IsPropTypeSupported<T>()
-  {
-    var source = JSValue.Undefined;
-    return TypeConversion.TryConvert(ref source, out T destination);
-  }
-
-  static MethodInfo IsPropTypeSupportedMethod = typeof(UnityNodeApiBuild).GetMethod(nameof(IsPropTypeSupported), Array.Empty<Type>());
+  static MethodInfo IsPropTypeSupportedMethod = typeof(Node).GetMethod(nameof(Node.IsPropTypeSupported), Array.Empty<Type>());
   static ISet<Type> cache = new HashSet<Type>();
 
   static bool IsPropTypeSupported(Type type)
@@ -166,7 +159,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
         Type propType = property.DeclaredValueType();
         if (propType.IsEnum)
         {
-          isArray = (property.Name.EndsWith("Flags") || property.Name.EndsWith("Hints")) && propType.GetCustomAttribute<FlagsAttribute>() != null;
+          isArray = propType.GetCustomAttribute<FlagsAttribute>() != null;
           if (cache.Add(propType))
             yield return $"export type {TypeName(propType)} = {string.Join(" | ", Enum.GetNames(propType).Select(name => $"'{name}'"))};";
         }

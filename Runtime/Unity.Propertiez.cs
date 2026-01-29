@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.JavaScript.NodeApi;
 using Unity.Properties;
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace Unity.Properties
 {
@@ -19,8 +20,73 @@ namespace Unity.Properties
 
 static class Propertiez
 {
+  static bool TryConvertJS<TDestination>(ref JSValue value, out TDestination destination)
+  {
+    if (TypeTraits<TDestination>.IsEnumFlags)
+    {
+      if (value.GetArrayLength() == 0)
+      {
+        destination = default;
+        return true;
+      }
+      var source = string.Join(", ", ((JSArray)value).Select(v => (string)v));
+      return TypeConversion.TryConvert(ref source, out destination);
+    }
+
+    if (TypeTraits<TDestination>.IsEnum)
+    {
+      var source = (string)value;
+      return TypeConversion.TryConvert(ref source, out destination);
+    }
+
+    if (TypeTraits<TDestination>.IsUnityObject)
+    {
+      var source = value.IsNullOrUndefined() ? null : value.GetValueExternal();
+      return TypeConversion.TryConvert(ref source, out destination);
+    }
+
+    return TypeConversion.TryConvert(ref value, out destination);
+  }
+
+  static bool TryConvertJS<TSource>(ref TSource source, out JSValue value)
+  {
+    if (TypeTraits<TSource>.IsEnumFlags)
+    {
+      value = source.ToString().Split(", ").Select(s => (JSValue)s).ToJSArray();
+      return true;
+    }
+
+    if (TypeTraits<TSource>.IsEnum)
+    {
+      value = source.ToString();
+      return true;
+    }
+
+    if (TypeTraits<TSource>.IsUnityObject)
+    {
+      value = (source != null) ? JSValue.CreateExternal(source) : JSValue.Null;
+      return true;
+    }
+
+    return TypeConversion.TryConvert(ref source, out value);
+  }
+
   public static bool TryConvert<TSource, TDestination>(ref TSource source, out TDestination destination)
   {
+    if (typeof(JSValue) == typeof(TSource))
+      return TryConvertJS(ref UnsafeUtility.As<TSource, JSValue>(ref source), out destination);
+
+    if (typeof(JSValue) == typeof(TDestination))
+    {
+      if (TryConvertJS(ref source, out JSValue value))
+      {
+        destination = UnsafeUtility.As<JSValue, TDestination>(ref value);
+        return true;
+      }
+      destination = default;
+      return false;
+    }
+
     return TypeConversion.TryConvert(ref source, out destination);
   }
 
@@ -92,11 +158,6 @@ static class Propertiez
       default:
         throw new Exception($"Unexpected {nameof(VisitReturnCode)}=[{returnCode}]");
     }
-  }
-
-  public static JSValue GetJSValue(object container, in PropertyPath path)
-  {
-    return GetValue<JSValue>(container, path);
   }
 
   class SetValueVisitor<TSrcValue> : PathVisitor
@@ -171,33 +232,6 @@ static class Propertiez
         throw new AccessViolationException($"Failed to SetValue for read-only property with Path=[{path}]");
       default:
         throw new Exception($"Unexpected {nameof(VisitReturnCode)}=[{returnCode}]");
-    }
-  }
-
-  public static void SetJSValue(object container, in PropertyPath path, in JSValue value)
-  {
-    switch (value.TypeOf())
-    {
-      case JSValueType.String:
-        if (!TrySetValue(container, path, (string)value, out _))
-          SetValue(container, path, value);
-        break;
-
-      case JSValueType.External:
-        var obj = value.TryGetValueExternal();
-        if (obj is UnityEngine.Object ueo)
-          SetValue(container, path, ueo);
-        else
-          SetValue(container, path, obj);
-        break;
-
-      default:
-        var part = path[path.Length - 1];
-        if (part.IsName && (part.Name.EndsWith("Flags") || part.Name.EndsWith("Hints")) && value.IsArray())
-          SetValue(container, path, string.Join(',', ((JSArray)value).Select(v => (string)v)));
-        else
-          SetValue(container, path, value);
-        break;
     }
   }
 }

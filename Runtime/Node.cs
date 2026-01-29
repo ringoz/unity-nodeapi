@@ -345,6 +345,12 @@ static class JSValueExtensions
 [JSExport]
 public class Node : IDisposable
 {
+  public static bool IsPropTypeSupported<T>()
+  {
+    JSValue source = default;
+    return Propertiez.TryConvert(ref source, out T destination);
+  }
+
   protected static TypeConverter<T?, JSValue> JS<T>(JSValue.From<T> convert)
   {
     return (ref T? v) => v != null ? convert(v) : default;
@@ -455,8 +461,8 @@ public class Node : IDisposable
   public override string ToString() => $"[{GetType().Name}] {mPtr}";
 
   private static PropertyPath PropPath(in JSValue key) => new PropertyPath(((string)key).Replace('-', '.'));
-  public virtual JSValue GetProp(string path) => Propertiez.GetJSValue(mPtr, PropPath(path));
-  public virtual void SetProps(in JSValue props) { foreach (var item in (JSObject)props) Propertiez.SetJSValue(mPtr, PropPath(item.Key), item.Value); }
+  public virtual JSValue GetProp(string path) => Propertiez.GetValue<JSValue>(mPtr, PropPath(path));
+  public virtual void SetProps(in JSValue props) { foreach (var item in (JSObject)props) Propertiez.SetValue(mPtr, PropPath(item.Key), item.Value); }
   public virtual void SetActive(bool value) => throw new NotImplementedException();
   public virtual void SetParent(Node? parent, Node? beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
