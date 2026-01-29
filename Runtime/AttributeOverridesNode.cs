@@ -25,6 +25,17 @@ class AttributeOverridesNode : Node
 
   public override string ToString() => $"[#{mName}] {mPtr}";
 
+  public override JSValue GetProp(string path)
+  {
+    if (mPtr is JSReference reference)
+    {
+      var props = reference.GetValue();
+      return props.GetProperty(path);
+    }
+
+    return base.GetProp(path);
+  }
+
   public override void SetProps(in JSValue props)
   {
     if (mPtr is JSReference reference)

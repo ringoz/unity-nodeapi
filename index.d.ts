@@ -54,6 +54,8 @@ export class Node {
 
 	toString(): string;
 
+	getProp(path: string): any;
+
 	setProps(props: any): void;
 
 	setActive(value: boolean): void;

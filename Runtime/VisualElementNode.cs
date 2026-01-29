@@ -45,8 +45,8 @@ public class ChangeEvent : RoutedEvent
   public float NewSingle => ((ChangeEvent<float>)mEvent!).newValue;
   public string OldString => (mEvent as InputEvent)?.previousData ?? ((ChangeEvent<string>)mEvent!).previousValue;
   public string NewString => (mEvent as InputEvent)?.newData ?? ((ChangeEvent<string>)mEvent!).newValue;
-  public float[] OldRect => (mEvent as GeometryChangedEvent)?.oldRect.ToArray() ?? ((ChangeEvent<Rect>)mEvent!).previousValue.ToArray();
-  public float[] NewRect => (mEvent as GeometryChangedEvent)?.newRect.ToArray() ?? ((ChangeEvent<Rect>)mEvent!).newValue.ToArray();
+  public float[] OldRect => (mEvent as GeometryChangedEvent)?.oldRect.AsEnumerable().ToArray() ?? ((ChangeEvent<Rect>)mEvent!).previousValue.AsEnumerable().ToArray();
+  public float[] NewRect => (mEvent as GeometryChangedEvent)?.newRect.AsEnumerable().ToArray() ?? ((ChangeEvent<Rect>)mEvent!).newValue.AsEnumerable().ToArray();
 }
 
 [JSExport]
@@ -69,10 +69,10 @@ public class PointerEvent : RoutedEvent
   public bool IsPrimary => (mEvent as IPointerEvent)?.isPrimary ?? true;
   public int Button => (mEvent as IPointerEvent)?.button ?? ((IMouseEvent)mEvent!).button;
   public int PressedButtons => (mEvent as IPointerEvent)?.pressedButtons ?? ((IMouseEvent)mEvent!).pressedButtons;
-  public float[] Position => (mEvent as IPointerEvent)?.position.ToArray() ?? ((IMouseEvent)mEvent!).mousePosition.ToArray();
-  public float[] LocalPosition => (mEvent as IPointerEvent)?.localPosition.ToArray() ?? ((IMouseEvent)mEvent!).localMousePosition.ToArray();
-  public float[] DeltaPosition => (mEvent as IPointerEvent)?.deltaPosition.ToArray() ?? ((IMouseEvent)mEvent!).mouseDelta.ToArray();
-  public float[] WheelDelta => (mEvent as WheelEvent)?.delta.ToArray() ?? Vector3.zero.ToArray();
+  public float[] Position => (mEvent as IPointerEvent)?.position.AsEnumerable().ToArray() ?? ((IMouseEvent)mEvent!).mousePosition.AsEnumerable().ToArray();
+  public float[] LocalPosition => (mEvent as IPointerEvent)?.localPosition.AsEnumerable().ToArray() ?? ((IMouseEvent)mEvent!).localMousePosition.AsEnumerable().ToArray();
+  public float[] DeltaPosition => (mEvent as IPointerEvent)?.deltaPosition.AsEnumerable().ToArray() ?? ((IMouseEvent)mEvent!).mouseDelta.AsEnumerable().ToArray();
+  public float[] WheelDelta => (mEvent as WheelEvent)?.delta.AsEnumerable().ToArray() ?? Vector3.zero.AsEnumerable().ToArray();
   public float DeltaTime => (mEvent as IPointerEvent)?.deltaTime ?? 0;
   public int ClickCount => (mEvent as IPointerEvent)?.clickCount ?? ((IMouseEvent)mEvent!).clickCount;
   public float Pressure => (mEvent as IPointerEvent)?.pressure ?? 0;
@@ -80,9 +80,9 @@ public class PointerEvent : RoutedEvent
   public float AltitudeAngle => (mEvent as IPointerEvent)?.altitudeAngle ?? 0;
   public float AzimuthAngle => (mEvent as IPointerEvent)?.azimuthAngle ?? 0;
   public float Twist => (mEvent as IPointerEvent)?.twist ?? 0;
-  public float[] Tilt => (mEvent as IPointerEvent)?.tilt.ToArray() ?? Vector2.zero.ToArray();
-  public float[] Radius => (mEvent as IPointerEvent)?.radius.ToArray() ?? Vector2.zero.ToArray();
-  public float[] RadiusVariance => (mEvent as IPointerEvent)?.radiusVariance.ToArray() ?? Vector2.zero.ToArray();
+  public float[] Tilt => (mEvent as IPointerEvent)?.tilt.AsEnumerable().ToArray() ?? Vector2.zero.AsEnumerable().ToArray();
+  public float[] Radius => (mEvent as IPointerEvent)?.radius.AsEnumerable().ToArray() ?? Vector2.zero.AsEnumerable().ToArray();
+  public float[] RadiusVariance => (mEvent as IPointerEvent)?.radiusVariance.AsEnumerable().ToArray() ?? Vector2.zero.AsEnumerable().ToArray();
   public bool ShiftKey => (mEvent as IPointerEvent)?.shiftKey ?? ((IMouseEvent)mEvent!).shiftKey;
   public bool CtrlKey => (mEvent as IPointerEvent)?.ctrlKey ?? ((IMouseEvent)mEvent!).ctrlKey;
   public bool CommandKey => (mEvent as IPointerEvent)?.commandKey ?? ((IMouseEvent)mEvent!).commandKey;
@@ -135,10 +135,15 @@ class VisualElementNode : Node
 
   static VisualElementNode()
   {
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<RoutedEvent>());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<ChangeEvent>());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<KeyboardEvent>());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<PointerEvent>());
+    TypeConversion.Register(JS((Action<RoutedEvent> v) => new JSFunction((JSValue e) => v((RoutedEvent)e.Unwrap("RoutedEvent")))));
+    TypeConversion.Register(JS((Action<ChangeEvent> v) => new JSFunction((JSValue e) => v((ChangeEvent)e.Unwrap("ChangeEvent")))));
+    TypeConversion.Register(JS((Action<KeyboardEvent> v) => new JSFunction((JSValue e) => v((KeyboardEvent)e.Unwrap("KeyboardEvent")))));
+    TypeConversion.Register(JS((Action<PointerEvent> v) => new JSFunction((JSValue e) => v((PointerEvent)e.Unwrap("PointerEvent")))));
+    
+    TypeConversion.Register(JS((JSValue v) => v.ToAction<RoutedEvent>()));
+    TypeConversion.Register(JS((JSValue v) => v.ToAction<ChangeEvent>()));
+    TypeConversion.Register(JS((JSValue v) => v.ToAction<KeyboardEvent>()));
+    TypeConversion.Register(JS((JSValue v) => v.ToAction<PointerEvent>()));
 
     var bag = (ContainerPropertyBagEx<VisualElement>)PropertyBag.GetPropertyBag<VisualElement>();
     bag.AddProperty(new EventProperty<RoutedEvent, AttachToPanelEvent>());

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
 using Unity.Properties;
+using System.Collections.Generic;
 
 #nullable enable
 
@@ -61,59 +62,384 @@ static class JSValueExtensions
     });
   }
 
-  public static float[] ToArray(this Vector2 value) => new float[] { value.x, value.y };
-  public static float[] ToArray(this Vector3 value) => new float[] { value.x, value.y, value.z };
-  public static float[] ToArray(this Vector4 value) => new float[] { value.x, value.y, value.z, value.w };
-  public static float[] ToArray(this Rect value) => new float[] { value.x, value.y, value.width, value.height };
+  public static JSValue ToJSArray(this IEnumerable<JSValue> values)
+  {
+    var array = JSValue.CreateArray(); int i = 0;
+    foreach (var value in values)
+      array.SetElement(i++, value);
+    return array;
+  }
+
+  public static IEnumerable<float> AsEnumerable(this Vector2 value)
+  {
+    yield return value.x;
+    yield return value.y;
+  }
+
+  public static IEnumerable<int> AsEnumerable(this Vector2Int value)
+  {
+    yield return value.x;
+    yield return value.y;
+  }
+
+  public static IEnumerable<float> AsEnumerable(this Vector3 value)
+  {
+    yield return value.x;
+    yield return value.y;
+    yield return value.z;
+  }
+
+  public static IEnumerable<int> AsEnumerable(this Vector3Int value)
+  {
+    yield return value.x;
+    yield return value.y;
+    yield return value.z;
+  }
+
+  public static IEnumerable<float> AsEnumerable(this Vector4 value)
+  {
+    yield return value.x;
+    yield return value.y;
+    yield return value.z;
+    yield return value.w;
+  }
+
+  public static IEnumerable<float> AsEnumerable(this Quaternion value)
+  {
+    yield return value.x;
+    yield return value.y;
+    yield return value.z;
+    yield return value.w;
+  }
+
+  public static IEnumerable<float> AsEnumerable(this Matrix4x4 value)
+  {
+    yield return value.m00;
+    yield return value.m01;
+    yield return value.m02;
+    yield return value.m03;
+
+    yield return value.m10;
+    yield return value.m11;
+    yield return value.m12;
+    yield return value.m13;
+
+    yield return value.m20;
+    yield return value.m21;
+    yield return value.m22;
+    yield return value.m23;
+
+    yield return value.m30;
+    yield return value.m31;
+    yield return value.m32;
+    yield return value.m33;
+  }
+
+  public static IEnumerable<float> AsEnumerable(this Color value)
+  {
+    yield return value.r;
+    yield return value.g;
+    yield return value.b;
+    yield return value.a;
+  }
+
+  public static IEnumerable<float> AsEnumerable(this Rect value)
+  {
+    yield return value.x;
+    yield return value.y;
+    yield return value.width;
+    yield return value.height;
+  }
+
+  public static IEnumerable<int> AsEnumerable(this RectInt value)
+  {
+    yield return value.x;
+    yield return value.y;
+    yield return value.width;
+    yield return value.height;
+  }
+
+  public static IEnumerable<float> AsEnumerable(this Bounds value)
+  {
+    yield return value.center.x;
+    yield return value.center.y;
+    yield return value.center.z;
+
+    yield return value.size.x;
+    yield return value.size.y;
+    yield return value.size.z;
+  }
+
+  public static IEnumerable<int> AsEnumerable(this BoundsInt value)
+  {
+    yield return value.position.x;
+    yield return value.position.y;
+    yield return value.position.z;
+
+    yield return value.size.x;
+    yield return value.size.y;
+    yield return value.size.z;
+  }
+
+  public static Vector2 ToVector2(this IEnumerable<float> value)
+  {
+    var result = new Vector2();
+    using (var values = value.GetEnumerator())
+    {
+      values.MoveNext(); result.x = values.Current;
+      values.MoveNext(); result.y = values.Current;
+    }
+    return result;
+  }
+
+  public static Vector2Int ToVector2Int(this IEnumerable<int> value)
+  {
+    var result = new Vector2Int();
+    using (var values = value.GetEnumerator())
+    {
+      values.MoveNext(); result.x = values.Current;
+      values.MoveNext(); result.y = values.Current;
+    }
+    return result;
+  }
+
+  public static Vector3 ToVector3(this IEnumerable<float> value)
+  {
+    var result = new Vector3();
+    using (var values = value.GetEnumerator())
+    {
+      values.MoveNext(); result.x = values.Current;
+      values.MoveNext(); result.y = values.Current;
+      values.MoveNext(); result.z = values.Current;
+    }
+    return result;
+  }
+
+  public static Vector3Int ToVector3Int(this IEnumerable<int> value)
+  {
+    var result = new Vector3Int();
+    using (var values = value.GetEnumerator())
+    {
+      values.MoveNext(); result.x = values.Current;
+      values.MoveNext(); result.y = values.Current;
+      values.MoveNext(); result.z = values.Current;
+    }
+    return result;
+  }
+
+  public static Vector4 ToVector4(this IEnumerable<float> value)
+  {
+    var result = new Vector4();
+    using (var values = value.GetEnumerator())
+    {
+      values.MoveNext(); result.x = values.Current;
+      values.MoveNext(); result.y = values.Current;
+      values.MoveNext(); result.z = values.Current;
+      values.MoveNext(); result.w = values.Current;
+    }
+    return result;
+  }
+
+  public static Quaternion ToQuaternion(this IEnumerable<float> value)
+  {
+    var result = new Quaternion();
+    using (var values = value.GetEnumerator())
+    {
+      values.MoveNext(); result.x = values.Current;
+      values.MoveNext(); result.y = values.Current;
+      values.MoveNext(); result.z = values.Current;
+      values.MoveNext(); result.w = values.Current;
+    }
+    return result;
+  }
+
+  public static Matrix4x4 ToMatrix4x4(this IEnumerable<float> value)
+  {
+    var result = new Matrix4x4();
+    using (var values = value.GetEnumerator())
+    {
+      for (int i = 0; i < 16; i++)
+      {
+        values.MoveNext(); result[i] = values.Current;
+      }
+    }
+    return result;
+  }
+
+  public static Color ToColor(this IEnumerable<float> value)
+  {
+    var result = new Color();
+    using (var values = value.GetEnumerator())
+    {
+      values.MoveNext(); result.r = values.Current;
+      values.MoveNext(); result.g = values.Current;
+      values.MoveNext(); result.b = values.Current;
+      values.MoveNext(); result.a = values.Current;
+    }
+    return result;
+  }
+
+  public static Rect ToRect(this IEnumerable<float> value)
+  {
+    var result = new Rect();
+    using (var values = value.GetEnumerator())
+    {
+      values.MoveNext(); result.x = values.Current;
+      values.MoveNext(); result.y = values.Current;
+      values.MoveNext(); result.width = values.Current;
+      values.MoveNext(); result.height = values.Current;
+    }
+    return result;
+  }
+
+  public static RectInt ToRectInt(this IEnumerable<int> value)
+  {
+    var result = new RectInt();
+    using (var values = value.GetEnumerator())
+    {
+      values.MoveNext(); result.x = values.Current;
+      values.MoveNext(); result.y = values.Current;
+      values.MoveNext(); result.width = values.Current;
+      values.MoveNext(); result.height = values.Current;
+    }
+    return result;
+  }
+
+  public static Bounds ToBounds(this IEnumerable<float> value)
+  {
+    var result = new Bounds();
+    using (var values = value.GetEnumerator())
+    {
+      var tmp = new Vector3();
+      values.MoveNext(); tmp.x = values.Current;
+      values.MoveNext(); tmp.y = values.Current;
+      values.MoveNext(); tmp.z = values.Current;
+      result.center = tmp;
+      values.MoveNext(); tmp.x = values.Current;
+      values.MoveNext(); tmp.y = values.Current;
+      values.MoveNext(); tmp.z = values.Current;
+      result.size = tmp;
+    }
+    return result;
+  }
+
+  public static BoundsInt ToBoundsInt(this IEnumerable<int> value)
+  {
+    var result = new BoundsInt();
+    using (var values = value.GetEnumerator())
+    {
+      var tmp = new Vector3Int();
+      values.MoveNext(); tmp.x = values.Current;
+      values.MoveNext(); tmp.y = values.Current;
+      values.MoveNext(); tmp.z = values.Current;
+      result.position = tmp;
+      values.MoveNext(); tmp.x = values.Current;
+      values.MoveNext(); tmp.y = values.Current;
+      values.MoveNext(); tmp.z = values.Current;
+      result.size = tmp;
+    }
+    return result;
+  }
 }
 
 [JSExport]
 public class Node : IDisposable
 {
+  protected static TypeConverter<T?, JSValue> JS<T>(JSValue.From<T> convert)
+  {
+    return (ref T? v) => v != null ? convert(v) : default;
+  }
+
+  protected static TypeConverter<JSValue, T?> JS<T>(JSValue.To<T> convert)
+  {
+    return (ref JSValue v) => v.IsNullOrUndefined() ? default : convert(v);
+  }
+
   static Node()
   {
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (char)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (bool)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (sbyte)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (short)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (int)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (long)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (byte)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (ushort)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (uint)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (ulong)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (float)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (double)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (string)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : (object)v);
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (int)v).ToArray());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (float)v).ToArray());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (string)v).ToArray());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (object)v).ToArray());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (int)v).ToList());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (float)v).ToList());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (string)v).ToList());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (object)v).ToList());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (int)v));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (float)v));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (string)v));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.Items.Select(v => (object)v));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : v.ToAction<Event>());
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new PropertyPath((string)v));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2((float)v[0], (float)v[1]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector2Int((int)v[0], (int)v[1]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector3((float)v[0], (float)v[1], (float)v[2]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector3Int((int)v[0], (int)v[1], (int)v[2]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Vector4((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Quaternion((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Matrix4x4(new Vector4((float)v[0], (float)v[1], (float)v[2], (float)v[3]), new Vector4((float)v[4], (float)v[5], (float)v[6], (float)v[7]), new Vector4((float)v[8], (float)v[9], (float)v[10], (float)v[11]), new Vector4((float)v[12], (float)v[13], (float)v[14], (float)v[15])));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Color((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Rect((float)v[0], (float)v[1], (float)v[2], (float)v[3]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new RectInt((int)v[0], (int)v[1], (int)v[2], (int)v[3]));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Bounds(new Vector3((float)v[0], (float)v[1], (float)v[2]), new Vector3((float)v[3], (float)v[4], (float)v[5])));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new BoundsInt(new Vector3Int((int)v[0], (int)v[1], (int)v[2]), new Vector3Int((int)v[3], (int)v[4], (int)v[5])));
-    TypeConversion.Register((ref JSValue v) => v.IsUndefined() ? default : new Version((int)v[0], (int)v[1], (int)v[2], (int)v[3]));
+    TypeConversion.Register(JS((char v) => (JSValue)v));
+    TypeConversion.Register(JS((bool v) => (JSValue)v));
+    TypeConversion.Register(JS((sbyte v) => (JSValue)v));
+    TypeConversion.Register(JS((short v) => (JSValue)v));
+    TypeConversion.Register(JS((int v) => (JSValue)v));
+    TypeConversion.Register(JS((long v) => (JSValue)v));
+    TypeConversion.Register(JS((byte v) => (JSValue)v));
+    TypeConversion.Register(JS((ushort v) => (JSValue)v));
+    TypeConversion.Register(JS((uint v) => (JSValue)v));
+    TypeConversion.Register(JS((ulong v) => (JSValue)v));
+    TypeConversion.Register(JS((float v) => (JSValue)v));
+    TypeConversion.Register(JS((double v) => (JSValue)v));
+    TypeConversion.Register(JS((string v) => (JSValue)v));
+    TypeConversion.Register(JS((object v) => (JSValue)v));
+    TypeConversion.Register(JS((int[] v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((float[] v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((string[] v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((object[] v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((List<int> v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((List<float> v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((List<string> v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((List<object> v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((IEnumerable<int> v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((IEnumerable<float> v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((IEnumerable<string> v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((IEnumerable<object> v) => v.Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((Action v) => new JSFunction(v)));
+    TypeConversion.Register(JS((Action<Event> v) => new JSFunction((JSValue e) => v((Event)e.Unwrap("Event")))));
+    TypeConversion.Register(JS((PropertyPath v) => (JSValue)v.ToString()));
+    TypeConversion.Register(JS((Vector2 v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((Vector2Int v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((Vector3 v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((Vector3Int v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((Vector4 v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((Quaternion v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((Matrix4x4 v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((Color v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((Rect v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((RectInt v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((Bounds v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+    TypeConversion.Register(JS((BoundsInt v) => v.AsEnumerable().Select(v => (JSValue)v).ToJSArray()));
+
+    TypeConversion.Register(JS((JSValue v) => (char)v));
+    TypeConversion.Register(JS((JSValue v) => (bool)v));
+    TypeConversion.Register(JS((JSValue v) => (sbyte)v));
+    TypeConversion.Register(JS((JSValue v) => (short)v));
+    TypeConversion.Register(JS((JSValue v) => (int)v));
+    TypeConversion.Register(JS((JSValue v) => (long)v));
+    TypeConversion.Register(JS((JSValue v) => (byte)v));
+    TypeConversion.Register(JS((JSValue v) => (ushort)v));
+    TypeConversion.Register(JS((JSValue v) => (uint)v));
+    TypeConversion.Register(JS((JSValue v) => (ulong)v));
+    TypeConversion.Register(JS((JSValue v) => (float)v));
+    TypeConversion.Register(JS((JSValue v) => (double)v));
+    TypeConversion.Register(JS((JSValue v) => (string)v));
+    TypeConversion.Register(JS((JSValue v) => (object)v));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToArray()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToArray()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (string)v).ToArray()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (object)v).ToArray()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToList()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToList()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (string)v).ToList()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (object)v).ToList()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v)));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v)));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (string)v)));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (object)v)));
+    TypeConversion.Register(JS((JSValue v) => v.ToAction()));
+    TypeConversion.Register(JS((JSValue v) => v.ToAction<Event>()));
+    TypeConversion.Register(JS((JSValue v) => new PropertyPath((string)v)));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToVector2()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToVector2Int()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToVector3()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToVector3Int()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToVector4()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToQuaternion()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToMatrix4x4()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToColor()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToRect()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToRectInt()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToBounds()));
+    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToBoundsInt()));
   }
 
   protected static readonly ConditionalWeakTable<object, Node> Wrappers = new();
@@ -129,34 +455,8 @@ public class Node : IDisposable
   public override string ToString() => $"[{GetType().Name}] {mPtr}";
 
   private static PropertyPath PropPath(in JSValue key) => new PropertyPath(((string)key).Replace('-', '.'));
-  private void SetProp(in PropertyPath key, in JSValue val)
-  {
-    switch (val.TypeOf())
-    {
-      case JSValueType.String:
-        if (!Propertiez.TrySetValue(mPtr, key, (string)val, out _))
-          Propertiez.SetValue(mPtr, key, val);
-        break;
-
-      case JSValueType.External:
-        var obj = val.TryGetValueExternal();
-        if (obj is UnityEngine.Object ueo)
-          Propertiez.SetValue(mPtr, key, ueo);
-        else
-          Propertiez.SetValue(mPtr, key, obj);
-        break;
-
-      default:
-        var part = key[key.Length - 1];
-        if (part.IsName && (part.Name.EndsWith("Flags") || part.Name.EndsWith("Hints")) && val.IsArray())
-          Propertiez.SetValue(mPtr, key, string.Join(',', ((JSArray)val).Select(v => (string)v)));
-        else
-          Propertiez.SetValue(mPtr, key, val);
-        break;
-    }
-  }
-
-  public virtual void SetProps(in JSValue props) { foreach (var item in (JSObject)props) SetProp(PropPath(item.Key), item.Value); }
+  public virtual JSValue GetProp(string path) => Propertiez.GetJSValue(mPtr, PropPath(path));
+  public virtual void SetProps(in JSValue props) { foreach (var item in (JSObject)props) Propertiez.SetJSValue(mPtr, PropPath(item.Key), item.Value); }
   public virtual void SetActive(bool value) => throw new NotImplementedException();
   public virtual void SetParent(Node? parent, Node? beforeChild = null) => throw new NotImplementedException();
   public virtual void Clear() => throw new NotImplementedException();
