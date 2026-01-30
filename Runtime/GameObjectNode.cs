@@ -31,7 +31,7 @@ class GameObjectNode : Node
   abstract class EventBehaviour : MonoBehaviour
   {
     static readonly GameObjectEvent Pool = new();
-    internal Action<Event> handler;
+    internal Action<Event>? handler;
     internal void Invoke(in JSValue value = default) => InvokeHandler(handler, Pool.Reset(gameObject, value));
   }
 
