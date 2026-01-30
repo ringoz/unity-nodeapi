@@ -25,7 +25,7 @@ class AttributeOverridesNode : Node
 
   public override string ToString() => $"[#{mName}] {mPtr}";
 
-  public override JSValue GetProp(string path)
+  public override JSValue Get(string path)
   {
     if (mPtr is JSReference reference)
     {
@@ -33,10 +33,10 @@ class AttributeOverridesNode : Node
       return props.GetProperty(path);
     }
 
-    return base.GetProp(path);
+    return base.Get(path);
   }
 
-  public override void SetProps(in JSValue props)
+  public override void Set(in JSValue props)
   {
     if (mPtr is JSReference reference)
     {
@@ -47,7 +47,7 @@ class AttributeOverridesNode : Node
     if (mPtr == null)
       mPtr = new JSReference(props);
     else
-      base.SetProps(props);
+      base.Set(props);
   }
 
   public override void SetParent(Node? parent, Node? beforeChild)
@@ -62,7 +62,7 @@ class AttributeOverridesNode : Node
     {
       mPtr = Search(mName, parent)?.mPtr!;
       Assert.IsNotNull(mPtr, $"{mName} not found in {parent.mPtr}");
-      base.SetProps(reference.GetValue());
+      base.Set(reference.GetValue());
     }
   }
 }

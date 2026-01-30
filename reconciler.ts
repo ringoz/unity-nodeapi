@@ -203,11 +203,11 @@ export function removeChildFromContainer(container: Container, child: Node | Tex
 }
 
 export function resetTextContent(instance: Node): void {
-  instance.setProps({ ['text']: undefined });
+  instance.set({ ['text']: undefined });
 }
 
 export function commitTextUpdate(instance: TextNode, oldText: string, newText: string): void {
-  instance.setProps({ ['text']: newText });
+  instance.set({ ['text']: newText });
 }
 
 export function commitMount(instance: Node, type: Type, props: Props, internalInstanceHandle: Reconciler.OpaqueHandle): void {
@@ -236,7 +236,7 @@ export function commitUpdate(instance: Node, type: Type, prevProps: Props, nextP
         restNew[key] = undefined;
     }
   }
-  instance.setProps(restNew);
+  instance.set(restNew);
 }
 
 export function hideInstance(instance: Node | TextNode): void {
