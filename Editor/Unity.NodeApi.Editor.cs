@@ -27,10 +27,10 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     switch (ctx.Report.summary.platform)
     {
       case BuildTarget.StandaloneWindows64:
-        PlayerSettings.SetAdditionalIl2CppArgs(m_il2cppArgs + " --linker-flags=\"/LIBPATH:Packages/net.ringoz.unity.nodeapi/Runtime/lib/ fcontext.lib napi.lib\"");
+        PlayerSettings.SetAdditionalIl2CppArgs(m_il2cppArgs + " --linker-flags=\"/LIBPATH:Packages/unity-nodeapi/Runtime/lib/ fcontext.lib napi.lib\"");
         break;
       case BuildTarget.StandaloneOSX:
-        PlayerSettings.SetAdditionalIl2CppArgs(m_il2cppArgs + " --linker-flags=\"-LPackages/net.ringoz.unity.nodeapi/Runtime/lib -lfcontext -undefined dynamic_lookup\"");
+        PlayerSettings.SetAdditionalIl2CppArgs(m_il2cppArgs + " --linker-flags=\"-LPackages/unity-nodeapi/Runtime/lib -lfcontext -undefined dynamic_lookup\"");
         break;
       case BuildTarget.WebGL:
         PlayerSettings.WebGL.emscriptenArgs = m_emsdkArgs + " -sEXPORTED_FUNCTIONS=['_main','_malloc','_free','_napi_register_wasm_v1','_node_api_module_get_api_version_v1'] -sEXTRA_EXPORTED_RUNTIME_METHODS=['emnapiInit']";
@@ -56,7 +56,7 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     UserTypes = new HashSet<Type>(userTypes);
 
     string projectPath = Path.GetDirectoryName(Application.dataPath);
-    GenerateTypings(coreTypes, projectPath + "/Packages/net.ringoz.unity.nodeapi/react.ts");
+    GenerateTypings(coreTypes, projectPath + "/Packages/unity-nodeapi/react.ts");
     GenerateTypings(userTypes, projectPath + "/index.ts");
   }
 
