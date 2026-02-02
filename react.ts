@@ -10,12 +10,13 @@ import { BsodBoundary } from './bsod.tsx';
 import * as FiberConfig from './reconciler.ts';
 
 const reconciler = Reconciler(FiberConfig);
-reconciler.injectIntoDevTools(undefined as any);
+reconciler.injectIntoDevTools(undefined as never);
 
 export function createRoot(parent: Node) {
   const isStrictMode = process.env.NODE_ENV !== 'production';
   const concurrentUpdatesByDefaultOverride = false;
   const identifierPrefix = '';
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   const onUncaughtError = (reconciler as any).defaultOnUncaughtError;
   const onCaughtError = (reconciler as any).defaultOnCaughtError;
   const onRecoverableError = (reconciler as any).defaultOnRecoverableError;
@@ -35,6 +36,7 @@ export function createRoot(parent: Node) {
   return {
     render: (component: React.ReactNode) => new Promise<void>((resolve, reject) => {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         isStrictMode || (component = createElement(BsodBoundary, null, component));
         reconciler.updateContainer(component, root, null, resolve);
       } catch (e) {
@@ -52,6 +54,8 @@ export function createRoot(parent: Node) {
     }
   };
 }
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 type IfEquals<X, Y, A = X, B = never> =
   (<T>() => T extends X ? 1 : 2) extends
@@ -98,6 +102,7 @@ export type Single = number;
 export type Double = number;
 export type Char = string;
 export type String = string;
+export type Object = object;
 export type List<T> = T[];
 export type IEnumerable<T> = Iterable<T>;
 export type Action<A = unknown> = (a: A) => void;
@@ -122,6 +127,8 @@ export const Cylinder = intrinsic<GameObject>("Cylinder");
 export const Plane = intrinsic<GameObject>("Plane");
 export const Quad = intrinsic<GameObject>("Quad");
 export const Sphere = intrinsic<GameObject>("Sphere");
+
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 
 //#region generated
 
