@@ -7,6 +7,8 @@ import Constants from 'react-reconciler/constants.js';
 import { Node } from '.';
 import { name as packageName, version as packageVersion } from './package.json';
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 export const rendererPackageName = packageName;
 export const rendererVersion = packageVersion;
 export const supportsMutation = true;
@@ -15,12 +17,12 @@ export const supportsHydration = false;
 export const isPrimaryRenderer = true;
 
 type Type = string;
-type Props = Record<string, any>;
+type Props = Record<string, unknown>;
 type Container = Node;
 type TextNode = Node;
 type SuspenseNode = Node;
 type PublicNode = Node;
-type HostContext = any;
+type HostContext = unknown;
 
 const EMPTY = Object.freeze({});
 
@@ -57,7 +59,7 @@ export function getPublicInstance(instance: Node | TextNode): PublicNode {
   return instance;
 }
 
-export function prepareForCommit(containerInfo: Container): Record<string, any> | null {
+export function prepareForCommit(containerInfo: Container): Props | null {
   return null;
 }
 
@@ -130,13 +132,13 @@ export function resetFormInstance() {
 }
 
 export const NotPendingTransition = null;
-export const HostTransitionContext = null as any;
+export const HostTransitionContext = null as never;
 
 export function shouldAttemptEagerTransition() {
   return false;
 }
 
-export function getInstanceFromNode(node: any): Reconciler.Fiber | null | undefined {
+export function getInstanceFromNode(node: unknown): Reconciler.Fiber | null | undefined {
   return null;
 }
 
@@ -148,11 +150,11 @@ export function afterActiveInstanceBlur(): void {
   throw new Error('Method not implemented.');
 }
 
-export function prepareScopeUpdate(scopeInstance: any, instance: any): void {
+export function prepareScopeUpdate(scopeInstance: unknown, instance: unknown): void {
   throw new Error('Method not implemented.');
 }
 
-export function getInstanceFromScope(scopeInstance: any): Node | null {
+export function getInstanceFromScope(scopeInstance: unknown): Node | null {
   throw new Error('Method not implemented.');
 }
 
@@ -214,7 +216,7 @@ export function commitMount(instance: Node, type: Type, props: Props, internalIn
   throw new Error('Method not implemented.');
 }
 
-function isEqual(a: any, b: any) {
+function isEqual(a: unknown, b: unknown) {
   if (a === b) return true;
   if (a instanceof Node && b instanceof Node && a.equals(b)) return true;
   if (Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => v === b[i])) return true;
