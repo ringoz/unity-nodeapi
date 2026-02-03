@@ -2,7 +2,7 @@
  Copyright (c) Vladimir Davidovich. All rights reserved.
 ***********************************************************************/
 
-import { createElement, lazy } from 'react';
+import { createElement, lazy, Suspense, use, useEffect, useState, type PropsWithChildren, type SuspenseProps } from 'react';
 import Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
 import { ChangeEvent, Event, KeyboardEvent, Node, PointerEvent, RoutedEvent } from '.';
@@ -88,6 +88,28 @@ export function /* @__PURE__ */ asset<T = GameObject>(path: string) {
     render.displayName = path;
     return { default: render };
   });
+}
+
+export function useScene(path: string) {
+  const [state] = useState(() => Promise.withResolvers());
+  useEffect(() => {
+    const promise = Node.loadSceneAsync(path);
+    promise.then(state.resolve, state.reject);
+    return () => {
+      promise.then((scene) => Node.unloadSceneAsync(scene));
+    };
+  }, [path, state]);
+  return state.promise;
+}
+
+export function Async({ promise, children }: PropsWithChildren<{ promise: Promise<unknown> }>) {
+  use(promise);
+  return children;
+}
+
+export function Scene({ path, children, ...rest }: { path: string } & SuspenseProps) {
+  const promise = useScene(path);
+  return createElement(Suspense, rest, createElement(Async, { promise }, children));
 }
 
 export type Ptr<T> = object;

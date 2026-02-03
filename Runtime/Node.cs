@@ -3,13 +3,14 @@
 ***********************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Unity.Properties;
-using System.Collections.Generic;
 
 #nullable enable
 
@@ -39,6 +40,9 @@ public abstract class Event : IDisposable
 
 [JSExport]
 public delegate Task<object> Loader(string path);
+
+[JSExport]
+public delegate Task Unloader(object obj);
 
 static class JSValueExtensions
 {
@@ -488,5 +492,18 @@ public class Node : IDisposable
     var request = Resources.LoadAsync(path);
     await request;
     return request.asset;
+  };
+
+  public static Loader LoadSceneAsync { get; set; } = async (string path) =>
+  {
+    var request = SceneManager.LoadSceneAsync(path, LoadSceneMode.Additive);
+    await request;
+    return path;
+  };
+
+  public static Unloader UnloadSceneAsync { get; set; } = async (object handle) =>
+  {
+    var request = SceneManager.UnloadSceneAsync((string)handle);
+    await request;
   };
 }

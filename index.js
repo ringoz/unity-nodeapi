@@ -10,6 +10,7 @@ export const {
 	DOMRect,
 	Event,
 	Loader,
+	Unloader,
 	Node,
 	RoutedEvent,
 	ChangeEvent,

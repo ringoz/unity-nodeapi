@@ -39,12 +39,18 @@ export class Event {
 
 export interface Loader { (path: string): Promise<Object>; }
 
+export interface Unloader { (obj: Object): Promise<void>; }
+
 export class Node {
 	readonly ptr: Object;
 
 	static readonly event?: Event;
 
 	static loadAssetAsync: Loader;
+
+	static loadSceneAsync: Loader;
+
+	static unloadSceneAsync: Unloader;
 
 	dispose(): void;
 
