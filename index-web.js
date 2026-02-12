@@ -27,12 +27,4 @@ const context = getDefaultContext();
 const exports = Module.emnapiInit({ context });
 export default exports;
 
-const raf = window.requestAnimationFrame;
-window.requestAnimationFrame = (callback) => raf((time) => {
-  const scope = context.openScope();
-  try {
-    callback(time);
-  } finally {
-    context.closeScope(scope);
-  }
-});
+context.openScope();
