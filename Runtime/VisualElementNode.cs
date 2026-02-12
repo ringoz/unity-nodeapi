@@ -32,6 +32,8 @@ public class RoutedEvent : Event
   public bool IsPropagationStopped => mEvent!.isPropagationStopped;
   public void StopPropagation() => mEvent!.StopPropagation();
   public void StopImmediatePropagation() => mEvent!.StopImmediatePropagation();
+  public void CapturePointer(int pointerId) => mEvent!.currentTarget.CapturePointer(pointerId);
+  public void ReleasePointer(int pointerId) => mEvent!.currentTarget.ReleasePointer(pointerId);
 }
 
 [JSExport]

@@ -110,6 +110,10 @@ export class RoutedEvent extends Event {
 	stopPropagation(): void;
 
 	stopImmediatePropagation(): void;
+
+	capturePointer(pointerId: number): void;
+
+	releasePointer(pointerId: number): void;
 }
 
 export class ChangeEvent extends RoutedEvent {
