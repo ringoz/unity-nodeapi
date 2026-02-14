@@ -13,7 +13,7 @@ const reconciler = Reconciler(FiberConfig);
 reconciler.injectIntoDevTools(undefined as never);
 
 export function createRoot(parent: Node) {
-  const isStrictMode = false;
+  const isStrictMode = process.env.NODE_ENV !== 'production';
   const concurrentUpdatesByDefaultOverride = false;
   const identifierPrefix = '';
   /* eslint-disable @typescript-eslint/no-explicit-any */
