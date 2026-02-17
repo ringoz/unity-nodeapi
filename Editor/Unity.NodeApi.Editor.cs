@@ -43,6 +43,9 @@ class UnityNodeApiBuild : IPreprocessBuildWithContext, IPostprocessBuildWithCont
     PlayerSettings.SetAdditionalIl2CppArgs(m_il2cppArgs);
     PlayerSettings.WebGL.emscriptenArgs = m_emsdkArgs;
 
+    if (!Application.isBatchMode)
+      return;
+
     // force class loads
     Node.Create("");
 
