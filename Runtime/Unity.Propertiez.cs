@@ -24,7 +24,7 @@ static class Propertiez
   {
     if (TypeTraits<TDestination>.IsEnumFlags)
     {
-      if (value.GetArrayLength() == 0)
+      if (value.IsNullOrUndefined() || value.GetArrayLength() == 0)
       {
         destination = default;
         return true;
@@ -35,6 +35,11 @@ static class Propertiez
 
     if (TypeTraits<TDestination>.IsEnum)
     {
+      if (value.IsNullOrUndefined())
+      {
+        destination = default;
+        return true;
+      }
       var source = (string)value;
       return TypeConversion.TryConvert(ref source, out destination);
     }
