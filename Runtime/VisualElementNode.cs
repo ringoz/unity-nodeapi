@@ -196,7 +196,7 @@ class VisualElementNode : Node
 
   public override void SetActive(bool value)
   {
-    ((VisualElement)mPtr).visible = value;
+    ((VisualElement)mPtr).style.display = value ? DisplayStyle.Flex : DisplayStyle.None;
   }
 
   public override void SetParent(Node? parent, Node? beforeChild)
