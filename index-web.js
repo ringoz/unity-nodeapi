@@ -1,9 +1,9 @@
 import { name as productName, author as companyName, version as productVersion } from '../../../package.json';
 const { Module } = await createUnityInstance(document.querySelector("#unity-canvas"), {
   arguments: [],
-  dataUrl: "Build/Build.web.data",
-  frameworkUrl: "Build/Build.web.framework.js",
-  codeUrl: "Build/Build.web.wasm",
+  dataUrl: "Build/WebGL.data",
+  frameworkUrl: "Build/WebGL.framework.js",
+  codeUrl: "Build/WebGL.wasm",
   streamingAssetsUrl: "StreamingAssets",
   productName,
   companyName,
