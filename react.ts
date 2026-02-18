@@ -143,13 +143,6 @@ export type Bounds = [x: number, y: number, z: number, sx: number, sy: number, s
 export type BoundsInt = Bounds;
 export type Version = [major: number, minor: number, build: number, revision: number];
 
-export const Capsule = intrinsic<GameObject>("Capsule");
-export const Cube = intrinsic<GameObject>("Cube");
-export const Cylinder = intrinsic<GameObject>("Cylinder");
-export const Plane = intrinsic<GameObject>("Plane");
-export const Quad = intrinsic<GameObject>("Quad");
-export const Sphere = intrinsic<GameObject>("Sphere");
-
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 
 //#region generated
