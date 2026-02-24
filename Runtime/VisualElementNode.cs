@@ -122,7 +122,7 @@ class VisualElementNode : Node
         return handler.callback;
       }
 
-      internal static void Set(VisualElement element, Action<TEvent>? callback)
+      internal static void Set(VisualElement element, Action<TEvent>? callback, TrickleDown useTrickleDown)
       {
         var props = element.GetUserProps();
         if (!props.TryGetValue(typeof(TEventType), out var prop))
@@ -130,16 +130,29 @@ class VisualElementNode : Node
 
         var handler = (Handler)prop;
         if ((handler.callback = callback) != null)
-          element.RegisterCallback<TEventType>(handler.Invoke);
+          element.RegisterCallback<TEventType>(handler.Invoke, useTrickleDown);
         else
-          element.UnregisterCallback<TEventType>(handler.Invoke);
+          element.UnregisterCallback<TEventType>(handler.Invoke, useTrickleDown);
       }
     }
 
-    public override string Name { get; } = $"on{typeof(TEventType).Name.Replace("Event", "").Replace("`1", "")}{typeof(TEventType).GetGenericArguments().Select(t => t.Name).FirstOrDefault()}";
+    EventProperty(bool bubbles)
+    {
+      var name = typeof(TEventType).Name.Replace("Event", "").Replace("`1", "");
+      var args = typeof(TEventType).GetGenericArguments().Select(t => t.Name).FirstOrDefault();
+      Name = $"{(bubbles ? "on" : "onPreview")}{name}{args}";
+    }
+
+    internal static void Add(ContainerPropertyBagEx<VisualElement> bag)
+    {
+      bag.AddProperty(new EventProperty<TEvent, TEventType>(true));
+      bag.AddProperty(new EventProperty<TEvent, TEventType>(false));
+    }
+
+    public override string Name { get; }
     public override bool IsReadOnly => false;
     public override Action<TEvent> GetValue(ref VisualElement container) => Handler.Get(container)!;
-    public override void SetValue(ref VisualElement container, Action<TEvent> value) => Handler.Set(container, value);
+    public override void SetValue(ref VisualElement container, Action<TEvent> value) => Handler.Set(container, value, Name.StartsWith("onPreview") ? TrickleDown.TrickleDown : TrickleDown.NoTrickleDown);
   }
 
   static VisualElementNode()
@@ -157,36 +170,36 @@ class VisualElementNode : Node
     TypeConversion.Register(JS((JSValue v) => v.ToAction<NavigationEvent>()));
 
     var bag = (ContainerPropertyBagEx<VisualElement>)PropertyBag.GetPropertyBag<VisualElement>();
-    bag.AddProperty(new EventProperty<RoutedEvent, AttachToPanelEvent>());
-    bag.AddProperty(new EventProperty<RoutedEvent, DetachFromPanelEvent>());
-    bag.AddProperty(new EventProperty<RoutedEvent, BlurEvent>());
-    bag.AddProperty(new EventProperty<RoutedEvent, FocusEvent>());
-    bag.AddProperty(new EventProperty<RoutedEvent, FocusOutEvent>());
-    bag.AddProperty(new EventProperty<RoutedEvent, FocusInEvent>());
-    bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<bool>>());
-    bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<int>>());
-    bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<float>>());
-    bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<string>>());
-    bag.AddProperty(new EventProperty<ChangeEvent, ChangeEvent<Rect>>());
-    bag.AddProperty(new EventProperty<ChangeEvent, InputEvent>());
-    bag.AddProperty(new EventProperty<ChangeEvent, GeometryChangedEvent>());
-    bag.AddProperty(new EventProperty<KeyboardEvent, KeyDownEvent>());
-    bag.AddProperty(new EventProperty<KeyboardEvent, KeyUpEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, ClickEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, WheelEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, PointerCaptureEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, PointerCaptureOutEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, PointerDownEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, PointerUpEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, PointerMoveEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, PointerEnterEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, PointerLeaveEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, PointerOverEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, PointerOutEvent>());
-    bag.AddProperty(new EventProperty<PointerEvent, PointerCancelEvent>());
-    bag.AddProperty(new EventProperty<NavigationEvent, NavigationMoveEvent>());
-    bag.AddProperty(new EventProperty<NavigationEvent, NavigationCancelEvent>());
-    bag.AddProperty(new EventProperty<NavigationEvent, NavigationSubmitEvent>());
+    EventProperty<RoutedEvent, AttachToPanelEvent>.Add(bag);
+    EventProperty<RoutedEvent, DetachFromPanelEvent>.Add(bag);
+    EventProperty<RoutedEvent, BlurEvent>.Add(bag);
+    EventProperty<RoutedEvent, FocusEvent>.Add(bag);
+    EventProperty<RoutedEvent, FocusOutEvent>.Add(bag);
+    EventProperty<RoutedEvent, FocusInEvent>.Add(bag);
+    EventProperty<ChangeEvent, ChangeEvent<bool>>.Add(bag);
+    EventProperty<ChangeEvent, ChangeEvent<int>>.Add(bag);
+    EventProperty<ChangeEvent, ChangeEvent<float>>.Add(bag);
+    EventProperty<ChangeEvent, ChangeEvent<string>>.Add(bag);
+    EventProperty<ChangeEvent, ChangeEvent<Rect>>.Add(bag);
+    EventProperty<ChangeEvent, InputEvent>.Add(bag);
+    EventProperty<ChangeEvent, GeometryChangedEvent>.Add(bag);
+    EventProperty<KeyboardEvent, KeyDownEvent>.Add(bag);
+    EventProperty<KeyboardEvent, KeyUpEvent>.Add(bag);
+    EventProperty<PointerEvent, ClickEvent>.Add(bag);
+    EventProperty<PointerEvent, WheelEvent>.Add(bag);
+    EventProperty<PointerEvent, PointerCaptureEvent>.Add(bag);
+    EventProperty<PointerEvent, PointerCaptureOutEvent>.Add(bag);
+    EventProperty<PointerEvent, PointerDownEvent>.Add(bag);
+    EventProperty<PointerEvent, PointerUpEvent>.Add(bag);
+    EventProperty<PointerEvent, PointerMoveEvent>.Add(bag);
+    EventProperty<PointerEvent, PointerEnterEvent>.Add(bag);
+    EventProperty<PointerEvent, PointerLeaveEvent>.Add(bag);
+    EventProperty<PointerEvent, PointerOverEvent>.Add(bag);
+    EventProperty<PointerEvent, PointerOutEvent>.Add(bag);
+    EventProperty<PointerEvent, PointerCancelEvent>.Add(bag);
+    EventProperty<NavigationEvent, NavigationMoveEvent>.Add(bag);
+    EventProperty<NavigationEvent, NavigationCancelEvent>.Add(bag);
+    EventProperty<NavigationEvent, NavigationSubmitEvent>.Add(bag);
   }
 
   protected VisualElementNode(object ptr) : base(ptr) { }
