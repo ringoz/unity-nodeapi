@@ -5,7 +5,7 @@
 import { createElement, lazy, Suspense, use, useEffect, useState, type PropsWithChildren, type SuspenseProps } from 'react';
 import Reconciler from 'react-reconciler';
 import Constants from 'react-reconciler/constants.js';
-import { ChangeEvent, Event, KeyboardEvent, Node, PointerEvent, RoutedEvent } from '.';
+import { ChangeEvent, Event, KeyboardEvent, NavigationEvent, Node, PointerEvent, RoutedEvent } from '.';
 import { BsodBoundary } from './bsod.tsx';
 import * as FiberConfig from './reconciler.ts';
 
@@ -327,6 +327,9 @@ export interface VisualElement {
   onPointerOver: Action<PointerEvent>;
   onPointerOut: Action<PointerEvent>;
   onPointerCancel: Action<PointerEvent>;
+  onNavigationMove: Action<NavigationEvent>;
+  onNavigationCancel: Action<NavigationEvent>;
+  onNavigationSubmit: Action<NavigationEvent>;
 }
 export const VisualElement = intrinsic<VisualElement>("VisualElement");
 

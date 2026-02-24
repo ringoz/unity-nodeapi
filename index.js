@@ -16,4 +16,5 @@ export const {
 	ChangeEvent,
 	KeyboardEvent,
 	PointerEvent,
+	NavigationEvent,
 } = exports;

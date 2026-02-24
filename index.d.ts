@@ -209,3 +209,11 @@ export class PointerEvent extends RoutedEvent {
 
 	readonly actionKey: boolean;
 }
+
+export class NavigationEvent extends RoutedEvent {
+	constructor();
+
+	readonly direction?: string;
+
+	readonly move?: number[];
+}

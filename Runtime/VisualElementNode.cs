@@ -92,6 +92,13 @@ public class PointerEvent : RoutedEvent
   public bool ActionKey => (mEvent as IPointerEvent)?.actionKey ?? ((IMouseEvent)mEvent!).actionKey;
 }
 
+[JSExport]
+public class NavigationEvent : RoutedEvent
+{
+  public string? Direction => (mEvent as NavigationMoveEvent)?.direction.ToString();
+  public float[]? Move => (mEvent as NavigationMoveEvent)?.move.AsEnumerable().ToArray();
+}
+
 class VisualElementNode : Node
 {
   sealed class EventProperty<TEvent, TEventType> : Property<VisualElement, Action<TEvent>>
@@ -141,11 +148,13 @@ class VisualElementNode : Node
     TypeConversion.Register(JS((Action<ChangeEvent> v) => new JSFunction((JSValue e) => v((ChangeEvent)e.Unwrap("ChangeEvent")))));
     TypeConversion.Register(JS((Action<KeyboardEvent> v) => new JSFunction((JSValue e) => v((KeyboardEvent)e.Unwrap("KeyboardEvent")))));
     TypeConversion.Register(JS((Action<PointerEvent> v) => new JSFunction((JSValue e) => v((PointerEvent)e.Unwrap("PointerEvent")))));
-    
+    TypeConversion.Register(JS((Action<NavigationEvent> v) => new JSFunction((JSValue e) => v((NavigationEvent)e.Unwrap("NavigationEvent")))));
+
     TypeConversion.Register(JS((JSValue v) => v.ToAction<RoutedEvent>()));
     TypeConversion.Register(JS((JSValue v) => v.ToAction<ChangeEvent>()));
     TypeConversion.Register(JS((JSValue v) => v.ToAction<KeyboardEvent>()));
     TypeConversion.Register(JS((JSValue v) => v.ToAction<PointerEvent>()));
+    TypeConversion.Register(JS((JSValue v) => v.ToAction<NavigationEvent>()));
 
     var bag = (ContainerPropertyBagEx<VisualElement>)PropertyBag.GetPropertyBag<VisualElement>();
     bag.AddProperty(new EventProperty<RoutedEvent, AttachToPanelEvent>());
@@ -175,6 +184,9 @@ class VisualElementNode : Node
     bag.AddProperty(new EventProperty<PointerEvent, PointerOverEvent>());
     bag.AddProperty(new EventProperty<PointerEvent, PointerOutEvent>());
     bag.AddProperty(new EventProperty<PointerEvent, PointerCancelEvent>());
+    bag.AddProperty(new EventProperty<NavigationEvent, NavigationMoveEvent>());
+    bag.AddProperty(new EventProperty<NavigationEvent, NavigationCancelEvent>());
+    bag.AddProperty(new EventProperty<NavigationEvent, NavigationSubmitEvent>());
   }
 
   protected VisualElementNode(object ptr) : base(ptr) { }
