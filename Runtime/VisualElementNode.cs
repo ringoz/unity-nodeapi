@@ -126,7 +126,7 @@ class VisualElementNode : Node
         if (!props.TryGetValue(typeof(TEventType), out var prop))
           return null;
 
-        var handler = (Handler)prop;
+        var handler = (Handler)prop!;
         return handler.callback;
       }
 
@@ -136,7 +136,7 @@ class VisualElementNode : Node
         if (!props.TryGetValue(typeof(TEventType), out var prop))
           props.Add(typeof(TEventType), prop = new Handler());
 
-        var handler = (Handler)prop;
+        var handler = (Handler)prop!;
         if ((handler.callback = callback) != null)
           element.RegisterCallback<TEventType>(handler.Invoke, useTrickleDown);
         else
@@ -179,7 +179,7 @@ class VisualElementNode : Node
 
     var bag = (ContainerPropertyBagEx<VisualElement>)PropertyBag.GetPropertyBag<VisualElement>();
     bag.AddProperty(new ClassProperty());
-    
+
     EventProperty<RoutedEvent, AttachToPanelEvent>.Add(bag);
     EventProperty<RoutedEvent, DetachFromPanelEvent>.Add(bag);
     EventProperty<RoutedEvent, BlurEvent>.Add(bag);
@@ -269,29 +269,53 @@ class VisualElementNode : Node
 
 public static class VisualElementExtensions
 {
-  public static Dictionary<object, object> GetUserProps(this VisualElement element)
+  public static Dictionary<Type, object?> GetUserProps(this VisualElement element)
   {
-    element.userData ??= new Dictionary<object, object>();
-    return (Dictionary<object, object>)element.userData;
+    element.userData ??= new Dictionary<Type, object?>();
+    return (Dictionary<Type, object?>)element.userData;
   }
 
   public static string? GetClassList(this VisualElement element)
   {
-    var classList = element.GetClasses();
-    if (!classList.Any())
+    var props = element.GetUserProps();
+    if (!props.TryGetValue(typeof(StyleSheet), out var prop))
       return null;
 
-    return string.Join(' ', classList);
+    var classes = (string[]?)prop;
+    if (classes == null)
+      return null;
+
+    return string.Join(' ', classes);
   }
 
   public static void SetClassList(this VisualElement element, string? classes)
   {
-    element.ClearClassList();
-    if (string.IsNullOrEmpty(classes))
-      return;
+    var props = element.GetUserProps();
 
-    var classList = classes.Split(' ');
-    foreach (var c in classList)
-      element.AddToClassList(c);
+    string[]? classesOld = null;
+    if (props.TryGetValue(typeof(StyleSheet), out var prop))
+      classesOld = (string[]?)prop;
+
+    string[]? classesNew = null;
+    if (!string.IsNullOrEmpty(classes))
+      Array.Sort(classesNew = classes.Split(' '), StringComparer.Ordinal);
+
+    props[typeof(StyleSheet)] = classesNew;
+
+    int i = 0, j = 0;
+    while (i < classesOld?.Length && j < classesNew?.Length)
+    {
+      int cmp = string.Compare(classesOld[i], classesNew[j], StringComparison.Ordinal);
+      if (cmp == 0)
+      {
+        i++; j++;
+      }
+      else if (cmp < 0)
+        element.RemoveFromClassList(classesOld[i++]);
+      else
+        element.AddToClassList(classesNew[j++]);
+    }
+    while (i < classesOld?.Length) element.RemoveFromClassList(classesOld[i++]);
+    while (j < classesNew?.Length) element.AddToClassList(classesNew[j++]);
   }
 }
