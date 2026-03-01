@@ -101,6 +101,14 @@ public class NavigationEvent : RoutedEvent
 
 class VisualElementNode : Node
 {
+  sealed class ClassProperty : Property<VisualElement, string?>
+  {
+    public override string Name => "class";
+    public override bool IsReadOnly => false;
+    public override string? GetValue(ref VisualElement container) => container.GetClassList();
+    public override void SetValue(ref VisualElement container, string? value) => container.SetClassList(value);
+  }
+
   sealed class EventProperty<TEvent, TEventType> : Property<VisualElement, Action<TEvent>>
     where TEvent : RoutedEvent, new()
     where TEventType : EventBase<TEventType>, new()
@@ -170,6 +178,8 @@ class VisualElementNode : Node
     TypeConversion.Register(JS((JSValue v) => v.ToAction<NavigationEvent>()));
 
     var bag = (ContainerPropertyBagEx<VisualElement>)PropertyBag.GetPropertyBag<VisualElement>();
+    bag.AddProperty(new ClassProperty());
+    
     EventProperty<RoutedEvent, AttachToPanelEvent>.Add(bag);
     EventProperty<RoutedEvent, DetachFromPanelEvent>.Add(bag);
     EventProperty<RoutedEvent, BlurEvent>.Add(bag);
@@ -263,5 +273,25 @@ public static class VisualElementExtensions
   {
     element.userData ??= new Dictionary<object, object>();
     return (Dictionary<object, object>)element.userData;
+  }
+
+  public static string? GetClassList(this VisualElement element)
+  {
+    var classList = element.GetClasses();
+    if (!classList.Any())
+      return null;
+
+    return string.Join(' ', classList);
+  }
+
+  public static void SetClassList(this VisualElement element, string? classes)
+  {
+    element.ClearClassList();
+    if (string.IsNullOrEmpty(classes))
+      return;
+
+    var classList = classes.Split(' ');
+    foreach (var c in classList)
+      element.AddToClassList(c);
   }
 }

@@ -143,8 +143,6 @@ export type Bounds = [x: number, y: number, z: number, sx: number, sy: number, s
 export type BoundsInt = Bounds;
 export type Version = [major: number, minor: number, build: number, revision: number];
 
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-
 //#region generated
 
 export type HideFlags = 'None' | 'HideInHierarchy' | 'HideInInspector' | 'DontSaveInEditor' | 'NotEditable' | 'DontSaveInBuild' | 'DontUnloadUnusedAsset' | 'DontSave' | 'HideAndDontSave';
@@ -300,6 +298,7 @@ export interface VisualElement {
   //readonly customStyle: ICustomStyle;
   //readonly styleSheets: VisualElementStyleSheetSet;
   tooltip: String;
+  class: String;
   onAttachToPanel: Action<RoutedEvent>;
   onPreviewAttachToPanel: Action<RoutedEvent>;
   onDetachFromPanel: Action<RoutedEvent>;
