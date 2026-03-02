@@ -154,7 +154,8 @@ class VisualElementNode : Node
     internal static void Add(ContainerPropertyBagEx<VisualElement> bag)
     {
       bag.AddProperty(new EventProperty<TEvent, TEventType>(true));
-      bag.AddProperty(new EventProperty<TEvent, TEventType>(false));
+      if (new TEventType().tricklesDown)
+        bag.AddProperty(new EventProperty<TEvent, TEventType>(false));
     }
 
     public override string Name { get; }

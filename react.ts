@@ -300,9 +300,7 @@ export interface VisualElement {
   tooltip: String;
   class: String;
   onAttachToPanel: Action<RoutedEvent>;
-  onPreviewAttachToPanel: Action<RoutedEvent>;
   onDetachFromPanel: Action<RoutedEvent>;
-  onPreviewDetachFromPanel: Action<RoutedEvent>;
   onBlur: Action<RoutedEvent>;
   onPreviewBlur: Action<RoutedEvent>;
   onFocus: Action<RoutedEvent>;
@@ -324,7 +322,6 @@ export interface VisualElement {
   onInput: Action<ChangeEvent>;
   onPreviewInput: Action<ChangeEvent>;
   onGeometryChanged: Action<ChangeEvent>;
-  onPreviewGeometryChanged: Action<ChangeEvent>;
   onKeyDown: Action<KeyboardEvent>;
   onPreviewKeyDown: Action<KeyboardEvent>;
   onKeyUp: Action<KeyboardEvent>;
