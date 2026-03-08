@@ -464,6 +464,22 @@ export interface Slider extends BindableElement {
 }
 export const Slider = intrinsic<Slider>("Slider");
 
+export interface SliderInt extends BindableElement {
+  value: Int32;
+  readonly labelElement: Ptr<Label>;
+  label: String;
+  showMixedValue: Boolean;
+  lowValue: Int32;
+  highValue: Int32;
+  readonly range: Int32;
+  pageSize: Single;
+  showInputField: Boolean;
+  fill: Boolean;
+  direction: SliderDirection;
+  inverted: Boolean;
+}
+export const SliderInt = intrinsic<SliderInt>("SliderInt");
+
 export interface GroupBox extends BindableElement {
   text: String;
 }

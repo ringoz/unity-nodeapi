@@ -26,6 +26,7 @@ using Unity.Properties;
 [assembly: GeneratePropertyBagsForType(typeof(ScrollView))]
 [assembly: GeneratePropertyBagsForType(typeof(Scroller))]
 [assembly: GeneratePropertyBagsForType(typeof(Slider))]
+[assembly: GeneratePropertyBagsForType(typeof(SliderInt))]
 [assembly: GeneratePropertyBagsForType(typeof(GroupBox))]
 [assembly: GeneratePropertyBagsForType(typeof(RadioButton))]
 [assembly: GeneratePropertyBagsForType(typeof(RadioButtonGroup))]
