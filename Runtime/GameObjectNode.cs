@@ -1,6 +1,7 @@
 /**********************************************************************
  Copyright (c) Vladimir Davidovich. All rights reserved.
 ***********************************************************************/
+#nullable enable
 
 using System;
 using System.Linq;
@@ -8,7 +9,7 @@ using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
 using Unity.Properties;
 
-#nullable enable
+[assembly: GeneratePropertyBagsForType(typeof(GameObject))]
 
 class GameObjectEvent : Event
 {

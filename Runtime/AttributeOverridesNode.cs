@@ -1,11 +1,10 @@
 /**********************************************************************
  Copyright (c) Vladimir Davidovich. All rights reserved.
 ***********************************************************************/
+#nullable enable
 
 using Microsoft.JavaScript.NodeApi;
 using UnityEngine.Assertions;
-
-#nullable enable
 
 class AttributeOverridesNode : Node
 {

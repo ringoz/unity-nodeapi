@@ -145,44 +145,6 @@ export type Version = [major: number, minor: number, build: number, revision: nu
 
 //#region generated
 
-export type HideFlags = 'None' | 'HideInHierarchy' | 'HideInInspector' | 'DontSaveInEditor' | 'NotEditable' | 'DontSaveInBuild' | 'DontUnloadUnusedAsset' | 'DontSave' | 'HideAndDontSave';
-export interface ObjectBase {
-  name: String;
-  hideFlags: HideFlags[];
-}
-
-export interface GameObject extends ObjectBase {
-  readonly transform: Ptr<Transform>;
-  //readonly transformHandle: TransformHandle;
-  layer: Int32;
-  readonly activeSelf: Boolean;
-  readonly activeInHierarchy: Boolean;
-  isStatic: Boolean;
-  tag: String;
-  //readonly scene: Scene;
-  readonly sceneCullingMask: UInt64;
-  readonly gameObject: Ptr<GameObject>;
-  onMessage: Action<Event>;
-  onAwake: Action<Event>;
-  onStart: Action<Event>;
-  onUpdate: Action<Event>;
-  onFixedUpdate: Action<Event>;
-  onLateUpdate: Action<Event>;
-  onDestroy: Action<Event>;
-  onEnable: Action<Event>;
-  onDisable: Action<Event>;
-  onBecameInvisible: Action<Event>;
-  onBecameVisible: Action<Event>;
-  onMouseDown: Action<Event>;
-  onMouseDrag: Action<Event>;
-  onMouseEnter: Action<Event>;
-  onMouseExit: Action<Event>;
-  onMouseOver: Action<Event>;
-  onMouseUp: Action<Event>;
-  onMouseUpAsButton: Action<Event>;
-}
-export const GameObject = intrinsic<GameObject>("GameObject");
-
 export interface Component extends ObjectBase {
   readonly transform: Ptr<Transform>;
   //readonly transformHandle: TransformHandle;
@@ -228,6 +190,44 @@ export interface MonoBehaviour extends Behaviour {
   runInEditMode: Boolean;
 }
 export const MonoBehaviour = intrinsic<MonoBehaviour>("MonoBehaviour");
+
+export interface GameObject extends ObjectBase {
+  readonly transform: Ptr<Transform>;
+  //readonly transformHandle: TransformHandle;
+  layer: Int32;
+  readonly activeSelf: Boolean;
+  readonly activeInHierarchy: Boolean;
+  isStatic: Boolean;
+  tag: String;
+  //readonly scene: Scene;
+  readonly sceneCullingMask: UInt64;
+  readonly gameObject: Ptr<GameObject>;
+  onMessage: Action<Event>;
+  onAwake: Action<Event>;
+  onStart: Action<Event>;
+  onUpdate: Action<Event>;
+  onFixedUpdate: Action<Event>;
+  onLateUpdate: Action<Event>;
+  onDestroy: Action<Event>;
+  onEnable: Action<Event>;
+  onDisable: Action<Event>;
+  onBecameInvisible: Action<Event>;
+  onBecameVisible: Action<Event>;
+  onMouseDown: Action<Event>;
+  onMouseDrag: Action<Event>;
+  onMouseEnter: Action<Event>;
+  onMouseExit: Action<Event>;
+  onMouseOver: Action<Event>;
+  onMouseUp: Action<Event>;
+  onMouseUpAsButton: Action<Event>;
+}
+export const GameObject = intrinsic<GameObject>("GameObject");
+
+export type HideFlags = 'None' | 'HideInHierarchy' | 'HideInInspector' | 'DontSaveInEditor' | 'NotEditable' | 'DontSaveInBuild' | 'DontUnloadUnusedAsset' | 'DontSave' | 'HideAndDontSave';
+export interface ObjectBase {
+  name: String;
+  hideFlags: HideFlags[];
+}
 
 export type Position = 'Relative' | 'Absolute';
 export type WorldSpaceSizeMode = 'Dynamic' | 'Fixed';

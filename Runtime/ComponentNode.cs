@@ -1,6 +1,7 @@
 /**********************************************************************
  Copyright (c) Vladimir Davidovich. All rights reserved.
 ***********************************************************************/
+#nullable enable
 
 using System;
 using System.Linq;
@@ -8,7 +9,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Properties;
 
-#nullable enable
+[assembly: GeneratePropertyBagsForType(typeof(Component))]
+[assembly: GeneratePropertyBagsForType(typeof(Transform))]
+[assembly: GeneratePropertyBagsForType(typeof(Behaviour))]
+[assembly: GeneratePropertyBagsForType(typeof(MonoBehaviour))]
 
 class ComponentNode : AttributeOverridesNode
 {

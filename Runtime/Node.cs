@@ -1,6 +1,7 @@
 /**********************************************************************
  Copyright (c) Vladimir Davidovich. All rights reserved.
 ***********************************************************************/
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Properties;
 
-#nullable enable
+[assembly: GeneratePropertyBagsForType(typeof(UnityEngine.Object))]
 
 [JSExport]
 public struct DOMRect
