@@ -9,7 +9,7 @@
 		"email": "vladimir.davidovich@outlook.com"
 	},
 	"unity": "6000.3",
-	"unityRelease": "0f1",
+	"unityRelease": "11f1",
 	"types": "./index.d.ts",
 	"exports": {
 		".": "./index.js",

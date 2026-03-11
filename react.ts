@@ -525,6 +525,7 @@ export interface TextField extends BindableElement {
   isReadOnly: Boolean;
   isPasswordField: Boolean;
   autoCorrection: Boolean;
+  hideSoftKeyboard: Boolean;
   hideMobileInput: Boolean;
   keyboardType: TouchScreenKeyboardType;
   //readonly touchScreenKeyboard: TouchScreenKeyboard;
