@@ -219,7 +219,6 @@ export function commitMount(instance: Node, type: Type, props: Props, internalIn
 function isEqual(a: unknown, b: unknown) {
   if (a === b) return true;
   if (a instanceof Node && b instanceof Node && a.equals(b)) return true;
-  if (Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => v === b[i])) return true;
 
   const i1 = (a as Iterable<unknown> | undefined)?.[Symbol.iterator]?.();
   const i2 = (b as Iterable<unknown> | undefined)?.[Symbol.iterator]?.();
