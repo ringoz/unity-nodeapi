@@ -112,6 +112,11 @@ export function Scene({ path, children, ...rest }: { path: string } & SuspensePr
   return createElement(Suspense, rest, createElement(Async, { promise }, children));
 }
 
+interface IndexedCollection extends Iterable<number> {
+  readonly length: number;
+  [index: number]: number;
+}
+
 export type Ptr<T> = object;
 export type Boolean = boolean;
 export type Int16 = number;
@@ -129,19 +134,19 @@ export type List<T> = T[];
 export type IEnumerable<T> = Iterable<T>;
 export type Action<A = unknown> = (a: A) => void;
 export type PropertyPath = string;
-export type Vector2 = [x: number, y: number];
+export type Vector2 = [x: number, y: number] | IndexedCollection;
 export type Vector2Int = Vector2;
-export type Vector3 = [x: number, y: number, z: number];
+export type Vector3 = [x: number, y: number, z: number] | IndexedCollection;
 export type Vector3Int = Vector3;
-export type Vector4 = [x: number, y: number, z: number, w: number];
+export type Vector4 = [x: number, y: number, z: number, w: number] | IndexedCollection;
 export type Quaternion = Vector4;
-export type Matrix4x4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
-export type Color = [r: number, g: number, b: number, a: number];
-export type Rect = [x: number, y: number, w: number, h: number];
+export type Matrix4x4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number] | IndexedCollection;
+export type Color = [r: number, g: number, b: number, a: number] | IndexedCollection;
+export type Rect = [x: number, y: number, w: number, h: number] | IndexedCollection;
 export type RectInt = Rect;
-export type Bounds = [x: number, y: number, z: number, sx: number, sy: number, sz: number];
+export type Bounds = [x: number, y: number, z: number, sx: number, sy: number, sz: number] | IndexedCollection;
 export type BoundsInt = Bounds;
-export type Version = [major: number, minor: number, build: number, revision: number];
+export type Version = [major: number, minor: number, build: number, revision: number] | IndexedCollection;
 
 //#region generated
 

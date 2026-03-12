@@ -75,6 +75,12 @@ static class JSValueExtensions
     return array;
   }
 
+  public static IEnumerable<JSValue> AsEnumerable(this JSValue value)
+  {
+    var iterable = (JSIterable)value;
+    return iterable;
+  }
+
   public static IEnumerable<float> AsEnumerable(this Vector2 value)
   {
     yield return value.x;
@@ -424,33 +430,33 @@ public class Node : IDisposable
     TypeConversion.Register(JS((JSValue v) => (double)v));
     TypeConversion.Register(JS((JSValue v) => (string)v));
     TypeConversion.Register(JS((JSValue v) => (object)v));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToArray()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToArray()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (string)v).ToArray()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (object)v).ToArray()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToList()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToList()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (string)v).ToList()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (object)v).ToList()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v)));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v)));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (string)v)));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (object)v)));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (int)v).ToArray()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v).ToArray()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (string)v).ToArray()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (object)v).ToArray()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (int)v).ToList()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v).ToList()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (string)v).ToList()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (object)v).ToList()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (int)v)));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v)));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (string)v)));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (object)v)));
     TypeConversion.Register(JS((JSValue v) => v.ToAction()));
     TypeConversion.Register(JS((JSValue v) => v.ToAction<Event>()));
     TypeConversion.Register(JS((JSValue v) => new PropertyPath((string)v)));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToVector2()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToVector2Int()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToVector3()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToVector3Int()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToVector4()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToQuaternion()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToMatrix4x4()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToColor()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToRect()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToRectInt()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (float)v).ToBounds()));
-    TypeConversion.Register(JS((JSValue v) => v.Items.Select(v => (int)v).ToBoundsInt()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v).ToVector2()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (int)v).ToVector2Int()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v).ToVector3()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (int)v).ToVector3Int()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v).ToVector4()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v).ToQuaternion()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v).ToMatrix4x4()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v).ToColor()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v).ToRect()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (int)v).ToRectInt()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (float)v).ToBounds()));
+    TypeConversion.Register(JS((JSValue v) => v.AsEnumerable().Select(v => (int)v).ToBoundsInt()));
   }
 
   protected static readonly ConditionalWeakTable<object, Node> Wrappers = new();

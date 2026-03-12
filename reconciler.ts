@@ -220,7 +220,16 @@ function isEqual(a: unknown, b: unknown) {
   if (a === b) return true;
   if (a instanceof Node && b instanceof Node && a.equals(b)) return true;
   if (Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => v === b[i])) return true;
-  return false;
+
+  const i1 = (a as Iterable<unknown> | undefined)?.[Symbol.iterator]?.();
+  const i2 = (b as Iterable<unknown> | undefined)?.[Symbol.iterator]?.();
+  while (i1 && i2) {
+    const n1 = i1.next();
+    const n2 = i2.next();
+    if (n1.done !== n2.done) return false;   // Different lengths
+    if (n1.done) return true;                // Both finished
+    if (n1.value !== n2.value) return false; // Values mismatch
+  }
 }
 
 export function commitUpdate(instance: Node, type: Type, prevProps: Props, nextProps: Props, internalHandle: Reconciler.OpaqueHandle): void {
