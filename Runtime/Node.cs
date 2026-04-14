@@ -493,6 +493,18 @@ public class Node : IDisposable
   private static Node? CreateImpl(object kind) => AttributeOverridesNode.Create(kind) ?? VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
   public static Node? Create(object kind) => CreateImpl(kind is string path ? Resources.Load(path) ?? kind : kind);
   public static Node? Search(object name, Node? scope = null) => scope is VisualElementNode root ? VisualElementNode.Find(name, root) : scope is GameObjectNode gobj ? ComponentNode.Find(name, gobj) : GameObjectNode.Find((string)name);
+  
+  public static IEnumerable<Node> Enumerate(Node parent)
+  {
+    foreach (var item in GameObjectNode.Enum(parent))
+      yield return item;
+
+    foreach (var item in ComponentNode.Enum(parent))
+      yield return item;
+
+    foreach (var item in VisualElementNode.Enum(parent))
+      yield return item;
+  }
 
   public static Loader LoadAssetAsync { get; set; } = async (string path) =>
   {

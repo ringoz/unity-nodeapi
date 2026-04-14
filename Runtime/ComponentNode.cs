@@ -21,6 +21,14 @@ class ComponentNode : AttributeOverridesNode
   public static Node? Wrap(Component? obj) => obj != null ? Wrappers.GetValue(obj, obj => new ComponentNode(obj) { mName = obj.GetType() }) : null;
   public static Node? Find(Type type, Node scope) => Wrap(((GameObject)scope.mPtr).GetOrAddComponent(type));
   public static Node? Find(object kind, Node scope) => Find(ParseType(kind)!, scope);
+  
+  public static IEnumerable<Node> Enum(Node parent)
+  {
+    if (parent.mPtr is GameObject)
+      return ((GameObject)parent.mPtr).GetComponents<Component>().Select(child => Wrap(child)!);
+      
+    return Enumerable.Empty<Node>();
+  }
 
   private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(Component).IsAssignableFrom(type));
   private static Type? ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());

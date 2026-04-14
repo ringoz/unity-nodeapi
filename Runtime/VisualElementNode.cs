@@ -248,7 +248,20 @@ class VisualElementNode : Node
   protected VisualElementNode(object ptr) : base(ptr) { }
 
   public static Node? Wrap(VisualElement? obj) => obj != null ? Wrappers.GetValue(obj, obj => new VisualElementNode(obj)) : null;
-  public static Node? Find(object name, Node scope) => Wrap(((VisualElement)scope.mPtr).Query(name.ToString()));
+  public static Node? Find(object name, Node scope) => Wrap(((VisualElement)scope.mPtr).Q(name.ToString()));
+  
+  public static IEnumerable<Node> Enum(Node parent)
+  {
+    VisualElement element;
+    if (parent.mPtr is UIDocument)
+      element = ((UIDocument)parent.mPtr).rootVisualElement;
+    else if (parent.mPtr is VisualElement)
+      element = (VisualElement)parent.mPtr;
+    else
+      return Enumerable.Empty<Node>();
+    
+    return element.Children().Select(child => Wrap(child)!);
+  }
 
   private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(VisualElement).IsAssignableFrom(type));
   private static Type? ParseType(object kind) => kind as Type ?? Types.FirstOrDefault(type => type.Name == kind.ToString());

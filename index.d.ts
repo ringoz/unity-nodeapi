@@ -86,6 +86,8 @@ export class Node {
 		name: Object,
 		scope?: Node,
 	): Node | undefined;
+
+	static enumerate(parent: Node): Iterable<Node>;
 }
 
 export class RoutedEvent extends Event {

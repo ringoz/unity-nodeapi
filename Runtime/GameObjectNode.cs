@@ -5,6 +5,7 @@
 
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using Microsoft.JavaScript.NodeApi;
 using UnityEngine;
 using Unity.Properties;
@@ -90,6 +91,13 @@ class GameObjectNode : Node
 
   public static Node? Wrap(GameObject? obj) => obj != null ? Wrappers.GetValue(obj, obj => new GameObjectNode(obj)) : null;
   public static Node? Find(string name) => Wrap(GameObject.Find(name));
+
+  public static IEnumerable<Node> Enum(Node parent)
+  {
+    if (parent.mPtr is GameObject)
+      foreach (Transform child in ((GameObject)parent.mPtr).transform)
+        yield return Wrap(child.gameObject)!;
+  }
 
   private static GameObjectNode _null = new GameObjectNode(null!);
   private static GameObjectNode Null
