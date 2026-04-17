@@ -11,6 +11,7 @@ class AttributeOverridesNode : Node
   protected object mName = null!;
 
   public override object Ptr => mPtr is JSReference ? null! : mPtr;
+  public override string Name => mName?.ToString()!;
 
   protected AttributeOverridesNode(object obj) : base(obj) { }
 

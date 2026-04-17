@@ -21,6 +21,8 @@ export class DOMRect extends ValueType {
 	readonly right: number;
 
 	readonly bottom: number;
+
+	toString(): string;
 }
 
 export class Event {
@@ -43,6 +45,8 @@ export interface Unloader { (obj: Object): Promise<void>; }
 
 export class Node {
 	readonly ptr: Object;
+
+	readonly name: string;
 
 	static readonly event?: Event;
 

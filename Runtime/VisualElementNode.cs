@@ -247,6 +247,8 @@ class VisualElementNode : Node
 
   protected VisualElementNode(object ptr) : base(ptr) { }
 
+  public override string Name => ((VisualElement)mPtr).name;
+
   public static Node? Wrap(VisualElement? obj) => obj != null ? Wrappers.GetValue(obj, obj => new VisualElementNode(obj)) : null;
   public static Node? Find(object name, Node scope) => Wrap(((VisualElement)scope.mPtr).Q(name.ToString()));
   

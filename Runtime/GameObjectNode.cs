@@ -89,6 +89,8 @@ class GameObjectNode : Node
 
   protected GameObjectNode(object ptr) : base(ptr) { }
 
+  public override string Name => ((GameObject)mPtr).name;
+
   public static Node? Wrap(GameObject? obj) => obj != null ? Wrappers.GetValue(obj, obj => new GameObjectNode(obj)) : null;
   public static Node? Find(string name) => Wrap(GameObject.Find(name));
 

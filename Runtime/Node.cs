@@ -26,6 +26,8 @@ public struct DOMRect
   public float top => y + 0.5f;
   public float right => left + width;
   public float bottom => top + height;
+
+  public override string ToString() => $"(x:{x}, y:{y}, width:{width}, height:{height})";
 }
 
 [JSExport]
@@ -463,13 +465,14 @@ public class Node : IDisposable
 
   internal object mPtr;
   public virtual object Ptr => mPtr;
+  public virtual string Name => null!;
 
   protected Node(object ptr) => mPtr = ptr;
   public virtual void Dispose() => (mPtr as IDisposable)?.Dispose();
 
   public sealed override bool Equals(object? other) => (GetType() == other?.GetType()) ? Equals(mPtr, ((Node)other).mPtr) : base.Equals(other);
   public sealed override int GetHashCode() => mPtr?.GetHashCode() ?? base.GetHashCode();
-  public sealed override string ToString() => mPtr?.ToString() ?? base.ToString();
+  public sealed override string ToString() => $"{mPtr?.GetType().Name}{(string.IsNullOrEmpty(Name) ? "" : $" \"{Name}\"")} {GetBoundingClientRect()}";
 
   public JSValue ToJSON()
   {
