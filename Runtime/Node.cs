@@ -467,9 +467,32 @@ public class Node : IDisposable
   protected Node(object ptr) => mPtr = ptr;
   public virtual void Dispose() => (mPtr as IDisposable)?.Dispose();
 
-  public override bool Equals(object? other) => (GetType() == other?.GetType()) ? Equals(mPtr, ((Node)other).mPtr) : base.Equals(other);
-  public override int GetHashCode() => mPtr?.GetHashCode() ?? 0;
-  public override string ToString() => $"[{GetType().Name}] {mPtr}";
+  public sealed override bool Equals(object? other) => (GetType() == other?.GetType()) ? Equals(mPtr, ((Node)other).mPtr) : base.Equals(other);
+  public sealed override int GetHashCode() => mPtr?.GetHashCode() ?? base.GetHashCode();
+  public sealed override string ToString() => mPtr?.ToString() ?? base.ToString();
+
+  public JSValue ToJSON()
+  {
+    var json = new JSObject();
+    foreach (var key in Propertiez.EnumNames(mPtr)) try
+      {
+        var val = Get(key);
+        if (!val.IsNullOrUndefined() && !val.IsExternal())
+          json.Add(key, val);
+      }
+      catch { }
+
+    var context = JSValueScope.Current.RuntimeContext;
+    foreach (var item in ComponentNode.Enum(this))
+      json.Add(item.Ptr.GetType().Name, context.GetOrCreateObjectWrapper(item));
+
+    var children = new JSArray();
+    foreach (var item in Enumerable.Concat(GameObjectNode.Enum(this), VisualElementNode.Enum(this)))
+      children.Add(context.GetOrCreateObjectWrapper(item));
+
+    if (children.Length != 0) json.Add("children", children);
+    return json;
+  }
 
   private static PropertyPath PropPath(in JSValue key) => new PropertyPath(((string)key).Replace('-', '.'));
   public virtual JSValue Get(string path) => Propertiez.GetValue<JSValue>(mPtr, PropPath(path));
@@ -493,18 +516,6 @@ public class Node : IDisposable
   private static Node? CreateImpl(object kind) => AttributeOverridesNode.Create(kind) ?? VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
   public static Node? Create(object kind) => CreateImpl(kind is string path ? Resources.Load(path) ?? kind : kind);
   public static Node? Search(object name, Node? scope = null) => scope is VisualElementNode root ? VisualElementNode.Find(name, root) : scope is GameObjectNode gobj ? ComponentNode.Find(name, gobj) : GameObjectNode.Find((string)name);
-  
-  public static IEnumerable<Node> Enumerate(Node parent)
-  {
-    foreach (var item in GameObjectNode.Enum(parent))
-      yield return item;
-
-    foreach (var item in ComponentNode.Enum(parent))
-      yield return item;
-
-    foreach (var item in VisualElementNode.Enum(parent))
-      yield return item;
-  }
 
   public static Loader LoadAssetAsync { get; set; } = async (string path) =>
   {

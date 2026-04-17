@@ -3,7 +3,6 @@
 ***********************************************************************/
 
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.JavaScript.NodeApi;
@@ -239,45 +238,41 @@ static class Propertiez
         throw new Exception($"Unexpected {nameof(VisitReturnCode)}=[{returnCode}]");
     }
   }
-}
 
-class PropertiezDump : PropertyVisitor
-{
-  public delegate void WriteLine(string line);
-  private readonly WriteLine mWriteLine;
-  private readonly HashSet<object> mIndent = new();
-
-  public PropertiezDump(WriteLine writeLine)
+  class PropNamesVisitor : IPropertyBagVisitor
   {
-    mWriteLine = writeLine;
-  }
+    private readonly Action<string> mYield;
 
-  protected override void VisitProperty<TContainer, TValue>(Property<TContainer, TValue> property, ref TContainer container, ref TValue value)
-  {
-    var propertyName = property switch
+    public PropNamesVisitor(Action<string> yield)
     {
-      ICollectionElementProperty => $"[{property.Name}]",
-      _ => property.Name
-    };
-    var type = value?.GetType() ?? property.DeclaredValueType();
-    var typeName = TypeUtility.GetTypeDisplayName(type);
+      mYield = yield;
+    }
 
-    string indent = new(' ', mIndent.Count * 2);
-    if (TypeTraits.IsContainer(type))
-      mWriteLine($"{indent}- {propertyName} {{{typeName}}}");
-    else
-      mWriteLine($"{indent}- {propertyName} = {{{typeName}}} {value}");
+    public void Visit<TContainer>(IPropertyBag<TContainer> properties, ref TContainer container)
+    {
+      foreach (var property in properties.GetProperties(ref container))
+      {
+        var propertyName = property switch
+        {
+          ICollectionElementProperty => $"[{property.Name}]",
+          _ => property.Name
+        };
 
-    mIndent.Add(container);
-    if (null != value && !mIndent.Contains(value))
-      PropertyContainer.Accept(this, ref value);
-    mIndent.Remove(container);
+        mYield(propertyName);
+      }
+    }
   }
 
-  public static string ToString(object container)
+  public static IEnumerable<string> EnumNames(object container)
   {
-    var sb = new StringBuilder();
-    PropertyContainer.Accept(new PropertiezDump((l) => sb.AppendLine(l)), container);
-    return sb.ToString();
+    var keys = new List<string>();
+    var visitor = new PropNamesVisitor(name => keys.Add(name));
+    for (var type = container.GetType(); type != null; type = type.BaseType)
+    {
+      var properties = PropertyBag.GetPropertyBag(type);
+      if (null != properties)
+        properties.Accept(visitor, ref container);
+    }
+    return keys;
   }
 }

@@ -22,8 +22,6 @@ class AttributeOverridesNode : Node
 
   public override void Dispose() => (mPtr as JSReference)?.Dispose();
 
-  public override string ToString() => $"[#{mName}] {mPtr}";
-
   public override JSValue Get(string path)
   {
     if (mPtr is JSReference reference)

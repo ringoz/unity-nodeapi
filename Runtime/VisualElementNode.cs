@@ -252,15 +252,13 @@ class VisualElementNode : Node
   
   public static IEnumerable<Node> Enum(Node parent)
   {
-    VisualElement element;
-    if (parent.mPtr is UIDocument)
-      element = ((UIDocument)parent.mPtr).rootVisualElement;
-    else if (parent.mPtr is VisualElement)
-      element = (VisualElement)parent.mPtr;
+    VisualElement? element;
+    if (parent.mPtr is GameObject)
+      element = ((GameObject)parent.mPtr).GetComponent<UIDocument>()?.rootVisualElement;
     else
-      return Enumerable.Empty<Node>();
-    
-    return element.Children().Select(child => Wrap(child)!);
+      element = parent.mPtr as VisualElement;
+      
+    return element?.Children().Select(child => Wrap(child)!) ?? Enumerable.Empty<Node>();
   }
 
   private static IEnumerable<Type> Types => PropertyBag.GetAllTypesWithAPropertyBag().Where(type => typeof(VisualElement).IsAssignableFrom(type));
