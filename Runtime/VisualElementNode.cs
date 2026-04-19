@@ -249,7 +249,7 @@ class VisualElementNode : Node
 
   public override string Name => ((VisualElement)mPtr).name;
 
-  public static Node? Wrap(VisualElement? obj) => obj != null ? Wrappers.GetValue(obj, obj => new VisualElementNode(obj)) : null;
+  public static Node? Wrap(VisualElement? obj) => Wrap(obj, obj => new VisualElementNode(obj));
   public static Node? Find(object name, Node scope) => Wrap(((VisualElement)scope.mPtr).Q(name.ToString()));
   
   public static IEnumerable<Node> Enum(Node parent)

@@ -91,16 +91,22 @@ class GameObjectNode : Node
 
   public override string Name => ((GameObject)mPtr).name;
 
-  public static Node? Wrap(GameObject? obj) => obj != null ? Wrappers.GetValue(obj, obj => new GameObjectNode(obj)) : null;
+  public static Node? Wrap(GameObject? obj) => Wrap(obj, obj => new GameObjectNode(obj));
   public static Node? Find(string name) => Wrap(GameObject.Find(name));
 
   public static IEnumerable<Node> Enum(Node parent)
   {
     if (parent.mPtr is GameObject)
       foreach (Transform child in ((GameObject)parent.mPtr).transform)
-        if (0 == child.gameObject.scene.buildIndex &&
-            0 == (child.gameObject.hideFlags & HideFlags.HideInHierarchy))
-          yield return Wrap(child.gameObject)!;
+      {
+        var obj = child.gameObject;
+        if (obj == null)
+          continue;
+          
+        if (0 == obj.scene.buildIndex &&
+            0 == (obj.hideFlags & HideFlags.HideInHierarchy))
+          yield return Wrap(obj)!;
+      }
   }
 
   private static GameObjectNode _null = new GameObjectNode(null!);

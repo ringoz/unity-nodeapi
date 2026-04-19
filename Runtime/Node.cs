@@ -462,6 +462,7 @@ public class Node : IDisposable
   }
 
   protected static readonly ConditionalWeakTable<object, Node> Wrappers = new();
+  protected static Node? Wrap(object? obj, ConditionalWeakTable<object, Node>.CreateValueCallback callback) => obj != null ? Wrappers.GetValue(obj, callback) : null;
 
   internal object mPtr;
   public virtual object Ptr => mPtr;
