@@ -98,7 +98,8 @@ class GameObjectNode : Node
   {
     if (parent.mPtr is GameObject)
       foreach (Transform child in ((GameObject)parent.mPtr).transform)
-        yield return Wrap(child.gameObject)!;
+        if (0 == (child.gameObject.hideFlags & HideFlags.HideInHierarchy))
+          yield return Wrap(child.gameObject)!;
   }
 
   private static GameObjectNode _null = new GameObjectNode(null!);
@@ -118,7 +119,12 @@ class GameObjectNode : Node
   public static new Node? Create(object kind)
   {
     if (kind is GameObject prefab)
-      return Wrap(UnityEngine.Object.Instantiate(prefab, ((GameObject)Null.mPtr).transform, false));
+    {
+      var obj = UnityEngine.Object.Instantiate(prefab, ((GameObject)Null.mPtr).transform, false);
+      foreach (Transform child in obj.transform)
+        child.gameObject.hideFlags = HideFlags.HideInHierarchy;
+      return Wrap(obj);
+    }
     return null;
   }
 
