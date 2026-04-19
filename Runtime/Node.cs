@@ -518,7 +518,17 @@ public class Node : IDisposable
 
   private static Node? CreateImpl(object kind) => AttributeOverridesNode.Create(kind) ?? VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
   public static Node? Create(object kind) => CreateImpl(kind is string path ? Resources.Load(path) ?? kind : kind);
-  public static Node? Search(object name, Node? scope = null) => scope is VisualElementNode root ? VisualElementNode.Find(name, root) : scope is GameObjectNode gobj ? ComponentNode.Find(name, gobj) : GameObjectNode.Find((string)name);
+  
+  public static Node? Search(object name, Node? scope = null)
+  {
+    if (scope is VisualElementNode root)
+      return VisualElementNode.Find(name, root);
+      
+    if (scope is GameObjectNode gobj)
+      return ComponentNode.Find(name, gobj);
+      
+    return GameObjectNode.Find((string)name);
+  }
 
   public static Loader LoadAssetAsync { get; set; } = async (string path) =>
   {
