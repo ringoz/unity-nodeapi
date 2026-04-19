@@ -48,6 +48,8 @@ export class Node {
 
 	readonly name: string;
 
+	readonly children: Iterable<Node>;
+
 	static readonly event?: Event;
 
 	static loadAssetAsync: Loader;

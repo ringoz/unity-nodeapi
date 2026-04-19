@@ -98,7 +98,8 @@ class GameObjectNode : Node
   {
     if (parent.mPtr is GameObject)
       foreach (Transform child in ((GameObject)parent.mPtr).transform)
-        if (0 == (child.gameObject.hideFlags & HideFlags.HideInHierarchy))
+        if (0 == child.gameObject.scene.buildIndex &&
+            0 == (child.gameObject.hideFlags & HideFlags.HideInHierarchy))
           yield return Wrap(child.gameObject)!;
   }
 

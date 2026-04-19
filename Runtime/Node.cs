@@ -489,14 +489,10 @@ public class Node : IDisposable
     foreach (var item in ComponentNode.Enum(this))
       json.Add(item.Ptr.GetType().Name, context.GetOrCreateObjectWrapper(item));
 
-    var children = new JSArray();
-    foreach (var item in Enumerable.Concat(GameObjectNode.Enum(this), VisualElementNode.Enum(this)))
-      children.Add(context.GetOrCreateObjectWrapper(item));
-
-    if (children.Length != 0) json.Add("children", children);
     return json;
   }
 
+  public IEnumerable<Node> Children => Enumerable.Concat(GameObjectNode.Enum(this), VisualElementNode.Enum(this));
   private static PropertyPath PropPath(in JSValue key) => new PropertyPath(((string)key).Replace('-', '.'));
   public virtual JSValue Get(string path) => Propertiez.GetValue<JSValue>(mPtr, PropPath(path));
   public virtual void Set(in JSValue props) { foreach (var item in (JSObject)props) Propertiez.SetValue(mPtr, PropPath(item.Key), item.Value); }
