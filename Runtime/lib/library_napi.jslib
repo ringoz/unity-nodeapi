@@ -1,5 +1,5 @@
-{{{ ((DEFAULT_LIBRARY_FUNCS_TO_INCLUDE.indexOf("$emnapiInit") === -1 ? DEFAULT_LIBRARY_FUNCS_TO_INCLUDE.push("$emnapiInit") : undefined), "") }}}
-{{{ ((EXPORTED_RUNTIME_METHODS.indexOf("emnapiInit") === -1 ? EXPORTED_RUNTIME_METHODS.push("emnapiInit") : undefined), "") }}}
+{{{ ((typeof DEFAULT_LIBRARY_FUNCS_TO_INCLUDE.add === "function" ? DEFAULT_LIBRARY_FUNCS_TO_INCLUDE.add("$emnapiInit") : (DEFAULT_LIBRARY_FUNCS_TO_INCLUDE.indexOf("$emnapiInit") === -1 ? DEFAULT_LIBRARY_FUNCS_TO_INCLUDE.push("$emnapiInit") : undefined)), "") }}}
+{{{ ((typeof EXPORTED_RUNTIME_METHODS.add === "function" ? EXPORTED_RUNTIME_METHODS.add("emnapiInit") : (EXPORTED_RUNTIME_METHODS.indexOf("emnapiInit") === -1 ? EXPORTED_RUNTIME_METHODS.push("emnapiInit") : undefined)), "") }}}
 /* eslint-disable no-unreachable */
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
@@ -236,8 +236,8 @@ function __emnapi_close_handle_scope(_scope) {
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/indent */
 /**
- * @__deps emscripten_resize_heap
  * @__sig ipjp
  */
 function _napi_adjust_external_memory(env, low, high, adjusted_value) {
@@ -248,35 +248,37 @@ function _napi_adjust_external_memory(env, low, high, adjusted_value) {
 #if WASM_BIGINT
     if (!high)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    change_in_bytes = Number(low);
+    change_in_bytes = BigInt(low);
 #else
     if (!adjusted_value)
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    change_in_bytes = (low >>> 0) + (high * Math.pow(2, 32));
+    change_in_bytes = BigInt(low >>> 0) + (BigInt(high) << BigInt(32));
 #endif
-    if (change_in_bytes < 0) {
-        return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-    }
-    if (change_in_bytes > 0) {
-        var old_size = wasmMemory.buffer.byteLength;
-        var new_size = old_size + change_in_bytes;
-        if (!_emscripten_resize_heap(new_size)) {
-            return envObject.setLastError(9 /* napi_status.napi_generic_failure */);
-        }
-    }
+    var adjusted_memory = emnapiCtx.adjustAmountOfExternalAllocatedMemory(change_in_bytes);
 #if WASM_BIGINT
     {{{ ('high') }}};
     if (emnapiCtx.feature.supportBigInt) {
-        {{{ makeSetValue('high', 0, 'wasmMemory.buffer.byteLength', 'i64') }}};
+        {{{ makeSetValue('high', 0, 'adjusted_memory', 'i64') }}};
     }
     else {
-        emnapiSetValueI64(high, wasmMemory.buffer.byteLength);
+        emnapiSetValueI64(high, Number(adjusted_memory));
     }
 #else
     {{{ ('adjusted_value') }}};
-    {{{ makeSetValue('adjusted_value', 0, 'wasmMemory.buffer.byteLength', 'i64') }}};
+    {{{ makeSetValue('adjusted_value', 0, 'adjusted_memory', 'i64') }}};
 #endif
     return envObject.clearLastError();
+}
+/**
+ * @__deps $PThread
+ * @__sig vp
+ */
+function __emnapi_worker_ref(pid) {
+    var worker = PThread.pthreads[pid];
+    worker = worker.worker || worker;
+    if (typeof worker.ref === 'function') {
+        worker.ref();
+    }
 }
 /**
  * @__deps $PThread
@@ -546,6 +548,7 @@ function _napi_create_async_work(env, resource, resource_name, execute, complete
     var resourceName = String(emnapiCtx.handleStore.get(resource_name).value);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var id = emnapiAWST.create(env, resourceObject, resourceName, execute, complete, data);
+    {{{ ('result') }}};
     {{{ makeSetValue('result', 0, 'id', '*') }}};
     return envObject.clearLastError();
 }
@@ -717,7 +720,7 @@ var emnapiString = {
         ptr >>>= 0;
         var HEAPU8 = new Uint8Array(wasmMemory.buffer);
         var end = ptr;
-        if (length === -1) {
+        if (length === -1 || length === 4294967295) {
             for (; HEAPU8[end];)
                 ++end;
         }
@@ -810,12 +813,12 @@ var emnapiString = {
             return '';
         ptr >>>= 0;
         var end = ptr;
-        if (length === -1) {
-            var idx = end >> 1;
+        if (length === -1 || length === 4294967295) {
+            var idx = end >>> 1;
             var HEAPU16 = new Uint16Array(wasmMemory.buffer);
             while (HEAPU16[idx])
                 ++idx;
-            end = idx << 1;
+            end = (idx << 1) >>> 0;
         }
         else {
             end = ptr + (length >>> 0) * 2;
@@ -855,7 +858,7 @@ var emnapiString = {
         // @ts-expect-error
         var envObject = emnapiCtx.envStore.get(env);
         envObject.checkGCAccess();
-        var autoLength = length === -1;
+        var autoLength = length === -1 || length === 4294967295;
         var sizelength = length >>> 0;
         if (length !== 0) {
             if (!str)
@@ -880,7 +883,7 @@ var emnapiString = {
         // @ts-expect-error
         var envObject = emnapiCtx.envStore.get(env);
         envObject.checkGCAccess();
-        var autoLength = length === -1;
+        var autoLength = length === -1 || length === 4294967295;
         var sizelength = length >>> 0;
         if (length !== 0) {
             if (!str)
@@ -1030,6 +1033,7 @@ var emnapiExternalMemory = {
         var pointer = _malloc({{{ ('arrayBuffer.byteLength') }}});
         if (!pointer)
             throw new Error('Out of memory');
+        {{{ ('pointer') }}};
         new Uint8Array(wasmMemory.buffer).set(new Uint8Array(arrayBuffer), pointer);
         info.address = pointer;
         info.ownership = emnapiExternalMemory.registry ? 0 /* ReferenceOwnership.kRuntime */ : 1 /* ReferenceOwnership.kUserland */;
@@ -1051,8 +1055,7 @@ var emnapiExternalMemory = {
             }
             return view;
         }
-        var maybeOldWasmMemory = emnapiExternalMemory.isDetachedArrayBuffer(view.buffer) ||
-            ((typeof SharedArrayBuffer === 'function') && (view.buffer instanceof SharedArrayBuffer));
+        var maybeOldWasmMemory = emnapiExternalMemory.isDetachedArrayBuffer(view.buffer) || emnapiExternalMemory.isSharedArrayBuffer(view.buffer);
         if (maybeOldWasmMemory && emnapiExternalMemory.wasmMemoryViewTable.has(view)) {
             var info = emnapiExternalMemory.wasmMemoryViewTable.get(view);
             var Ctor = info.Ctor;
@@ -1283,13 +1286,12 @@ function _napi_get_typedarray_info(env, typedarray, type, length, data, arraybuf
         }
         {{{ makeSetValue('type', 0, 't', 'i32') }}};
     }
+    v = emnapiExternalMemory.getOrUpdateMemoryView(v);
     if (length) {
         {{{ ('length') }}};
         {{{ makeSetValue('length', 0, 'v.length', SIZE_TYPE) }}};
     }
-    var buffer;
     if (data || arraybuffer) {
-        buffer = v.buffer;
         if (data) {
             {{{ ('data') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1299,7 +1301,7 @@ function _napi_get_typedarray_info(env, typedarray, type, length, data, arraybuf
         if (arraybuffer) {
             {{{ ('arraybuffer') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            var ab = envObject.ensureHandleId(buffer);
+            var ab = envObject.ensureHandleId(v.buffer);
             {{{ makeSetValue('arraybuffer', 0, 'ab', '*') }}};
         }
     }
@@ -1343,14 +1345,12 @@ function _napi_get_dataview_info(env, dataview, byte_length, data, arraybuffer, 
     if (!handle.isDataView()) {
         return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
     }
-    var v = handle.value;
+    var v = emnapiExternalMemory.getOrUpdateMemoryView(handle.value);
     if (byte_length) {
         {{{ ('byte_length') }}};
         {{{ makeSetValue('byte_length', 0, 'v.byteLength', SIZE_TYPE) }}};
     }
-    var buffer;
     if (data || arraybuffer) {
-        buffer = v.buffer;
         if (data) {
             {{{ ('data') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1360,7 +1360,7 @@ function _napi_get_dataview_info(env, dataview, byte_length, data, arraybuffer, 
         if (arraybuffer) {
             {{{ ('arraybuffer') }}};
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            var ab = envObject.ensureHandleId(buffer);
+            var ab = envObject.ensureHandleId(v.buffer);
             {{{ makeSetValue('arraybuffer', 0, 'ab', '*') }}};
         }
     }
@@ -2338,7 +2338,7 @@ function _napi_define_class(env, utf8name, length, constructor, callback_data, p
             if (!properties)
                 return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         }
-        if ((length < -1) || (length > 2147483647) || (!utf8name)) {
+        if (!((length >= -1 && length <= 2147483647) || length === 4294967295) || (!utf8name)) {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         }
         var fresult = emnapiCreateFunction(envObject, utf8name, length, constructor, callback_data);
@@ -2682,7 +2682,7 @@ function emnapiSyncMemory(js_to_wasm, arrayBufferOrView, offset, len) {
         var pointer = emnapiExternalMemory.getArrayBufferPointer(arrayBufferOrView, false).address;
         if (!pointer)
             throw new Error('Unknown ArrayBuffer address');
-        if (typeof len !== 'number' || len === -1) {
+        if (typeof len !== 'number' || len === -1 || len === 4294967295) {
             len = arrayBufferOrView.byteLength - offset;
         }
         len = len >>> 0;
@@ -2704,7 +2704,7 @@ function emnapiSyncMemory(js_to_wasm, arrayBufferOrView, offset, len) {
         var pointer = viewPointerInfo.address;
         if (!pointer)
             throw new Error('Unknown ArrayBuffer address');
-        if (typeof len !== 'number' || len === -1) {
+        if (typeof len !== 'number' || len === -1 || len === 4294967295) {
             len = latestView.byteLength - offset;
         }
         len = len >>> 0;
@@ -3121,7 +3121,7 @@ function _napi_create_object(env, result) {
 /**
  * @__sig ipppppp
  */
-function _napi_create_object_with_properties(env, prototype_or_null, property_names, property_values, property_count, result) {
+function _node_api_create_object_with_properties(env, prototype_or_null, property_names, property_values, property_count, result) {
     if (!env)
         return 1 /* napi_status.napi_invalid_arg */;
     // @ts-expect-error
@@ -3335,6 +3335,7 @@ function _napi_create_buffer(env, size, data, result) {
             pointer = _malloc({{{ ('size') }}});
             if (!pointer)
                 throw new Error('Out of memory');
+            {{{ ('pointer') }}};
             new Uint8Array(wasmMemory.buffer).subarray(pointer, pointer + size).fill(0);
             var buffer_1 = Buffer.from(wasmMemory.buffer, pointer, size);
             var viewDescriptor = {
@@ -3538,7 +3539,7 @@ function _node_api_symbol_for(env, utf8description, length, result) {
     {{{ ('length') }}};
     {{{ ('utf8description') }}};
     {{{ ('result') }}};
-    var autoLength = length === -1;
+    var autoLength = length === -1 || length === 4294967295;
     var sizelength = length >>> 0;
     if (length !== 0) {
         if (!utf8description)
@@ -3990,6 +3991,21 @@ function _napi_fatal_exception(env, err) {
     }
 }
 /** @__sig ipppppp */
+function __emnapi_create_function(env, utf8name, length, cb, data, result) {
+    {{{ ('length') }}};
+    var envObject = emnapiCtx.envStore.get(env);
+    var fresult = emnapiCreateFunction(envObject, utf8name, length, cb, data);
+    if (fresult.status !== 0 /* napi_status.napi_ok */)
+        return envObject.setLastError(fresult.status);
+    var f = fresult.f;
+    var valueHandle = emnapiCtx.addToCurrentScope(f);
+    {{{ ('result') }}};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    var value = valueHandle.id;
+    {{{ makeSetValue('result', 0, 'value', '*') }}};
+    return envObject.getReturnStatus();
+}
+/** @__sig ipppppp */
 function _napi_create_function(env, utf8name, length, cb, data, result) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var value;
@@ -4008,16 +4024,7 @@ function _napi_create_function(env, utf8name, length, cb, data, result) {
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
         if (!cb)
             return envObject.setLastError(1 /* napi_status.napi_invalid_arg */);
-        {{{ ('length') }}};
-        var fresult = emnapiCreateFunction(envObject, utf8name, length, cb, data);
-        if (fresult.status !== 0 /* napi_status.napi_ok */)
-            return envObject.setLastError(fresult.status);
-        var f = fresult.f;
-        var valueHandle = emnapiCtx.addToCurrentScope(f);
-        {{{ ('result') }}};
-        value = valueHandle.id;
-        {{{ makeSetValue('result', 0, 'value', '*') }}};
-        return envObject.getReturnStatus();
+        return __emnapi_create_function(env, utf8name, length, cb, data, result);
     }
     catch (err) {
         envObject.tryCatch.setError(err);
@@ -4192,6 +4199,7 @@ function _napi_get_new_target(env, cbinfo, result) {
     {{{ ('result') }}};
     var cbinfoValue = emnapiCtx.scopeStore.get(cbinfo).callbackInfo;
     var thiz = cbinfoValue.thiz, fn = cbinfoValue.fn;
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain, @typescript-eslint/no-unused-vars
     var value = thiz == null || thiz.constructor == null
         ? 0
         : thiz instanceof fn
@@ -5520,29 +5528,85 @@ function _napi_run_script(env, script, result) {
  * ```
  */
 var emnapiTSFN = {
+    _liveSet: {},
     offset: {
+        __size__: 0,
         /* napi_ref */ resource: 0,
-        /* double */ async_id: 8,
-        /* double */ trigger_async_id: 16,
-        /* size_t */ queue_size: 24,
-        /* void* */ queue: 1 * {{{ POINTER_SIZE }}} + 24,
-        /* size_t */ thread_count: 2 * {{{ POINTER_SIZE }}} + 24,
-        /* bool */ is_closing: 3 * {{{ POINTER_SIZE }}} + 24,
-        /* atomic_uchar */ dispatch_state: 3 * {{{ POINTER_SIZE }}} + 28,
-        /* void* */ context: 3 * {{{ POINTER_SIZE }}} + 32,
-        /* size_t */ max_queue_size: 4 * {{{ POINTER_SIZE }}} + 32,
-        /* napi_ref */ ref: 5 * {{{ POINTER_SIZE }}} + 32,
-        /* napi_env */ env: 6 * {{{ POINTER_SIZE }}} + 32,
-        /* void* */ finalize_data: 7 * {{{ POINTER_SIZE }}} + 32,
-        /* napi_finalize */ finalize_cb: 8 * {{{ POINTER_SIZE }}} + 32,
-        /* napi_threadsafe_function_call_js */ call_js_cb: 9 * {{{ POINTER_SIZE }}} + 32,
-        /* bool */ handles_closing: 10 * {{{ POINTER_SIZE }}} + 32,
-        /* bool */ async_ref: 10 * {{{ POINTER_SIZE }}} + 36,
-        /* int32_t */ mutex: 10 * {{{ POINTER_SIZE }}} + 40,
-        /* int32_t */ cond: 10 * {{{ POINTER_SIZE }}} + 44,
-        end: 10 * {{{ POINTER_SIZE }}} + 48
+        /* double */ async_id: 0,
+        /* double */ trigger_async_id: 0,
+        /* size_t */ queue_size: 0,
+        /* bool */ is_some: 0,
+        /* void* */ queue: 0,
+        // Reuse uv_async_t storage as JS-side wakeup state: pending event + scheduled drain.
+        async_pending: 0,
+        async_u_fd: 0,
+        /* size_t */ thread_count: 0,
+        /* int32_t */ state: 0,
+        /* atomic_uchar */ dispatch_state: 0,
+        /* void* */ context: 0,
+        /* size_t */ max_queue_size: 0,
+        /* napi_ref */ ref: 0,
+        /* napi_env */ env: 0,
+        /* void* */ finalize_data: 0,
+        /* napi_finalize */ finalize_cb: 0,
+        /* napi_threadsafe_function_call_js */ call_js_cb: 0,
+        /* bool */ handles_closing: 0,
+        /* bool */ async_ref: 0,
+        /* int32_t */ mutex: 0,
+        /* int32_t */ cond: 0
     },
     init: function () {
+        emnapiTSFN._liveSet = new Set();
+#if MEMORY64
+        emnapiTSFN.offset.__size__ = 320 /* NapiTSFNOffset64.__size__ */;
+        emnapiTSFN.offset.resource = 0 /* NapiTSFNOffset64.async_resource_resource */;
+        emnapiTSFN.offset.async_id = 8 /* NapiTSFNOffset64.async_resource_async_context_async_id */;
+        emnapiTSFN.offset.trigger_async_id = 16 /* NapiTSFNOffset64.async_resource_async_context_trigger_async_id */;
+        emnapiTSFN.offset.queue_size = 88 /* NapiTSFNOffset64.queue_size */;
+        emnapiTSFN.offset.is_some = 24 /* NapiTSFNOffset64.async_resource_is_some */;
+        emnapiTSFN.offset.queue = 96 /* NapiTSFNOffset64.queue */;
+        emnapiTSFN.offset.async_pending = 232 /* NapiTSFNOffset64.async_pending */;
+        emnapiTSFN.offset.async_u_fd = 160 /* NapiTSFNOffset64.async_u_fd */;
+        emnapiTSFN.offset.thread_count = 240 /* NapiTSFNOffset64.thread_count */;
+        emnapiTSFN.offset.state = 248 /* NapiTSFNOffset64.state */;
+        emnapiTSFN.offset.dispatch_state = 252 /* NapiTSFNOffset64.dispatch_state */;
+        emnapiTSFN.offset.context = 256 /* NapiTSFNOffset64.context */;
+        emnapiTSFN.offset.max_queue_size = 264 /* NapiTSFNOffset64.max_queue_size */;
+        emnapiTSFN.offset.ref = 272 /* NapiTSFNOffset64.ref */;
+        emnapiTSFN.offset.env = 280 /* NapiTSFNOffset64.env */;
+        emnapiTSFN.offset.finalize_data = 288 /* NapiTSFNOffset64.finalize_data */;
+        emnapiTSFN.offset.finalize_cb = 296 /* NapiTSFNOffset64.finalize_cb */;
+        emnapiTSFN.offset.call_js_cb = 304 /* NapiTSFNOffset64.call_js_cb */;
+        emnapiTSFN.offset.handles_closing = 312 /* NapiTSFNOffset64.handles_closing */;
+        emnapiTSFN.offset.async_ref = 316 /* NapiTSFNOffset64.async_ref */;
+        emnapiTSFN.offset.mutex = 32 /* NapiTSFNOffset64.mutex */;
+        emnapiTSFN.offset.cond = 80 /* NapiTSFNOffset64.cond */;
+#else
+        emnapiTSFN.offset.__size__ = 184 /* NapiTSFNOffset32.__size__ */;
+        emnapiTSFN.offset.resource = 0 /* NapiTSFNOffset32.async_resource_resource */;
+        emnapiTSFN.offset.async_id = 8 /* NapiTSFNOffset32.async_resource_async_context_async_id */;
+        emnapiTSFN.offset.trigger_async_id = 16 /* NapiTSFNOffset32.async_resource_async_context_trigger_async_id */;
+        emnapiTSFN.offset.queue_size = 60 /* NapiTSFNOffset32.queue_size */;
+        emnapiTSFN.offset.is_some = 24 /* NapiTSFNOffset32.async_resource_is_some */;
+        emnapiTSFN.offset.queue = 64 /* NapiTSFNOffset32.queue */;
+        emnapiTSFN.offset.async_pending = 132 /* NapiTSFNOffset32.async_pending */;
+        emnapiTSFN.offset.async_u_fd = 96 /* NapiTSFNOffset32.async_u_fd */;
+        emnapiTSFN.offset.thread_count = 136 /* NapiTSFNOffset32.thread_count */;
+        emnapiTSFN.offset.state = 140 /* NapiTSFNOffset32.state */;
+        emnapiTSFN.offset.dispatch_state = 144 /* NapiTSFNOffset32.dispatch_state */;
+        emnapiTSFN.offset.context = 148 /* NapiTSFNOffset32.context */;
+        emnapiTSFN.offset.max_queue_size = 152 /* NapiTSFNOffset32.max_queue_size */;
+        emnapiTSFN.offset.ref = 156 /* NapiTSFNOffset32.ref */;
+        emnapiTSFN.offset.env = 160 /* NapiTSFNOffset32.env */;
+        emnapiTSFN.offset.finalize_data = 164 /* NapiTSFNOffset32.finalize_data */;
+        emnapiTSFN.offset.finalize_cb = 168 /* NapiTSFNOffset32.finalize_cb */;
+        emnapiTSFN.offset.call_js_cb = 172 /* NapiTSFNOffset32.call_js_cb */;
+        emnapiTSFN.offset.handles_closing = 176 /* NapiTSFNOffset32.handles_closing */;
+        emnapiTSFN.offset.async_ref = 180 /* NapiTSFNOffset32.async_ref */;
+        emnapiTSFN.offset.mutex = 32 /* NapiTSFNOffset32.mutex */;
+        emnapiTSFN.offset.cond = 56 /* NapiTSFNOffset32.cond */;
+#endif
+        emnapiTSFN.offset.mutex = emnapiTSFN.offset.mutex + 4;
         if (typeof PThread !== 'undefined') {
             PThread.unusedWorkers.forEach(emnapiTSFN.addListener);
             PThread.runningWorkers.forEach(emnapiTSFN.addListener);
@@ -5566,7 +5630,10 @@ var emnapiTSFN = {
                 var type = __emnapi__.type;
                 var payload = __emnapi__.payload;
                 if (type === 'tsfn-send') {
-                    emnapiTSFN.dispatch(payload.tsfn);
+                    var pendng = payload.tsfn + emnapiTSFN.offset.async_pending;
+                    if (Atomics.load(new Int32Array(wasmMemory.buffer), pendng >>> 2) !== 0) {
+                        emnapiTSFN.enqueue(payload.tsfn);
+                    }
                 }
             }
         };
@@ -5593,6 +5660,7 @@ var emnapiTSFN = {
         var queue = _malloc({{{ ('size') }}});
         if (!queue)
             return false;
+        {{{ ('queue') }}};
         new Uint8Array(wasmMemory.buffer, queue, size).fill(0);
         emnapiTSFN.storeSizeTypeValue(func + emnapiTSFN.offset.queue, queue, false);
         return true;
@@ -5600,6 +5668,12 @@ var emnapiTSFN = {
     destroyQueue: function (func) {
         var queue = emnapiTSFN.loadSizeTypeValue(func + emnapiTSFN.offset.queue, false);
         if (queue) {
+            var node = emnapiTSFN.loadSizeTypeValue(queue, false);
+            while (node !== 0) {
+                var next = emnapiTSFN.loadSizeTypeValue(node + {{{ POINTER_SIZE }}}, false);
+                _free({{{ ('node') }}});
+                node = next;
+            }
             _free({{{ ('queue') }}});
         }
     },
@@ -5612,6 +5686,7 @@ var emnapiTSFN = {
         var node = _malloc({{{ ('size') }}});
         if (!node)
             throw new Error('OOM');
+        {{{ ('node') }}};
         emnapiTSFN.storeSizeTypeValue(node, data, false);
         emnapiTSFN.storeSizeTypeValue(node + {{{ POINTER_SIZE }}}, 0, false);
         if (head === 0 && tail === 0) {
@@ -5647,11 +5722,11 @@ var emnapiTSFN = {
         var waitCondition = function () {
             var queueSize = emnapiTSFN.getQueueSize(func);
             var maxSize = emnapiTSFN.getMaxQueueSize(func);
-            var isClosing = emnapiTSFN.getIsClosing(func);
-            return queueSize >= maxSize && maxSize > 0 && !isClosing;
+            return queueSize >= maxSize && maxSize > 0 && emnapiTSFN.getState(func) === 0 /* State.kOpen */;
         };
         var isBrowserMain = typeof window !== 'undefined' && typeof document !== 'undefined' && !ENVIRONMENT_IS_NODE;
-        return mutex.execute(function () {
+        var shouldDelete = false;
+        var ret = mutex.execute(function () {
             while (waitCondition()) {
                 if (mode === 0 /* napi_threadsafe_function_call_mode.napi_tsfn_nonblocking */) {
                     return 15 /* napi_status.napi_queue_full */;
@@ -5668,21 +5743,25 @@ var emnapiTSFN = {
                 }
                 cond.wait();
             }
-            if (emnapiTSFN.getIsClosing(func)) {
-                if (emnapiTSFN.getThreadCount(func) === 0) {
-                    return 1 /* napi_status.napi_invalid_arg */;
-                }
-                else {
-                    emnapiTSFN.subThreadCount(func);
-                    return 16 /* napi_status.napi_closing */;
-                }
-            }
-            else {
+            if (emnapiTSFN.getState(func) === 0 /* State.kOpen */) {
                 emnapiTSFN.pushQueue(func, data);
                 emnapiTSFN.send(func);
                 return 0 /* napi_status.napi_ok */;
             }
+            if (emnapiTSFN.getThreadCount(func) === 0) {
+                return 1 /* napi_status.napi_invalid_arg */;
+            }
+            emnapiTSFN.subThreadCount(func);
+            if (!(emnapiTSFN.getState(func) === 2 /* State.kClosed */ && emnapiTSFN.getThreadCount(func) === 0)) {
+                return 16 /* napi_status.napi_closing */;
+            }
+            shouldDelete = true;
+            return 16 /* napi_status.napi_closing */;
         });
+        if (shouldDelete) {
+            emnapiTSFN.destroy(func);
+        }
+        return ret;
     },
     getMutex: function (func) {
         var index = func + emnapiTSFN.offset.mutex;
@@ -5692,7 +5771,7 @@ var emnapiTSFN = {
                 var i32a = new Int32Array(wasmMemory.buffer, index, 1);
                 if (isBrowserMain) {
                     while (true) {
-                        var oldValue = Atomics.compareExchange(i32a, 0, 0, 1);
+                        var oldValue = Atomics.compareExchange(i32a, 0, 0, 10);
                         if (oldValue === 0) {
                             return;
                         }
@@ -5700,11 +5779,11 @@ var emnapiTSFN = {
                 }
                 else {
                     while (true) {
-                        var oldValue = Atomics.compareExchange(i32a, 0, 0, 1);
+                        var oldValue = Atomics.compareExchange(i32a, 0, 0, 10);
                         if (oldValue === 0) {
                             return;
                         }
-                        Atomics.wait(i32a, 0, 1);
+                        Atomics.wait(i32a, 0, 10);
                     }
                 }
             },
@@ -5713,20 +5792,20 @@ var emnapiTSFN = {
                 const again = (): void => { fn() }
                 const fn = (): void => {
                   const i32a = new Int32Array(wasmMemory.buffer, index, 1)
-                  const oldValue = Atomics.compareExchange(i32a, 0, 0, 1)
+                  const oldValue = Atomics.compareExchange(i32a, 0, 0, 10)
                   if (oldValue === 0) {
                     resolve()
                     return
                   }
-                  (Atomics as any).waitAsync(i32a, 0, 1).value.then(again)
+                  (Atomics as any).waitAsync(i32a, 0, 10).value.then(again)
                 }
                 fn()
               })
             }, */
             unlock: function () {
                 var i32a = new Int32Array(wasmMemory.buffer, index, 1);
-                var oldValue = Atomics.compareExchange(i32a, 0, 1, 0);
-                if (oldValue !== 1) {
+                var oldValue = Atomics.compareExchange(i32a, 0, 10, 0);
+                if (oldValue !== 10) {
                     throw new Error('Tried to unlock while not holding the mutex');
                 }
                 Atomics.notify(i32a, 0, 1);
@@ -5791,10 +5870,10 @@ var emnapiTSFN = {
         var arr, index;
 #if MEMORY64
         arr = new BigUint64Array(wasmMemory.buffer);
-        index = (func + offset) >> 3;
+        index = (func + offset) >>> 3;
 #else
         arr = new Uint32Array(wasmMemory.buffer);
-        index = (func + offset) >> 2;
+        index = (func + offset) >>> 2;
 #endif
         Atomics.add(arr, index, {{{ ('1') }}});
     },
@@ -5803,10 +5882,10 @@ var emnapiTSFN = {
         var arr, index;
 #if MEMORY64
         arr = new BigUint64Array(wasmMemory.buffer);
-        index = (func + offset) >> 3;
+        index = (func + offset) >>> 3;
 #else
         arr = new Uint32Array(wasmMemory.buffer);
-        index = (func + offset) >> 2;
+        index = (func + offset) >>> 2;
 #endif
         Atomics.sub(arr, index, {{{ ('1') }}});
     },
@@ -5818,10 +5897,10 @@ var emnapiTSFN = {
         var arr, index;
 #if MEMORY64
         arr = new BigUint64Array(wasmMemory.buffer);
-        index = (func + offset) >> 3;
+        index = (func + offset) >>> 3;
 #else
         arr = new Uint32Array(wasmMemory.buffer);
-        index = (func + offset) >> 2;
+        index = (func + offset) >>> 2;
 #endif
         Atomics.add(arr, index, {{{ ('1') }}});
     },
@@ -5830,27 +5909,27 @@ var emnapiTSFN = {
         var arr, index;
 #if MEMORY64
         arr = new BigUint64Array(wasmMemory.buffer);
-        index = (func + offset) >> 3;
+        index = (func + offset) >>> 3;
 #else
         arr = new Uint32Array(wasmMemory.buffer);
-        index = (func + offset) >> 2;
+        index = (func + offset) >>> 2;
 #endif
         Atomics.sub(arr, index, {{{ ('1') }}});
     },
-    getIsClosing: function (func) {
-        return Atomics.load(new Int32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.is_closing) >> 2);
+    getState: function (func) {
+        return Atomics.load(new Int32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.state) >>> 2);
     },
-    setIsClosing: function (func, value) {
-        Atomics.store(new Int32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.is_closing) >> 2, value);
+    setState: function (func, value) {
+        Atomics.store(new Int32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.state) >>> 2, value);
     },
     getHandlesClosing: function (func) {
-        return Atomics.load(new Int32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.handles_closing) >> 2);
+        return Atomics.load(new Int8Array(wasmMemory.buffer), (func + emnapiTSFN.offset.handles_closing));
     },
     setHandlesClosing: function (func, value) {
-        Atomics.store(new Int32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.handles_closing) >> 2, value);
+        Atomics.store(new Int8Array(wasmMemory.buffer), (func + emnapiTSFN.offset.handles_closing), value);
     },
     getDispatchState: function (func) {
-        return Atomics.load(new Uint32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.dispatch_state) >> 2);
+        return Atomics.load(new Uint32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.dispatch_state) >>> 2);
     },
     getContext: function (func) {
         return emnapiTSFN.loadSizeTypeValue(func + emnapiTSFN.offset.context, false);
@@ -5882,20 +5961,20 @@ var emnapiTSFN = {
         if (unsigned) {
 #if MEMORY64
             arr = new BigUint64Array(wasmMemory.buffer);
-            ret = Number(Atomics.load(arr, offset >> 3));
+            ret = Number(Atomics.load(arr, offset >>> 3));
 #else
             arr = new Uint32Array(wasmMemory.buffer);
-            ret = Atomics.load(arr, offset >> 2);
+            ret = Atomics.load(arr, offset >>> 2);
 #endif
             return ret;
         }
         else {
 #if MEMORY64
             arr = new BigInt64Array(wasmMemory.buffer);
-            ret = Number(Atomics.load(arr, offset >> 3));
+            ret = Number(Atomics.load(arr, offset >>> 3));
 #else
             arr = new Int32Array(wasmMemory.buffer);
-            ret = Atomics.load(arr, offset >> 2);
+            ret = Atomics.load(arr, offset >>> 2);
 #endif
             return ret;
         }
@@ -5905,64 +5984,91 @@ var emnapiTSFN = {
         if (unsigned) {
 #if MEMORY64
             arr = new BigUint64Array(wasmMemory.buffer);
-            Atomics.store(arr, offset >> 3, BigInt(value));
+            Atomics.store(arr, offset >>> 3, BigInt(value));
 #else
             arr = new Uint32Array(wasmMemory.buffer);
-            Atomics.store(arr, offset >> 2, value);
+            Atomics.store(arr, offset >>> 2, value);
 #endif
             return undefined;
         }
         else {
 #if MEMORY64
             arr = new BigInt64Array(wasmMemory.buffer);
-            Atomics.store(arr, offset >> 3, BigInt(value >>> 0));
+            Atomics.store(arr, offset >>> 3, BigInt(value >>> 0));
 #else
             arr = new Int32Array(wasmMemory.buffer);
-            Atomics.store(arr, offset >> 2, value >>> 0);
+            Atomics.store(arr, offset >>> 2, value >>> 0);
 #endif
             return undefined;
         }
     },
+    releaseResources: function (func) {
+        if (emnapiTSFN.getState(func) !== 2 /* State.kClosed */) {
+            emnapiTSFN.setState(func, 2 /* State.kClosed */);
+            var env = emnapiTSFN.getEnv(func);
+            var envObject = emnapiCtx.envStore.get(env);
+            var ref = emnapiTSFN.getRef(func);
+            if (ref) {
+                emnapiCtx.refStore.get(ref).dispose();
+            }
+            var resource = emnapiTSFN.getResource(func);
+            emnapiCtx.refStore.get(resource).dispose();
+            {{{ makeSetValue('func', 'emnapiTSFN.offset.is_some', '0', 'i8') }}};
+            emnapiCtx.removeCleanupHook(envObject, emnapiTSFN.cleanup, func);
+            envObject.unref();
+            var asyncRefOffset = (func + emnapiTSFN.offset.async_ref) >>> 2;
+            var arr = new Uint32Array(wasmMemory.buffer);
+            if (Atomics.load(arr, asyncRefOffset) > 0) {
+                Atomics.store(arr, asyncRefOffset, 0);
+                __emnapi_runtime_keepalive_pop();
+                emnapiCtx.decreaseWaitingRequestCounter();
+            }
+            if (emnapiNodeBinding) {
+                var view = new DataView(wasmMemory.buffer);
+                var asyncId = view.getFloat64(func + emnapiTSFN.offset.async_id, true);
+                var triggerAsyncId = view.getFloat64(func + emnapiTSFN.offset.trigger_async_id, true);
+                __emnapi_node_emit_async_destroy(asyncId, triggerAsyncId);
+            }
+        }
+    },
     destroy: function (func) {
+        emnapiTSFN._liveSet.delete(func);
         emnapiTSFN.destroyQueue(func);
-        var env = emnapiTSFN.getEnv(func);
-        var envObject = emnapiCtx.envStore.get(env);
-        var ref = emnapiTSFN.getRef(func);
-        if (ref) {
-            emnapiCtx.refStore.get(ref).dispose();
-        }
-        emnapiCtx.removeCleanupHook(envObject, emnapiTSFN.cleanup, func);
-        envObject.unref();
-        var asyncRefOffset = (func + emnapiTSFN.offset.async_ref) >> 2;
-        var arr = new Int32Array(wasmMemory.buffer);
-        if (Atomics.load(arr, asyncRefOffset)) {
-            Atomics.store(arr, asyncRefOffset, 0);
-            __emnapi_runtime_keepalive_pop();
-            emnapiCtx.decreaseWaitingRequestCounter();
-        }
-        var resource = emnapiTSFN.getResource(func);
-        emnapiCtx.refStore.get(resource).dispose();
-        if (emnapiNodeBinding) {
-            var view = new DataView(wasmMemory.buffer);
-            var asyncId = view.getFloat64(func + emnapiTSFN.offset.async_id, true);
-            var triggerAsyncId = view.getFloat64(func + emnapiTSFN.offset.trigger_async_id, true);
-            __emnapi_node_emit_async_destroy(asyncId, triggerAsyncId);
-        }
+        emnapiTSFN.releaseResources(func);
         _free({{{ ('func') }}});
     },
-    emptyQueueAndDelete: function (func) {
+    emptyQueue: function (func) {
+        var drainQueue = [];
+        emnapiTSFN.getMutex(func).execute(function () {
+            while (emnapiTSFN.getQueueSize(func) > 0) {
+                drainQueue.push(emnapiTSFN.shiftQueue(func));
+            }
+        });
         var callJsCb = emnapiTSFN.getCallJSCb(func);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         var context = emnapiTSFN.getContext(func);
         var data;
-        while (emnapiTSFN.getQueueSize(func) > 0) {
+        for (var i = 0; i < drainQueue.length; i++) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            data = emnapiTSFN.shiftQueue(func);
+            data = drainQueue[i];
             if (callJsCb) {
                 {{{ makeDynCall('vpppp', 'callJsCb') }}}({{{ ('0') }}}, {{{ ('0') }}}, {{{ ('context') }}}, {{{ ('data') }}});
             }
         }
-        emnapiTSFN.destroy(func);
+    },
+    maybeDelete: function (func) {
+        var shouldDelete = false;
+        emnapiTSFN.getMutex(func).execute(function () {
+            if (emnapiTSFN.getThreadCount(func) > 0) {
+                emnapiTSFN.releaseResources(func);
+            }
+            else {
+                shouldDelete = true;
+            }
+        });
+        if (shouldDelete) {
+            emnapiTSFN.destroy(func);
+        }
     },
     finalize: function (func) {
         var env = emnapiTSFN.getEnv(func);
@@ -5977,6 +6083,7 @@ var emnapiTSFN = {
             envObject.callFinalizerInternal(0, {{{ ('finalize') }}}, {{{ ('data') }}}, {{{ ('context') }}});
         };
         try {
+            emnapiTSFN.emptyQueue(func);
             if (finalize) {
                 if (emnapiNodeBinding) {
                     var resource = emnapiTSFN.getResource(func);
@@ -5994,7 +6101,7 @@ var emnapiTSFN = {
                     f();
                 }
             }
-            emnapiTSFN.emptyQueueAndDelete(func);
+            emnapiTSFN.maybeDelete(func);
         }
         finally {
             emnapiCtx.closeScope(envObject);
@@ -6010,7 +6117,7 @@ var emnapiTSFN = {
         try {
             if (set_closing) {
                 emnapiTSFN.getMutex(func).execute(function () {
-                    emnapiTSFN.setIsClosing(func, 1);
+                    emnapiTSFN.setState(func, 1 /* State.kClosing */);
                     if (emnapiTSFN.getMaxQueueSize(func) > 0) {
                         emnapiTSFN.getCond(func).signal();
                     }
@@ -6020,6 +6127,7 @@ var emnapiTSFN = {
                 return;
             }
             emnapiTSFN.setHandlesClosing(func, 1);
+            Atomics.store(new Int32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.async_pending) >>> 2, 1);
             emnapiCtx.feature.setImmediate(function () {
                 emnapiTSFN.finalize(func);
             });
@@ -6036,10 +6144,7 @@ var emnapiTSFN = {
         var mutex = emnapiTSFN.getMutex(func);
         var cond = emnapiTSFN.getCond(func);
         mutex.execute(function () {
-            if (emnapiTSFN.getIsClosing(func)) {
-                emnapiTSFN.closeHandlesAndMaybeDelete(func, 0);
-            }
-            else {
+            if (emnapiTSFN.getState(func) === 0 /* State.kOpen */) {
                 var size = emnapiTSFN.getQueueSize(func);
                 if (size > 0) {
                     data = emnapiTSFN.shiftQueue(func);
@@ -6052,7 +6157,7 @@ var emnapiTSFN = {
                 }
                 if (size === 0) {
                     if (emnapiTSFN.getThreadCount(func) === 0) {
-                        emnapiTSFN.setIsClosing(func, 1);
+                        emnapiTSFN.setState(func, 1 /* State.kClosing */);
                         if (emnapiTSFN.getMaxQueueSize(func) > 0) {
                             cond.signal();
                         }
@@ -6062,6 +6167,9 @@ var emnapiTSFN = {
                 else {
                     has_more = true;
                 }
+            }
+            else {
+                emnapiTSFN.closeHandlesAndMaybeDelete(func, 0);
             }
         });
         if (popped_value) {
@@ -6111,7 +6219,7 @@ var emnapiTSFN = {
         var has_more = true;
         var iterations_left = 1000;
         var ui32a = new Uint32Array(wasmMemory.buffer);
-        var index = (func + emnapiTSFN.offset.dispatch_state) >> 2;
+        var index = (func + emnapiTSFN.offset.dispatch_state) >>> 2;
         while (has_more && --iterations_left !== 0) {
             Atomics.store(ui32a, index, 1);
             has_more = emnapiTSFN.dispatchOne(func);
@@ -6123,25 +6231,85 @@ var emnapiTSFN = {
             emnapiTSFN.send(func);
         }
     },
-    send: function (func) {
-        var current_state = Atomics.or(new Uint32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.dispatch_state) >> 2, 1 << 1);
-        if ((current_state & 1) === 1) {
+    enqueue: function (func) {
+        // `pending` means a worker thread has requested a wakeup that has not
+        // been drained on the main thread yet.
+        var pending = func + emnapiTSFN.offset.async_pending;
+        // `scheduled` prevents queueing the same main-thread drain chain more than
+        // once while a previous wakeup is still in flight.
+        var scheduled = func + emnapiTSFN.offset.async_u_fd;
+        var i32a = new Int32Array(wasmMemory.buffer);
+        if (Atomics.exchange(i32a, scheduled >>> 2, 1) !== 0) {
             return;
         }
-        if ((typeof ENVIRONMENT_IS_PTHREAD !== 'undefined') && ENVIRONMENT_IS_PTHREAD) {
-            postMessage({
-                __emnapi__: {
-                    type: 'tsfn-send',
-                    payload: {
-                        tsfn: func
+        // Match uv_async_send-style coalescing in JS: the first turn represents
+        // the wakeup reaching the main thread, and the second turn performs the
+        // actual TSFN drain after nearby Send/Signal calls have had a chance to
+        // collapse into the shared AsyncProgressWorker state.
+        emnapiCtx.feature.setImmediate(function () {
+            if (!emnapiTSFN._liveSet.has(func)) {
+                return;
+            }
+            if (Atomics.load(i32a, pending >>> 2) === 0) {
+                Atomics.store(i32a, scheduled >>> 2, 0);
+                return;
+            }
+            emnapiCtx.feature.setImmediate(function () {
+                try {
+                    // Consume the coalesced wakeup once, then let dispatch() observe any
+                    // queue mutations through dispatch_state like the C implementation.
+                    if (Atomics.exchange(i32a, pending >>> 2, 0) === 0) {
+                        return;
+                    }
+                    // After destroy(), the func address is freed.  Skip dispatch
+                    // to avoid use-after-free (JS-side lifecycle check).
+                    if (!emnapiTSFN._liveSet.has(func)) {
+                        return;
+                    }
+                    emnapiTSFN.dispatch(func);
+                }
+                finally {
+                    // Allow a later wakeup to schedule a new drain chain. If another
+                    // worker-thread send raced with this drain, enqueue one more turn.
+                    if (emnapiTSFN._liveSet.has(func)) {
+                        Atomics.store(i32a, scheduled >>> 2, 0);
+                        if (Atomics.load(i32a, pending >>> 2) !== 0) {
+                            emnapiTSFN.enqueue(func);
+                        }
                     }
                 }
             });
+        });
+    },
+    send: function (func) {
+        var current_state = Atomics.or(new Uint32Array(wasmMemory.buffer), (func + emnapiTSFN.offset.dispatch_state) >>> 2, 1 << 1);
+        if ((current_state & 1) === 1) {
+            return;
         }
-        else {
-            emnapiCtx.feature.setImmediate(function () {
-                emnapiTSFN.dispatch(func);
-            });
+        var pendng = func + emnapiTSFN.offset.async_pending;
+        // A wakeup is already pending, so this send only needs to leave the queued
+        // work in the TSFN queue and let the existing drain pick it up.
+        if (Atomics.load(new Int32Array(wasmMemory.buffer), pendng >>> 2) !== 0) {
+            return;
+        }
+        if (Atomics.exchange(new Int32Array(wasmMemory.buffer), pendng >>> 2, 1) === 0) {
+            if ((typeof ENVIRONMENT_IS_PTHREAD !== 'undefined') && ENVIRONMENT_IS_PTHREAD) {
+                // Worker threads only post a wakeup token. Main-thread draining is
+                // serialized by enqueue() once the message is received.
+                postMessage({
+                    __emnapi__: {
+                        type: 'tsfn-send',
+                        payload: {
+                            tsfn: func
+                        }
+                    }
+                });
+            }
+            else {
+                // On the main thread we can skip the cross-thread hop and schedule the
+                // coalesced drain chain directly.
+                emnapiTSFN.enqueue(func);
+            }
         }
     }
 };
@@ -6201,21 +6369,24 @@ function _napi_create_threadsafe_function(env, func, async_resource, async_resou
     asyncResourceName = String(asyncResourceName);
     var resource_name = envObject.ensureHandleId(asyncResourceName);
     // tsfn create
-    var sizeofTSFN = emnapiTSFN.offset.end;
+    var sizeofTSFN = emnapiTSFN.offset.__size__;
+    // eslint-disable-next-line prefer-const
     var tsfn = _malloc({{{ ('sizeofTSFN') }}});
     if (!tsfn)
         return envObject.setLastError(9 /* napi_status.napi_generic_failure */);
+    {{{ ('tsfn') }}};
     new Uint8Array(wasmMemory.buffer).subarray(tsfn, tsfn + sizeofTSFN).fill(0);
     var resourceRef = emnapiCtx.createReference(envObject, resource, 1, 1 /* ReferenceOwnership.kUserland */);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var resource_ = resourceRef.id;
-    {{{ makeSetValue('tsfn', 0, 'resource_', '*') }}};
+    {{{ makeSetValue('tsfn', 'emnapiTSFN.offset.resource', 'resource_', '*') }}};
     if (!emnapiTSFN.initQueue(tsfn)) {
         _free({{{ ('tsfn') }}});
         resourceRef.dispose();
         return envObject.setLastError(9 /* napi_status.napi_generic_failure */);
     }
     __emnapi_node_emit_async_init(resource, resource_name, -1, tsfn + emnapiTSFN.offset.async_id);
+    {{{ makeSetValue('tsfn', 'emnapiTSFN.offset.is_some', '1', 'i8') }}};
     {{{ makeSetValue('tsfn', 'emnapiTSFN.offset.thread_count', 'initial_thread_count', SIZE_TYPE) }}};
     {{{ makeSetValue('tsfn', 'emnapiTSFN.offset.context', 'context', '*') }}};
     {{{ makeSetValue('tsfn', 'emnapiTSFN.offset.max_queue_size', 'max_queue_size', SIZE_TYPE) }}};
@@ -6225,10 +6396,11 @@ function _napi_create_threadsafe_function(env, func, async_resource, async_resou
     {{{ makeSetValue('tsfn', 'emnapiTSFN.offset.finalize_cb', 'thread_finalize_cb', '*') }}};
     {{{ makeSetValue('tsfn', 'emnapiTSFN.offset.call_js_cb', 'call_js_cb', '*') }}};
     emnapiCtx.addCleanupHook(envObject, emnapiTSFN.cleanup, tsfn);
+    emnapiTSFN._liveSet.add(tsfn);
     envObject.ref();
     __emnapi_runtime_keepalive_push();
     emnapiCtx.increaseWaitingRequestCounter();
-    {{{ makeSetValue('tsfn', 'emnapiTSFN.offset.async_ref', '1', 'i32') }}};
+    {{{ makeSetValue('tsfn', 'emnapiTSFN.offset.async_ref', '1', 'u32') }}};
     {{{ ('result') }}};
     {{{ makeSetValue('result', 0, 'tsfn', '*') }}};
     return envObject.clearLastError();
@@ -6265,11 +6437,11 @@ function _napi_acquire_threadsafe_function(func) {
     {{{ ('func') }}};
     var mutex = emnapiTSFN.getMutex(func);
     return mutex.execute(function () {
-        if (emnapiTSFN.getIsClosing(func)) {
-            return 16 /* napi_status.napi_closing */;
+        if (emnapiTSFN.getState(func) === 0 /* State.kOpen */) {
+            emnapiTSFN.addThreadCount(func);
+            return 0 /* napi_status.napi_ok */;
         }
-        emnapiTSFN.addThreadCount(func);
-        return 0 /* napi_status.napi_ok */;
+        return 16 /* napi_status.napi_closing */;
     });
 }
 /** @__sig ipi */
@@ -6281,24 +6453,33 @@ function _napi_release_threadsafe_function(func, mode) {
     {{{ ('func') }}};
     var mutex = emnapiTSFN.getMutex(func);
     var cond = emnapiTSFN.getCond(func);
-    return mutex.execute(function () {
+    var shouldDelete = false;
+    var ret = mutex.execute(function () {
         if (emnapiTSFN.getThreadCount(func) === 0) {
             return 1 /* napi_status.napi_invalid_arg */;
         }
         emnapiTSFN.subThreadCount(func);
         if (emnapiTSFN.getThreadCount(func) === 0 || mode === 1 /* napi_threadsafe_function_release_mode.napi_tsfn_abort */) {
-            var isClosing = emnapiTSFN.getIsClosing(func);
-            if (!isClosing) {
-                var isClosingValue = (mode === 1 /* napi_threadsafe_function_release_mode.napi_tsfn_abort */) ? 1 : 0;
-                emnapiTSFN.setIsClosing(func, isClosingValue);
-                if (isClosingValue && emnapiTSFN.getMaxQueueSize(func) > 0) {
+            if (emnapiTSFN.getState(func) === 0 /* State.kOpen */) {
+                if (mode === 1 /* napi_threadsafe_function_release_mode.napi_tsfn_abort */) {
+                    emnapiTSFN.setState(func, 1 /* State.kClosing */);
+                }
+                if (emnapiTSFN.getState(func) === 1 /* State.kClosing */ && emnapiTSFN.getMaxQueueSize(func) > 0) {
                     cond.signal();
                 }
                 emnapiTSFN.send(func);
             }
         }
+        if (!(emnapiTSFN.getState(func) === 2 /* State.kClosed */ && emnapiTSFN.getThreadCount(func) === 0)) {
+            return 0 /* napi_status.napi_ok */;
+        }
+        shouldDelete = true;
         return 0 /* napi_status.napi_ok */;
     });
+    if (shouldDelete) {
+        emnapiTSFN.destroy(func);
+    }
+    return ret;
 }
 /** @__sig ipp */
 function _napi_unref_threadsafe_function(env, func) {
@@ -6307,12 +6488,15 @@ function _napi_unref_threadsafe_function(env, func) {
         return 1 /* napi_status.napi_invalid_arg */;
     }
     {{{ ('func') }}};
-    var asyncRefOffset = (func + emnapiTSFN.offset.async_ref) >> 2;
-    var arr = new Int32Array(wasmMemory.buffer);
-    if (Atomics.load(arr, asyncRefOffset)) {
-        Atomics.store(arr, asyncRefOffset, 0);
-        __emnapi_runtime_keepalive_pop();
-        emnapiCtx.decreaseWaitingRequestCounter();
+    var asyncRefOffset = (func + emnapiTSFN.offset.async_ref) >>> 2;
+    var arr = new Uint32Array(wasmMemory.buffer);
+    var currentValue = Atomics.load(arr, asyncRefOffset);
+    if (currentValue > 0) {
+        Atomics.store(arr, asyncRefOffset, currentValue - 1);
+        if (currentValue === 1) {
+            __emnapi_runtime_keepalive_pop();
+            emnapiCtx.decreaseWaitingRequestCounter();
+        }
     }
     return 0 /* napi_status.napi_ok */;
 }
@@ -6323,13 +6507,14 @@ function _napi_ref_threadsafe_function(env, func) {
         return 1 /* napi_status.napi_invalid_arg */;
     }
     {{{ ('func') }}};
-    var asyncRefOffset = (func + emnapiTSFN.offset.async_ref) >> 2;
-    var arr = new Int32Array(wasmMemory.buffer);
-    if (!Atomics.load(arr, asyncRefOffset)) {
-        Atomics.store(arr, asyncRefOffset, 1);
+    var asyncRefOffset = (func + emnapiTSFN.offset.async_ref) >>> 2;
+    var arr = new Uint32Array(wasmMemory.buffer);
+    var currentValue = Atomics.load(arr, asyncRefOffset);
+    if (!currentValue) {
         __emnapi_runtime_keepalive_push();
         emnapiCtx.increaseWaitingRequestCounter();
     }
+    Atomics.store(arr, asyncRefOffset, currentValue + 1);
     return 0 /* napi_status.napi_ok */;
 }
 /** @__sig ippp */
@@ -6857,6 +7042,14 @@ function _napi_get_version(env, result) {
     _emnapi_close_handle_scope: __emnapi_close_handle_scope,
     _emnapi_close_handle_scope__deps: ["$emnapiCtx", "$emnapiCtx"],
     _emnapi_close_handle_scope__sig: "vp",
+    $emnapiString: emnapiString,
+    $emnapiString__deps: ["$emnapiCtx"],
+    $emnapiString__postset: "emnapiString.init();",
+    $emnapiCreateFunction: emnapiCreateFunction,
+    $emnapiCreateFunction__deps: ["$emnapiString", "$emnapiCtx"],
+    _emnapi_create_function: __emnapi_create_function,
+    _emnapi_create_function__deps: ["$emnapiCtx", "$emnapiCreateFunction"],
+    _emnapi_create_function__sig: "ipppppp",
     _emnapi_ctx_decrease_waiting_request_counter: __emnapi_ctx_decrease_waiting_request_counter,
     _emnapi_ctx_decrease_waiting_request_counter__deps: ["$emnapiCtx"],
     _emnapi_ctx_decrease_waiting_request_counter__sig: "v",
@@ -6872,9 +7065,6 @@ function _napi_get_version(env, result) {
     _emnapi_env_unref: __emnapi_env_unref,
     _emnapi_env_unref__deps: ["$emnapiCtx"],
     _emnapi_env_unref__sig: "vp",
-    $emnapiString: emnapiString,
-    $emnapiString__deps: ["$emnapiCtx"],
-    $emnapiString__postset: "emnapiString.init();",
     _emnapi_get_filename: __emnapi_get_filename,
     _emnapi_get_filename__deps: ["$emnapiCtx", "$emnapiString"],
     _emnapi_get_filename__sig: "ippi",
@@ -6909,6 +7099,9 @@ function _napi_get_version(env, result) {
     _emnapi_runtime_keepalive_push__sig: "v",
     _emnapi_unwind: __emnapi_unwind,
     _emnapi_unwind__sig: "v",
+    _emnapi_worker_ref: __emnapi_worker_ref,
+    _emnapi_worker_ref__deps: ["$PThread"],
+    _emnapi_worker_ref__sig: "vp",
     _emnapi_worker_unref: __emnapi_worker_unref,
     _emnapi_worker_unref__deps: ["$PThread"],
     _emnapi_worker_unref__sig: "vp",
@@ -6954,7 +7147,7 @@ function _napi_get_version(env, result) {
     napi_add_env_cleanup_hook__deps: ["$emnapiCtx"],
     napi_add_env_cleanup_hook__sig: "ippp",
     napi_adjust_external_memory: _napi_adjust_external_memory,
-    napi_adjust_external_memory__deps: ["$emnapiCtx", "$emnapiSetValueI64", "emscripten_resize_heap"],
+    napi_adjust_external_memory__deps: ["$emnapiCtx", "$emnapiSetValueI64"],
     napi_adjust_external_memory__sig: "ipjp",
     napi_call_function: _napi_call_function,
     napi_call_function__deps: ["$emnapiCtx"],
@@ -7044,10 +7237,8 @@ function _napi_get_version(env, result) {
     napi_create_external_buffer: _napi_create_external_buffer,
     napi_create_external_buffer__deps: ["emnapi_create_memory_view"],
     napi_create_external_buffer__sig: "ipppppp",
-    $emnapiCreateFunction: emnapiCreateFunction,
-    $emnapiCreateFunction__deps: ["$emnapiString", "$emnapiCtx"],
     napi_create_function: _napi_create_function,
-    napi_create_function__deps: ["$emnapiCtx", "$emnapiCreateFunction"],
+    napi_create_function__deps: ["$emnapiCtx", "_emnapi_create_function"],
     napi_create_function__sig: "ipppppp",
     napi_create_int32: _napi_create_int32,
     napi_create_int32__deps: ["$emnapiCtx"],
@@ -7058,9 +7249,6 @@ function _napi_get_version(env, result) {
     napi_create_object: _napi_create_object,
     napi_create_object__deps: ["$emnapiCtx"],
     napi_create_object__sig: "ipp",
-    napi_create_object_with_properties: _napi_create_object_with_properties,
-    napi_create_object_with_properties__deps: ["$emnapiCtx"],
-    napi_create_object_with_properties__sig: "ipppppp",
     napi_create_promise: _napi_create_promise,
     napi_create_promise__deps: ["$emnapiCtx"],
     napi_create_promise__sig: "ippp",
@@ -7384,6 +7572,9 @@ function _napi_get_version(env, result) {
     node_api_create_external_string_utf16: _node_api_create_external_string_utf16,
     node_api_create_external_string_utf16__deps: ["$emnapiString", "napi_create_string_utf16"],
     node_api_create_external_string_utf16__sig: "ippppppp",
+    node_api_create_object_with_properties: _node_api_create_object_with_properties,
+    node_api_create_object_with_properties__deps: ["$emnapiCtx"],
+    node_api_create_object_with_properties__sig: "ipppppp",
     node_api_create_property_key_latin1: _node_api_create_property_key_latin1,
     node_api_create_property_key_latin1__deps: ["napi_create_string_latin1"],
     node_api_create_property_key_latin1__sig: "ipppp",
