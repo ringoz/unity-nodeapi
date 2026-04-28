@@ -97,17 +97,19 @@ class GameObjectNode : Node
   public static IEnumerable<Node> Enum(Node parent)
   {
     var transform = (parent.mPtr as GameObject)?.transform;
-    if (transform != null)
-      foreach (Transform child in transform)
-      {
-        var obj = child.gameObject;
-        if (obj == null)
-          continue;
-          
-        if (0 == obj.scene.buildIndex &&
-            0 != (obj.hideFlags & HideFlags.DontSave))
-          yield return Wrap(obj)!;
-      }
+    if (transform == null)
+      yield break;
+
+    foreach (Transform child in transform)
+    {
+      var obj = child.gameObject;
+      if (!obj.activeSelf)
+        continue;
+        
+      if (0 == obj.scene.buildIndex &&
+          0 != (obj.hideFlags & HideFlags.DontSave))
+        yield return Wrap(obj)!;
+    }
   }
 
   private static GameObjectNode _null = new GameObjectNode(null!);
@@ -166,6 +168,10 @@ class GameObjectNode : Node
 
   public override DOMRect? GetBoundingClientRect()
   {
+    var camera = Camera.main;
+    if (camera == null)
+      return base.GetBoundingClientRect();
+
     var renderer = ((GameObject)mPtr).GetComponent<Renderer>();
     if (renderer == null)
       return base.GetBoundingClientRect();
@@ -182,7 +188,7 @@ class GameObjectNode : Node
       new Vector3( c.x - e.x, c.y + e.y, c.z - e.z ),
       new Vector3( c.x - e.x, c.y - e.y, c.z + e.z ),
       new Vector3( c.x - e.x, c.y - e.y, c.z - e.z ),
-    }.Select(corner => Camera.main.WorldToScreenPoint(corner));
+    }.Select(corner => camera.WorldToScreenPoint(corner));
 
     var maxX = corners.Max(corner => corner.x) * 96 / Screen.dpi;
     var minX = corners.Min(corner => corner.x) * 96 / Screen.dpi;
