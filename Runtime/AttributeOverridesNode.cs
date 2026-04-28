@@ -9,8 +9,6 @@ using UnityEngine.Assertions;
 class AttributeOverridesNode : Node
 {
   protected object mName = null!;
-
-  public override object Ptr => mPtr is JSReference ? null! : mPtr;
   public override string Name => mName?.ToString()!;
 
   protected AttributeOverridesNode(object obj) : base(obj) { }
@@ -27,8 +25,8 @@ class AttributeOverridesNode : Node
   {
     if (mPtr is JSReference reference)
     {
-      var props = reference.GetValue();
-      return props.GetProperty(path);
+      var current = reference.GetValue();
+      return current.GetProperty(path);
     }
 
     return base.Get(path);
@@ -38,11 +36,11 @@ class AttributeOverridesNode : Node
   {
     if (mPtr is JSReference reference)
     {
-      reference.Dispose();
-      mPtr = null!;
+      var current = reference.GetValue();
+      foreach (var item in (JSObject)props)
+        current.SetProperty(item.Key, item.Value);
     }
-
-    if (mPtr == null)
+    else if (mPtr == null)
       mPtr = new JSReference(props);
     else
       base.Set(props);

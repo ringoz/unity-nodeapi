@@ -237,15 +237,14 @@ export function commitUpdate(instance: Node, type: Type, prevProps: Props, nextP
   if (shouldSetTextContent(type, prevProps)) restOld['text'] = childrenOld;
   if (shouldSetTextContent(type, nextProps)) restNew['text'] = childrenNew;
 
-  if (instance.ptr) {
-    for (const [key, oldVal] of Object.entries(restOld)) {
-      const newVal = restNew[key];
-      if (isEqual(oldVal, newVal))
-        delete restNew[key];
-      else if (newVal === undefined)
-        restNew[key] = undefined;
-    }
+  for (const [key, oldVal] of Object.entries(restOld)) {
+    const newVal = restNew[key];
+    if (isEqual(oldVal, newVal))
+      delete restNew[key];
+    else if (newVal === undefined)
+      restNew[key] = undefined;
   }
+
   instance.set(restNew);
 }
 

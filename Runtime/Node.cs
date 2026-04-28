@@ -464,8 +464,11 @@ public class Node : IDisposable
   protected static readonly ConditionalWeakTable<object, Node> Wrappers = new();
   protected static Node? Wrap(object? obj, ConditionalWeakTable<object, Node>.CreateValueCallback callback) => obj != null ? Wrappers.GetValue(obj, callback) : null;
 
+  private static uint genUid = 0;
+  private uint mUid = ++genUid;
+
   internal object mPtr;
-  public virtual object Ptr => mPtr;
+  public uint Uid => mUid;
   public virtual string Name => null!;
 
   protected Node(object ptr) => mPtr = ptr;
@@ -473,7 +476,7 @@ public class Node : IDisposable
 
   public sealed override bool Equals(object? other) => (GetType() == other?.GetType()) ? Equals(mPtr, ((Node)other).mPtr) : base.Equals(other);
   public sealed override int GetHashCode() => mPtr?.GetHashCode() ?? base.GetHashCode();
-  public sealed override string ToString() => $"{mPtr?.GetType().Name}{(string.IsNullOrEmpty(Name) ? "" : $" \"{Name}\"")} {GetBoundingClientRect()}";
+  public sealed override string ToString() => $"{mPtr?.GetType().Name}{(string.IsNullOrEmpty(Name) ? "" : $" \"{Name}\"")} uid={Uid} {GetBoundingClientRect()}";
 
   public JSValue ToJSON()
   {
@@ -488,7 +491,7 @@ public class Node : IDisposable
 
     var context = JSValueScope.Current.RuntimeContext;
     foreach (var item in ComponentNode.Enum(this))
-      json.Add(item.Ptr.GetType().Name, context.GetOrCreateObjectWrapper(item));
+      json.Add(item.mPtr.GetType().Name, context.GetOrCreateObjectWrapper(item));
 
     return json;
   }

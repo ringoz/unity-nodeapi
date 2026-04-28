@@ -44,9 +44,9 @@ export interface Loader { (path: string): Promise<Object>; }
 export interface Unloader { (obj: Object): Promise<void>; }
 
 export class Node {
-	readonly ptr: Object;
-
 	readonly name: string;
+
+	readonly uid: number;
 
 	readonly children: Iterable<Node>;
 
