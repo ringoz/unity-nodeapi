@@ -31,17 +31,6 @@ public struct DOMRect
 }
 
 [JSExport]
-public abstract class Event : IDisposable
-{
-  public override string ToString() => $"[{GetType().Name}] {Type}";
-  public abstract void Dispose();
-  public virtual string Type => GetType().Name;
-  public virtual long Timestamp => (long)(Time.unscaledTime * 1000.0f);
-  public abstract Node Target { get; }
-  public virtual JSValue? Value => default;
-}
-
-[JSExport]
 public delegate Task<object> Loader(string path);
 
 [JSExport]
@@ -518,15 +507,15 @@ public class Node : IDisposable
 
   private static Node? CreateImpl(object kind) => AttributeOverridesNode.Create(kind) ?? VisualElementNode.Create(kind) ?? ComponentNode.Create(kind) ?? GameObjectNode.Create(kind);
   public static Node? Create(object kind) => CreateImpl(kind is string path ? Resources.Load(path) ?? kind : kind);
-  
+
   public static Node? Search(object name, Node? scope = null)
   {
     if (scope is VisualElementNode root)
       return VisualElementNode.Find(name, root);
-      
+
     if (scope is GameObjectNode gobj)
       return ComponentNode.Find(name, gobj);
-      
+
     return GameObjectNode.Find((string)name);
   }
 

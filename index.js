@@ -7,8 +7,8 @@ const { default: exports } = await import(`./index-${suffix}.js`);
 export default exports;
 
 export const {
-	DOMRect,
 	Event,
+	DOMRect,
 	Loader,
 	Unloader,
 	Node,

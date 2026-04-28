@@ -5,6 +5,25 @@
 import './mscorlib';
 
 
+export class Event {
+	readonly type: string;
+
+	readonly timestamp: number;
+
+	readonly target: Node;
+
+	readonly value?: any;
+
+	toString(): string;
+
+	dispose(): void;
+
+	static injectMouseClick(
+		x: number,
+		y: number,
+	): void;
+}
+
 export class DOMRect extends ValueType {
 	x: number;
 
@@ -25,28 +44,14 @@ export class DOMRect extends ValueType {
 	toString(): string;
 }
 
-export class Event {
-	readonly type: string;
-
-	readonly timestamp: number;
-
-	readonly target: Node;
-
-	readonly value?: any;
-
-	toString(): string;
-
-	dispose(): void;
-}
-
 export interface Loader { (path: string): Promise<Object>; }
 
 export interface Unloader { (obj: Object): Promise<void>; }
 
 export class Node {
-	readonly name: string;
-
 	readonly uid: number;
+
+	readonly name: string;
 
 	readonly children: Iterable<Node>;
 
