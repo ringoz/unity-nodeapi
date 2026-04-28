@@ -96,15 +96,16 @@ class GameObjectNode : Node
 
   public static IEnumerable<Node> Enum(Node parent)
   {
-    if (parent.mPtr is GameObject)
-      foreach (Transform child in ((GameObject)parent.mPtr).transform)
+    var transform = (parent.mPtr as GameObject)?.transform;
+    if (transform != null)
+      foreach (Transform child in transform)
       {
         var obj = child.gameObject;
         if (obj == null)
           continue;
           
         if (0 == obj.scene.buildIndex &&
-            0 == (obj.hideFlags & HideFlags.HideInHierarchy))
+            0 != (obj.hideFlags & HideFlags.DontSave))
           yield return Wrap(obj)!;
       }
   }
@@ -128,8 +129,7 @@ class GameObjectNode : Node
     if (kind is GameObject prefab)
     {
       var obj = UnityEngine.Object.Instantiate(prefab, ((GameObject)Null.mPtr).transform, false);
-      foreach (Transform child in obj.transform)
-        child.gameObject.hideFlags = HideFlags.HideInHierarchy;
+      obj.hideFlags |= HideFlags.DontSave;
       return Wrap(obj);
     }
     return null;
