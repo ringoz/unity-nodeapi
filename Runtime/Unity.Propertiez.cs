@@ -43,12 +43,6 @@ static class Propertiez
       return TypeConversion.TryConvert(ref source, out destination);
     }
 
-    if (TypeTraits<TDestination>.IsUnityObject)
-    {
-      var source = value.IsNullOrUndefined() ? null : value.GetValueExternal();
-      return TypeConversion.TryConvert(ref source, out destination);
-    }
-
     return TypeConversion.TryConvert(ref value, out destination);
   }
 
@@ -63,12 +57,6 @@ static class Propertiez
     if (TypeTraits<TSource>.IsEnum)
     {
       value = source.ToString();
-      return true;
-    }
-
-    if (TypeTraits<TSource>.IsUnityObject)
-    {
-      value = (source != null) ? JSValue.CreateExternal(source) : JSValue.Null;
       return true;
     }
 
