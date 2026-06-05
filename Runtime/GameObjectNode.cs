@@ -141,7 +141,10 @@ class GameObjectNode : Node
 
   public override void Dispose()
   {
-    UnityEngine.Object.Destroy((GameObject)mPtr);
+    var go = (GameObject)mPtr;
+    if (!go) return;
+
+    UnityEngine.Object.Destroy(go);
   }
 
   public override void SetActive(bool value)
@@ -151,15 +154,21 @@ class GameObjectNode : Node
 
   public override void SetParent(Node? parent, Node? beforeChild)
   {
+    var go = (GameObject)mPtr;
+    if (!go) return;
+
     var parentGameObject = (GameObject)(parent ?? Null).mPtr;
-    ((GameObject)mPtr).transform.SetParent(parentGameObject.transform, false);
+    go.transform.SetParent(parentGameObject.transform, false);
     if (beforeChild?.mPtr is GameObject beforeChildGameObject)
-      ((GameObject)mPtr).transform.SetSiblingIndex(beforeChildGameObject.transform.GetSiblingIndex());
+      go.transform.SetSiblingIndex(beforeChildGameObject.transform.GetSiblingIndex());
   }
 
   public override void Clear()
   {
-    foreach (Transform child in ((GameObject)mPtr).transform)
+    var go = (GameObject)mPtr;
+    if (!go) return;
+
+    foreach (Transform child in go.transform)
       child.SetParent(((GameObject)Null.mPtr).transform, false);
   }
 
