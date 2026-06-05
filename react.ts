@@ -225,6 +225,7 @@ export interface GameObject extends ObjectBase {
   onMouseOver: Action<Event>;
   onMouseUp: Action<Event>;
   onMouseUpAsButton: Action<Event>;
+  onNavigationDone: Action<Event>;
 }
 export const GameObject = intrinsic<GameObject>("GameObject");
 

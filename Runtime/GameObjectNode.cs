@@ -63,6 +63,7 @@ class GameObjectNode : Node
   sealed class onMouseOver : EventBehaviour { void OnMouseOver() => Invoke(); }
   sealed class onMouseUp : EventBehaviour { void OnMouseUp() => Invoke(); }
   sealed class onMouseUpAsButton : EventBehaviour { void OnMouseUpAsButton() => Invoke(); }
+  sealed class onNavigationDone : EventBehaviour { public void NavigationDone() => Invoke(); }
 
   static GameObjectNode()
   {
@@ -85,6 +86,7 @@ class GameObjectNode : Node
     bag.AddProperty(new EventProperty<onMouseOver>());
     bag.AddProperty(new EventProperty<onMouseUp>());
     bag.AddProperty(new EventProperty<onMouseUpAsButton>());
+    bag.AddProperty(new EventProperty<onNavigationDone>());
   }
 
   protected GameObjectNode(object ptr) : base(ptr) { }
