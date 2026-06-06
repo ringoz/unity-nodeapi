@@ -1,6 +1,6 @@
 import { name as productName, author as companyName, version as productVersion } from '../../../package.json';
-import listing from '../../index-web.json' with { type: 'json' };
 
+const listing = await fetch('build.json').then(r => r.json());
 const find = (ext) => `Build/${listing.find(f => f.endsWith(ext))}`;
 
 await new Promise((resolve, reject) => {
