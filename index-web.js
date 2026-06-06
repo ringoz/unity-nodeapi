@@ -1,9 +1,21 @@
 import { name as productName, author as companyName, version as productVersion } from '../../../package.json';
+import listing from '../../index-web.json' with { type: 'json' };
+
+const find = (ext) => `Build/${listing.find(f => f.endsWith(ext))}`;
+
+await new Promise((resolve, reject) => {
+  const el = document.createElement('script');
+  el.src = find('.loader.js');
+  el.onload = resolve;
+  el.onerror = reject;
+  document.head.appendChild(el);
+});
+
 const { Module } = await createUnityInstance(document.querySelector("#unity-canvas"), {
   arguments: [],
-  dataUrl: "Build/Main.data",
-  frameworkUrl: "Build/Main.framework.js",
-  codeUrl: "Build/Main.wasm",
+  dataUrl: find('.data'),
+  frameworkUrl: find('.framework.js'),
+  codeUrl: find('.wasm'),
   streamingAssetsUrl: "StreamingAssets",
   productName,
   companyName,
